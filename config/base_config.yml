@@ -1,0 +1,5 @@
+base:
+  paths:
+    project_absolute_path: "C:/ETL/"
+    data_path: "C:/ETL/DATA_FICHIERS/"
+    download_path: "C:/ETL/Downloads/"

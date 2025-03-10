@@ -1,0 +1,11 @@
+.vscode
+venv
+.venv
+.env*
+!.env.example
+*.pyc
+__pycache__
+DATA_FICHIERS
+**/logs/*
+.idea
+*.log
