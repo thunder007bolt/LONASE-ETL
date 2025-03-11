@@ -1,0 +1,42 @@
+gitech_casino:
+  extraction_dest_relative_path: "gitech_casino/extracted/"
+  transformation_dest_relative_path: "gitech_casino/transformed/"
+  error_dest_relative_path: "gitech_casino/error/"
+  loaded_dest_relative_path: "gitech_casino/loaded/"
+  processed_dest_relative_path: "gitech_casino/processed/"
+  file_downloaded_name: "Cumul CA des * types de jeux*xls"
+  download_path: "C:/ETL/DATA_FICHIERS/gitech_casino/extracted/"
+  ##### extraction config #####
+  file_pattern: "Cumul CA des * types de jeux*xls"
+  start_date: 2025-03-01 # defaut is today - 1 day
+  end_date: 2025-03-04
+  include_sup: false
+  wait_time: 120
+  urls:
+    login: "https://www.pmuonline.sn/lonasemis/lonase_administration/Login.aspx"
+    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/Gamepayoutsummary.aspx"
+
+  html_elements:
+    ### login page ###
+    username_element_id: "Username"
+    password_element_id: "Password"
+    login_submit_button_element_id: "btnSubmit"
+    verification_xpath: "/html/body/form/div[3]/table/tbody/tr/td/table[1]/tbody/tr[2]/td[3]/span"
+
+    ### report page ###
+    start_date_day_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlDate"
+    start_date_month_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlMonth"
+    start_date_year_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlYear"
+    end_date_day_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlDate"
+    end_date_month_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlMonth"
+    end_date_year_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlYear"
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+  #### transform config ####
+  files_to_transform_pattern: "gitech_casino*.xls"
+
+  #### load config ####
+  files_to_load_pattern: "gitech_casino*.csv"
+
