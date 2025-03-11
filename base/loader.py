@@ -4,10 +4,9 @@ from base.logger import Logger
 from utils.config_utils import get_config, get_transformation_configurations, get_loading_configurations
 from pathlib import Path
 from abc import ABC, abstractmethod
-
 from utils.db_utils import get_db_connection
 from utils.file_manipulation import move_file
-
+import numpy as np
 
 class Loader(ABC):
     def __init__(self, name, log_file, columns, table_name):
@@ -57,6 +56,7 @@ class Loader(ABC):
 
     def _dataframe_to_tuples(self, df):
         self.logger.info("Conversion des données en tuples...")
+        df = df.replace(np.nan, '')
         return list(df.itertuples(index=False, name=None))
 
     def _connection_to_db(self):

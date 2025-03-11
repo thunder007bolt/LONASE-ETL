@@ -35,4 +35,17 @@ def rename_file(name_pattern, source_folder, rename_name, logger):
             new_file.unlink()
         file.rename(new_file)
         logger.info(f"Fichier renommé {new_file}")
-#
+
+def delete_file(path: Path, file_pattern: str):
+    """
+    Supprime les fichiers correspondant au pattern spécifié dans le dossier spécifié.
+
+    Args:
+        path (Path): Chemin complet du dossier où les fichiers doivent être supprimés.
+        file_pattern (str): Pattern à utiliser pour la recherche des fichiers à supprimer.
+    """
+    files = list(Path(path).glob(file_pattern))
+    if not files:
+        return
+    for file in files:
+        file.unlink()

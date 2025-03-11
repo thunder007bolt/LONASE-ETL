@@ -12,7 +12,8 @@ from datetime import datetime
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from utils.file_manipulation import rename_file
+from utils.file_manipulation import rename_file, delete_file
+
 """
 Classe pour scrapper un site Web.
 """
@@ -36,6 +37,13 @@ class BaseScrapper(ABC):
         ### Dates
         self.start_date: datetime
         self.end_date: datetime
+
+    def process_extraction(self):
+        self._set_date()
+        self._delete_old_files()
+        self._open_browser()
+        self._connection_to_platform()
+        self._download_files()
 
     def _open_browser(self):
         """Ouvre le navigateur Chrome avec les options de téléchargement configurées."""
@@ -89,6 +97,10 @@ class BaseScrapper(ABC):
     def _process_download(self, start_date, end_date):
         pass
 
+    def _delete_old_files(self):
+        self.logger.info("Suppression des fichiers existant...")
+        delete_file(self.config["download_path"], self.config["file_pattern"])
+
     def _process_multiple_files(self):
         start_date = self.start_date
         # todo: +1 if include_sup equals true
@@ -96,6 +108,7 @@ class BaseScrapper(ABC):
         delta = timedelta(days=1)
         while end_date <= self.end_date:
             sleep(2)
+            self._delete_old_files()
             self._process_download(start_date, end_date)
             try:
                 self.start_date = start_date

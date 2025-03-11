@@ -86,11 +86,6 @@ class ExtractAcajouDigital(BaseScrapper):
         self.logger.info("Soumission du formulaire...")
         self.wait_and_click(step_x2_element_xpath, locator_type='xpath', timeout=60)
 
-    def process_extraction(self):
-        self._set_date()
-        self._open_browser()
-        self._connection_to_platform()
-        self._download_files()
 
 def run_acajou_digital():
     env_variables_list = ["ACAJOU_DIGITAL_LOGIN_USERNAME", "ACAJOU_DIGITAL_LOGIN_PASSWORD"]

@@ -104,11 +104,6 @@ class ExtractBwinner(BaseScrapper):
         self.logger.info("Télechargement du fichier")
         self.wait_and_click(download_button_element_xpath, locator_type='xpath', timeout=15)
 
-    def process_extraction(self):
-        self._set_date()
-        self._open_browser()
-        self._connection_to_platform()
-        self._download_files()
 
 def run_bwinner():
     env_variables_list = ["BWINNER_LOGIN_USERNAME", "BWINNER_LOGIN_PASSWORD"]
