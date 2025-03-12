@@ -23,7 +23,6 @@ class BaseScrapper(ABC):
     def __init__(self, name: str, env_variables_list: list, log_file: str, chrome_options_arguments: list = []):
         configs = get_config(name)
         self.base_config = configs["base"]
-        print(f"{configs}")
         self.config = configs[name]
         self.name = name
         self.chrome_options_arguments = chrome_options_arguments

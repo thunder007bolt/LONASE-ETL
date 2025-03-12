@@ -4,6 +4,8 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 from utils.file_manipulation import move_file
 import re
+import datetime
+
 class Transformer(ABC):
     def __init__(self, name, log_file):
         self.error_file_count = 0
@@ -46,11 +48,15 @@ class Transformer(ABC):
             csv_filename = f"{prefix} {date_str}.csv"
         return self.transformation_dest_path / csv_filename
 
-    def _save_file(self, file, data, type, **kwargs):
+    def _get_file_date(self, file):
         match = re.search(r"\s*(\d{4}-\d{2}-\d{2})", file.name)
-        # todo: gérer le cas ou la date n'est pas présente mais qu'il s'agit d'un fichier valide
         date = match.group(1)
-        csv_filename = f"{self.name}_transformed_{date}.csv"
+        converted_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        return converted_date
+
+    def _save_file(self, file, data, type, **kwargs):
+        date = self._get_file_date(file)
+        csv_filename = f"{self.name}_transformed_{date.strftime('%Y-%m-%d')}.csv"
         output_file = self.transformation_dest_path / csv_filename
         try:
             if output_file.exists():

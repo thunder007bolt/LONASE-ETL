@@ -1,0 +1,19 @@
+honore_gaming:
+  ftp_remote_path: "/HONOREGAMING/"
+  extraction_dest_relative_path: "honore_gaming/extracted/"
+  transformation_dest_relative_path: "honore_gaming/transformed/"
+  error_dest_relative_path: "honore_gaming/error/"
+  loaded_dest_relative_path: "honore_gaming/loaded/"
+  processed_dest_relative_path: "honore_gaming/processed/"
+  download_path: "C:/Users/pauli/Documents/LONASE_ETL/DATA_FICHIERS/honore_gaming/extracted/"
+  wait_time:
+  date:
+  ##### extraction config #####
+
+
+  #### transform config ####
+  files_to_transform_pattern: "*.csv"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

@@ -55,3 +55,16 @@ def loading(text, delay=.5, duration=10, show_countdown=False):
     print(end='\b' * (len(text) + 3), flush=True)
 
 # Exemple d'utilisation
+def retry_operation(self, operation, max_attempts=3, delay=1):
+    """Retry a given operation up to max_attempts times with a delay between attempts."""
+    attempts = 0
+    while attempts < max_attempts:
+        try:
+            return operation()  # Execute the operation
+        except Exception as e:
+            attempts += 1
+            self.logger.warning(f"Attempt {attempts}/{max_attempts} failed: {e}")
+            if attempts == max_attempts:
+                self.logger.error(f"Max retries reached. Operation failed.")
+                raise  # Re-raise the last exception after max attempts
+            time.sleep(delay)
