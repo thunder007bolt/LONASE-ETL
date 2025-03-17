@@ -1,0 +1,39 @@
+parifoot_online:
+  extraction_dest_relative_path: "parifoot_online/extracted/"
+  transformation_dest_relative_path: "parifoot_online/transformed/"
+  error_dest_relative_path: "parifoot_online/error/"
+  loaded_dest_relative_path: "parifoot_online/loaded/"
+  processed_dest_relative_path: "parifoot_online/processed/"
+  file_downloaded_name: "AgentCasinoAndBettingReport*cs*"
+  download_path: "C:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
+  ##### extraction config #####
+  file_pattern: "AgentCasinoAndBettingReport*cs*"
+  start_date: 2025-03-01 # defaut is today - 1 day
+  end_date: 2025-03-04
+  include_sup: false
+  wait_time: 8
+  urls:
+    login: "https://agent.premierbet.com/"
+    report: "https://agent.premierbet.com/Transaction?menu=accReport_index_agentCasinoAndBettingReport&actionCtrl=AgentCasinoAndBettingReport"
+
+  html_elements:
+    ### login page ###
+    username_element_id: "Username"
+    password_element_id: "Password"
+    login_submit_button_element_id: "logon"
+    verification_xpath: "/html/body/nav/div/div/ul[2]/li[2]/a/div/div[1]/span[3]"
+
+    ### report page ###
+    date_day_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlDate"
+    date_month_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlMonth"
+    date_year_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlYear"
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+  #### transform config ####
+  files_to_transform_pattern: "parifoot_online*cs*"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

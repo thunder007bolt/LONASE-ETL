@@ -54,7 +54,7 @@ class Transformer(ABC):
         converted_date = datetime.datetime.strptime(date, "%Y-%m-%d")
         return converted_date
 
-    def _save_file(self, file, data, type, **kwargs):
+    def _save_file(self, file, data, type="csv", **kwargs):
         date = self._get_file_date(file)
         csv_filename = f"{self.name}_transformed_{date.strftime('%Y-%m-%d')}.csv"
         output_file = self.transformation_dest_path / csv_filename
