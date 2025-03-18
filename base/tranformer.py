@@ -48,14 +48,20 @@ class Transformer(ABC):
             csv_filename = f"{prefix} {date_str}.csv"
         return self.transformation_dest_path / csv_filename
 
-    def _get_file_date(self, file):
-        match = re.search(r"\s*(\d{4}-\d{2}-\d{2})", file.name)
+    def _get_file_date(self, file, reverse=False):
+        if not reverse :
+            regex = r"\s*(\d{4}-\d{2}-\d{2})"
+            format = "%Y-%m-%d"
+        else:
+            regex =  r"\s*(\d{2}-\d{2}-\d{4})"
+            format = "%d-%m-%Y"
+        match = re.search(regex, file.name)
         date = match.group(1)
-        converted_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        converted_date = datetime.datetime.strptime(date,format)
         return converted_date
 
-    def _save_file(self, file, data, type="csv", **kwargs):
-        date = self._get_file_date(file)
+    def _save_file(self, file, data, type="csv", date=None, **kwargs):
+        date =  date or self._get_file_date(file)
         csv_filename = f"{self.name}_transformed_{date.strftime('%Y-%m-%d')}.csv"
         output_file = self.transformation_dest_path / csv_filename
         try:

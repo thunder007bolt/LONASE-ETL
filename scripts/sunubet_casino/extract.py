@@ -1,15 +1,17 @@
 ### system ###
 import glob
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 ### base ###
 from base.logger import Logger
 from base.web_scrapper import BaseScrapper
 ### selenium ###
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from pathlib import Path
 
 ### utils ###
 from utils.config_utils import get_config, get_secret
@@ -23,6 +25,7 @@ class ExtractSunubetCasino(BaseScrapper):
         super().__init__('sunubet_casino', env_variables_list,
                          'logs/extract_sunubet_casino.log')
         self.file_path = None
+        self.files = []
 
     def _connection_to_platform(self):
         self.logger.info("Connexion au site...")
@@ -39,8 +42,8 @@ class ExtractSunubetCasino(BaseScrapper):
         password = secret_config["SUNUBET_CASINO_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_send_keys(username_xpath, keys=username, locator_type="xpath")
-        self.wait_and_send_keys(password_xpath, keys=password, locator_type="xpath")
+        self.wait_and_send_keys(username_xpath, keys=username, locator_type="xpath", raise_error=True)
+        self.wait_and_send_keys(password_xpath, keys=password, locator_type="xpath", raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
         self.wait_and_click(submit_button_xpath, locator_type="xpath")
@@ -143,6 +146,10 @@ class ExtractSunubetCasino(BaseScrapper):
             submit_button_xpath = html_elements["report_submit_button_xpath"]
             self.wait_and_click(submit_button_xpath, locator_type="xpath")
             sleep(5)
+
+            #todo verifié si le fichier a bient été générer dans le cas contaire ne pas incrémenter les dates
+            self.files.append({"start_date": start_date, "end_date": end_date})
+
             start_date += delta
             end_date += delta
 
@@ -159,28 +166,55 @@ class ExtractSunubetCasino(BaseScrapper):
 
         self.logger.info("Chargement de la page historique des rapports...")
         retry_operation(self, operation=lambda: browser.get(url))
-        self.wait_for_presence(table_xpath, timeout=20)
-        self.wait_for_presence(table_row_xpath, timeout=20)
+        self.wait_for_presence(table_xpath, timeout=60*3)
+        self.wait_for_presence(table_row_xpath, timeout=60*3)
         rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
-        start_date = self.start_date
-        delta = timedelta(days=1)
-        end_date = self.start_date + delta
         for row in rows:
+            columns = row.find_elements(by=By.TAG_NAME, value="td")
+            """
             start_date_formated = start_date.strftime('%d/%m/%Y')
             end_date_formated = (start_date + delta).strftime('%d/%m/%Y')
-            columns = row.find_elements(by=By.TAG_NAME, value="td")
+            self.wait_for_presence("//tr", timeout=60)
+            max_attempts = 3
+            columns = []
+            for attempt in range(max_attempts):
+                try:
+                    sleep(2)
+                    columns = row.find_elements(By.TAG_NAME, "td")
+                    break  # Si succès, sors de la boucle
+                except Exception as e:
+                    if attempt < max_attempts - 1:
+                        print("Element stale, réessai...")
+                        self._download_files()
+                        sleep(2)  # Petite pause avant de réessayer
+                        continue
+            """
             if len(columns) < 5:
                 continue
-            logger.info(f"Report name: {columns[1].text}, Dates: {columns[2].text}, {columns[3].text}, Status: {columns[4].text}")
+
+            logger.info(f"Report name: {columns[1].text}, Dates: {columns[4].text}, {columns[5].text}, Status: {columns[6].text}")
             report_name = columns[2].text
             type = columns[3].text
             date1 = columns[4].text
             date2 = columns[5].text
+            date1_formated = datetime.strptime(date1, "%d/%m/%Y").strftime("%Y-%m-%d")
+            date2_formated = datetime.strptime(date2, "%d/%m/%Y").strftime("%Y-%m-%d")
             status = columns[6].text
+
+            founded = False
+            idx = None
+            if len(self.files) > 0:
+                for index, file in enumerate(self.files):
+                    if file["start_date"].strftime('%d/%m/%Y') == date1 and file["end_date"].strftime(
+                            '%d/%m/%Y') == date2:
+                        founded = True
+                        idx = index
+            else:
+                self.logger.info("Tous les fichiers ont été téléchargés")
+                break
+
             founded_file_name = "InstantGamesTransactionsHistory" in report_name and \
-                                type == 'CSV' and \
-                                date1 == start_date_formated and \
-                                date2 == end_date_formated
+                                type == 'CSV' and founded
 
             if founded_file_name and "Disponible" in status:
                 logger.info("Téléchargement du fichier...")
@@ -189,31 +223,27 @@ class ExtractSunubetCasino(BaseScrapper):
                 WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
                 logger.info("Téléchargement lancé avec succès.")
                 try:
-                    self.start_date = start_date
-                    self._verify_download()
-                    name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-                    file_pattern = self.config['file_pattern']
-                    rename_file(file_pattern, self.config["download_path"], name, self.logger)
-                    if (end_date == (self.end_date + delta) or self.start_date == self.end_date):
-                        self.logger.info("Tous les fichiers ont été téléchargés")
-                        #todo: fin propre du fichier
-                        break
-                    start_date += delta
-                    end_date += delta
+                    name = f"{self.name}_{date1.replace('/', '-')}"
+                    file = self._verify_download(start_date=date1, patterns=[date1_formated, date2_formated])
+                    file = Path(file)
+                    rename_file(file, self.config["download_path"], name, self.logger)
+                    del self.files[idx]
                     continue
-                except:
+                except Exception as e :
                     self.logger.error(
-                        f"Le fichier du {start_date} n'a pas pu être téléchargé")
+                        f"Le fichier du {date1} n'a pas pu être téléchargé")
+                    raise e
 
             elif founded_file_name and (status in ["En attente", "En cours de traitement"]):
-                self.logger.info(f"Le fichier du {start_date} est en attente de téléchargement")
-                sleep(10)
+                self.logger.info(f"Le fichier du {date1} est en attente de téléchargement")
+                sleep(30)
                 self.logger.info("Rétéléchargement du fichier")
                 self._download_files()
-                return
+                self.logger.info("Break")
+                break
 
             else:
-                self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé")
+                self.logger.error(f"Le fichier du {date1} n'a pas pu être téléchargé")
                 continue
 
     def process_extraction(self):

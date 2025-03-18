@@ -30,7 +30,7 @@ class SunubetCasinoTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
         # todo: get date from file or current date
-        date = datetime.now().date()
+        date = self._get_file_date(file, reverse=True)
         data["JOUR"] = str(date.strftime("%d/%m/%Y"))
         data["ANNEE"] = str(date.strftime("%Y"))
         data["MOIS"] = str(date.strftime("%m"))
@@ -38,29 +38,7 @@ class SunubetCasinoTransformer(Transformer):
         data = data.replace(np.nan, '')
         data = data.astype(str)
 
-        # Construction du nom du fichier CSV de sortie
-        # Todo: setup dates
-        csv_filename = f"SunubetCasino_{date}.csv"
-        output_file = self.transformation_dest_path / csv_filename
-
-        try:
-            if output_file.exists():
-                output_file.unlink()
-            data.to_csv(output_file, index=False, sep=';', encoding='utf8')
-            move_file(file, self.processed_dest_path)
-            self.logger.info(f"Le fichier {csv_filename} a été transformé et sauvegardé avec succès.")
-
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de la sauvegarde du fichier {csv_filename} : {e}")
-            return
-
-        # Suppression du fichier XLSX conver ti s'il n'est plus nécessaire
-        try:
-            file.unlink()
-        except Exception as e:
-            self.logger.warning(f"Impossible de supprimer le fichier converti {file.name} : {e}")
-
+        self._save_file(file, data, date=date, type="csv", index=False, sep=';', encoding='utf8')
 
 def run_sunubet_casino_transformer():
     transformer = SunubetCasinoTransformer()

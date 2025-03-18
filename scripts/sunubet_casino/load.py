@@ -21,7 +21,7 @@ class LonasebetCasinoLoad(Loader):
         df = pd.read_csv(file, sep=';', index_col=False)
         return df
 
-def run__loader():
+def run_sunubet_casino_loader():
     loader = LonasebetCasinoLoad()
     loader.process_loading()
 

@@ -24,17 +24,27 @@ def move_file(file_path: Path, destination_folder: Path) -> Path:
 
     return destination
 
-def rename_file(name_pattern, source_folder, rename_name, logger):
-    files = list(Path(source_folder).glob(name_pattern))  # Recherche dans le dossier courant
-    if not files:
-        logger.info(f"Aucun fichier trouvé avec le pattern : {name_pattern}")
-        return
-    for file in files:
-        new_file = file.parent / f"{rename_name}{file.suffix}"# Conserve le dossier d'origine
-        if new_file.exists():
-            new_file.unlink()
-        file.rename(new_file)
+def rename_file(pattern, source_folder, rename_name, logger):
+    if isinstance(pattern, Path):
+        file = pattern
+        new_file = rename(file, rename_name)
         logger.info(f"Fichier renommé {new_file}")
+        pass
+    else:
+        files = list(Path(source_folder).glob(pattern))  # R, echerche dans le dossier courant
+        if not files:
+            logger.info(f"Aucun fichier trouvé avec le pattern : {pattern}")
+            return
+        for file in files:
+            new_file = rename(file, rename_name)
+            logger.info(f"Fichier renommé {new_file}")
+
+def rename(file, rename_name):
+    new_file = file.parent / f"{rename_name}{file.suffix}"  # Conserve le dossier d'origine
+    if new_file.exists():
+        new_file.unlink()
+    file.rename(new_file)
+    return new_file
 
 def delete_file(path: Path, file_pattern: str):
     """

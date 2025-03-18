@@ -8,7 +8,7 @@ sunubet_casino:
   download_path: "C:/ETL/DATA_FICHIERS/sunubet_casino/extracted/"
   ##### extraction config #####
   file_pattern: "*InstantGamesTransactionsHistory*csv"
-  wait_time: 200
+  wait_time: 7000
   start_date: 2025-02-15
   end_date: 2025-02-16
   urls:
@@ -50,7 +50,7 @@ sunubet_casino:
     download_button_xpath: "*/div/div/i"
 
   #### transform config ####
-  files_to_transform_pattern: "*InstantGamesTransactionsHistory*csv"
+  files_to_transform_pattern: "*csv"
 
   #### load config ####
   files_to_load_pattern: "*.csv"

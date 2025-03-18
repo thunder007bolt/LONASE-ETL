@@ -84,6 +84,8 @@ class BaseScrapper(ABC):
             return By.XPATH
         elif locator_type == 'name':
             return By.NAME
+        elif locator_type == 'tag':
+            return By.TAG_NAME
 
     @abstractmethod
     def _connection_to_platform(self):
@@ -122,15 +124,27 @@ class BaseScrapper(ABC):
             start_date += delta
             end_date += delta
 
-    def _verify_download(self, file_pattern=None):
+    def _verify_download(self, file_pattern=None, start_date=None, patterns=None):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
             """Attend l'apparition d'un fichier correspondant au motif donné."""
             self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {pattern}")
             start_time = time.time()
             while time.time() - start_time < timeout:
                 files = glob.glob(pattern)
-                if files:
+                if patterns is not None :
+                    temp = True
+                    for file in files:
+                        for pat in patterns:
+                            temp = True
+                            if pat not in file:
+                                temp = False
+                                break
+                        if temp == True :
+                            return file
+                elif files:
+                    self.logger.info(f"Files0: {files}")
                     return files[0]
+
                 time.sleep(poll_interval)
             return None
         file_pattern = file_pattern or self.config["file_pattern"]
@@ -139,7 +153,9 @@ class BaseScrapper(ABC):
             raise Exception("Téléchargement anormalement long, fichier non téléchargé")
             # self._download_files()
         else:
-            self.logger.info(f"Le fichier du {self.start_date} a bien ete telecharge")
+            self.logger.info(
+                f"Le fichier du {start_date or self.start_date} a bien ete telecharge")
+            return tmp_file
 
     def wait_and_click(self, element, locator_type='id', timeout=10, raise_error=False):
         by_type = self._get_by_type(locator_type)
