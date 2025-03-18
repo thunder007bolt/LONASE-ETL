@@ -28,6 +28,8 @@ def rename_file(pattern, source_folder, rename_name, logger):
     if isinstance(pattern, Path):
         file = pattern
         new_file = rename(file, rename_name)
+        if file.exists():
+            file.unlink()
         logger.info(f"Fichier renommé {new_file}")
         pass
     else:
