@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from utils.file_manipulation import rename_file, delete_file
+from glob import glob
 
 """
 Classe pour scrapper un site Web.
@@ -124,9 +125,40 @@ class BaseScrapper(ABC):
             start_date += delta
             end_date += delta
 
+    def _verify_download_opt(self, file_pattern=None, start_date=None, patterns=None):
+        def wait_for_download(download_path, file_pattern, patterns=None, timeout=120, poll_interval=2):
+            """Attend l'apparition d'un fichier correspondant au motif donné."""
+            self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {file_pattern}")
+            start_time = time.time()
+            while time.time() - start_time < timeout:
+                files = glob(os.path.join(download_path, file_pattern))
+                if patterns:
+                    for file in files:
+                        # Vérifie si tous les motifs sont présents
+                        if all(pat in file for pat in patterns):
+                            self.logger.info(f"Fichier trouvé correspondant aux motifs : {file}")
+                            return file
+                elif files:
+                    self.logger.info(f"Fichier trouvé : {files[0]}")
+                    return files[0]
+                time.sleep(poll_interval)
+            self.logger.warning(f"Aucun fichier trouvé pour {file_pattern} après {timeout} secondes")
+            return None
+
+        file_pattern = file_pattern or self.config["file_pattern"]
+        download_path = self.config["download_path"]
+        tmp_file = wait_for_download(download_path, file_pattern, patterns, timeout=self.config["wait_time"],
+                                     poll_interval=2)
+        if not tmp_file:
+            raise Exception(f"Téléchargement anormalement long, fichier non téléchargé pour le motif {file_pattern}")
+        else:
+            self.logger.info(f"Le fichier du {start_date or self.start_date} a bien été téléchargé : {tmp_file}")
+            return tmp_file
+
     def _verify_download(self, file_pattern=None, start_date=None, patterns=None):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
             """Attend l'apparition d'un fichier correspondant au motif donné."""
+            #todo: s'assurrer à un moment ou à un autre que le téléchargement progresse bien
             self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {pattern}")
             start_time = time.time()
             while time.time() - start_time < timeout:
@@ -144,7 +176,6 @@ class BaseScrapper(ABC):
                 elif files:
                     self.logger.info(f"Files0: {files}")
                     return files[0]
-
                 time.sleep(poll_interval)
             return None
         file_pattern = file_pattern or self.config["file_pattern"]
@@ -195,7 +226,7 @@ class BaseScrapper(ABC):
                 raise(f"Élément introuvable : {element}")
             self.logger.warning(f"Élément introuvable : {element}")
 
-    def wait_and_send_keys(self, element, locator_type='id', timeout=10, keys=None, raise_error=False):
+    def wait_and_send_keys(self, element, locator_type='id', timeout=30, keys=None, raise_error=False):
         try:
             by_type = self._get_by_type(locator_type)
             WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element))).send_keys(keys)

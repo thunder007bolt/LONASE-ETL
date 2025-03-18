@@ -24,24 +24,33 @@ def move_file(file_path: Path, destination_folder: Path) -> Path:
 
     return destination
 
+
 def rename_file(pattern, source_folder, rename_name, logger):
+    """Renomme un fichier ou un ensemble de fichiers selon un motif."""
     if isinstance(pattern, Path):
         file = pattern
-        new_file = rename(file, rename_name)
-        logger.info(f"Fichier renommé {new_file}")
-        pass
+        try:
+            new_file = _rename_file(file, rename_name, logger)
+            logger.info(f"Fichier renommé {new_file}")
+        except Exception as e:
+            logger.error(f"Erreur lors du renommage de {file}: {e}")
     else:
-        files = list(Path(source_folder).glob(pattern))  # R, echerche dans le dossier courant
+        files = list(Path(source_folder).glob(pattern))
         if not files:
             logger.info(f"Aucun fichier trouvé avec le pattern : {pattern}")
             return
         for file in files:
-            new_file = rename(file, rename_name)
-            logger.info(f"Fichier renommé {new_file}")
+            try:
+                new_file = _rename_file(file, rename_name, logger)
+                logger.info(f"Fichier renommé {new_file}")
+            except Exception as e:
+                logger.error(f"Erreur lors du renommage de {file}: {e}")
 
-def rename(file, rename_name):
-    new_file = file.parent / f"{rename_name}{file.suffix}"  # Conserve le dossier d'origine
+def _rename_file(file, rename_name, logger):
+    """Renomme un fichier en conservant son dossier et son extension."""
+    new_file = file.parent / f"{rename_name}{file.suffix}"
     if new_file.exists():
+        logger.warning(f"Le fichier {new_file} existe déjà et sera remplacé.")
         new_file.unlink()
     file.rename(new_file)
     return new_file
