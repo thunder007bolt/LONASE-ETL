@@ -48,21 +48,32 @@ class Transformer(ABC):
             csv_filename = f"{prefix} {date_str}.csv"
         return self.transformation_dest_path / csv_filename
 
-    def _get_file_date(self, file, reverse=False):
-        if not reverse :
+    def _get_file_date(self, file, reverse=False, is_multiple=False):
+        if not reverse:
             regex = r"\s*(\d{4}-\d{2}-\d{2})"
             format = "%Y-%m-%d"
         else:
-            regex =  r"\s*(\d{2}-\d{2}-\d{4})"
+            regex = r"\s*(\d{2}-\d{2}-\d{4})"
             format = "%d-%m-%Y"
+        if is_multiple:
+            matches = re.findall(regex, file.name)
+            dates = [datetime.datetime.strptime(match, format) for match in matches]
+            return dates
+
         match = re.search(regex, file.name)
         date = match.group(1)
-        converted_date = datetime.datetime.strptime(date,format)
+        converted_date = datetime.datetime.strptime(date, format)
         return converted_date
 
-    def _save_file(self, file, data, type="csv", date=None, **kwargs):
-        date =  date or self._get_file_date(file)
-        csv_filename = f"{self.name}_transformed_{date.strftime('%Y-%m-%d')}.csv"
+    def _build_name(self, file, reverse=False, is_multiple=False):
+        dates = self._get_file_date(file, reverse=reverse, is_multiple=is_multiple)
+        if is_multiple:
+            return f"{self.name}_transformed_{dates[0].strftime('%Y-%m-%d')}_{dates[1].strftime('%Y-%m-%d')}.csv"
+        else:
+            return f"{self.name}_transformed_{dates.strftime('%Y-%m-%d')}.csv"
+
+    def _save_file(self, file, data, type, reverse=False, is_multiple=False, **kwargs):
+        csv_filename = self._build_name(file, reverse=reverse, is_multiple=is_multiple)
         output_file = self.transformation_dest_path / csv_filename
         try:
             if output_file.exists():

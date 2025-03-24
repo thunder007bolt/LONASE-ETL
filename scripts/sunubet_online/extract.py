@@ -227,6 +227,7 @@ class ExtractSunubetOnline(BaseScrapper):
                 self.logger.info("Break")
                 break
 
+            #todo: gestion des erreurs
             else:
                 self.logger.error(f"ligne Ignorée")
                 continue
