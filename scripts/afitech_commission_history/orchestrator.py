@@ -1,15 +1,18 @@
+import sys
+sys.path.append("C:\ETL")
+
 from base.logger import Logger
-from extract import run_gitech as extract
+from extract import run_afitech_commission_history as extract
 from transform import run_afitech_commission_history_transformer as transform
-from load import run_afitech_daily_payment_activity_loader as load
+from load import run_afitech_commission_history_loader as load
 
 def orchestrator():
-    logger = Logger(log_file="extract_gitech.log").get_logger()
+    logger = Logger(log_file="logs/orchestrator_afitech_commission_history.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
         extract()
         transform()
-        # load()
+        load()
         logger.info("Orchestrateur terminé avec succès.")
 
     except Exception as e:

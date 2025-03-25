@@ -20,6 +20,8 @@ from utils.date_utils import get_yesterday_date, sleep
 from utils.other_utils import move_file, loading, retry_operation
 from utils.file_manipulation import rename_file
 
+from selenium.common.exceptions import StaleElementReferenceException
+
 
 class ExtractAfitechCommissionHistory(BaseScrapper):
     def __init__(self, env_variables_list):
@@ -165,76 +167,65 @@ class ExtractAfitechCommissionHistory(BaseScrapper):
         browser = self.browser
         html_elements = self.config['html_elements']
         logger = self.logger
-
         url = self.config['urls']['report_history']
-
         table_xpath = html_elements['table_xpath']
         table_row_xpath = html_elements['table_row_xpath']
         download_button_xpath = html_elements['download_button_xpath']
 
-        self.logger.info("Chargement de la page historique des rapports...")
-        browser.get(url)
+        while self.files:
+            logger.info("Chargement de la page historique des rapports...")
+            browser.get(url)  # Reload the page to get fresh elements
 
-        self.wait_for_presence(table_xpath, timeout=40)
-        self.wait_for_presence(
-            "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-            timeout=40)
-        rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
-        delta = timedelta(days=1)
-        if self.range:
-            end_date = self.start_date
-        else:
-            end_date = self.end_date
-        start_date = datetime.date((end_date).year, (end_date).month, 1)
+            # Wait for the table and other elements to load
+            self.wait_for_presence(table_xpath, timeout=40)
+            self.wait_for_presence(
+                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
+                timeout=40
+            )
 
-        for row in rows:
-            columns = row.find_elements(by=By.TAG_NAME, value="td")
-            if len(columns) < 5:
-                continue
-            report_name = columns[1].text
-            date1 = columns[2].text
-            date2 = columns[3].text
-            status = columns[4].text
+            # Process rows with fresh elements each iteration
+            rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
 
-            founded = False
-            idx = None
-            if len(self.files) > 0:
-                for index, file in enumerate(self.files):
-                    if file["start_date"].strftime('%d/%m/%Y') == date1 and file["end_date"].strftime('%d/%m/%Y') == date2:
-                        founded = True
-                        idx = index
-            else:
-                self.logger.info("Tous les fichiers ont été téléchargés")
-                break
-
-            founded_file_name = "CommissionHistory" in report_name and founded
-            if founded_file_name and "Available" in status:
-                logger.info("Téléchargement du fichier...")
-                download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
-                WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
-                logger.info("Téléchargement lancé avec succès.")
+            for row in rows:
                 try:
-                    self.start_date = end_date
-                    self._verify_download()
-                    name = f"{self.name}_{date1.replace('/','-')}_{date2.replace('/','-')}"
-                    file_pattern = self.config['file_pattern']
-                    rename_file(file_pattern, self.config["download_path"], name, self.logger)
-                    del self.files[idx]
-                    continue
+                    columns = row.find_elements(by=By.TAG_NAME, value="td")
+                    if len(columns) < 5:
+                        continue
+                    report_name = columns[1].text
+                    date1 = columns[2].text
+                    date2 = columns[3].text
+                    status = columns[4].text
 
-                except:
-                    self.logger.error(
-                        f"Le fichier du {start_date} n'a pas pu être téléchargé")
+                    # Check if the row matches a file in self.files
+                    founded = False
+                    idx = None
+                    for index, file in enumerate(self.files):
+                        if (file["start_date"].strftime('%d/%m/%Y') == date1 and file["end_date"].strftime('%d/%m/%Y') == date2):
+                            founded = True
+                            idx = index
+                            break
 
-            elif founded_file_name and (status in ["Incomplete", "Queued", "In Progress"]):
-                self.logger.info(f"Le fichier du {start_date} est en attente de téléchargement")
-                sleep(10)
-                self.logger.info("Rétéléchargement du fichier")
-                self._download_files()
+                    founded_file_name = "CommissionHistory" in report_name and founded
+                    if founded_file_name and "Available" in status:
+                        logger.info("Téléchargement du fichier...")
+                        download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
+                        WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
+                        logger.info("Téléchargement lancé avec succès.")
+                        try:
+                            self._verify_download()
+                            name = f"{self.name}_{date1.replace('/', '-')}_{date2.replace('/', '-')}"
+                            file_pattern = self.config['file_pattern']
+                            rename_file(file_pattern, self.config["download_path"], name, logger)
+                            del self.files[idx]  # Remove downloaded file from list
+                        except Exception as e:
+                            logger.error(f"Le fichier du {date1} n'a pas pu être téléchargé: {str(e)}")
 
-            else:
-                self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé")
-                continue
+                    elif founded_file_name and status in ["Incomplete", "Queued", "In Progress"]:
+                        logger.info(f"Le fichier du {date1} est en attente de téléchargement")
+                except Exception as e:
+                    logger.info(f"Erreur {e}")
+
+
 
     def process_extraction(self):
         self._set_date()

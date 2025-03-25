@@ -8,12 +8,13 @@ class AfitechDailyPaymentActivityLoad(Loader):
         name = ('afitech_daily_payment_activity')
         log_file = 'logs/loader_afitech_daily_payment_activity.log'
         columns = [
+            "jour",
             "partner",
             "payment_provider",
             "total_amount_of_deposit",
             "total_number_of_deposit",
-            "total_amount_of_withdrawal",
-            "total_number_of_withdrawal",
+            "total_amount_of_withdrawals",
+            "total_number_of_withdrawals",
             "total_commissions",
             "t_amount_of_partner_deposits",
             "t_am_of_partner_withdrawals"
@@ -23,11 +24,6 @@ class AfitechDailyPaymentActivityLoad(Loader):
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file,sep=';',index_col=False)
-        df = df.replace(np.nan, '')
-        df = df.applymap(lambda x: str(x).replace('.',','))
-        df['Partner'] = df['Partner'].str.replace(',', '.',regex=False)
-        df['Date'] = df['Date'].str.replace('-', '/',regex=False)
-        df=df.astype(str)
 
         return df
 

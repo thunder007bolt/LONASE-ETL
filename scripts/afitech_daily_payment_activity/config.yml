@@ -10,7 +10,7 @@ afitech_daily_payment_activity:
   file_pattern: "*DailyPaymentActivity*xls*"
   wait_time: 300
   start_date: 2025-02-15
-  end_date: 2025-02-18
+  end_date: 2025-02-15
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"
@@ -43,7 +43,7 @@ afitech_daily_payment_activity:
     download_button_xpath: ".//span/span/i"
 
   #### transform config ####
-  files_to_transform_pattern: "*DailyPaymentActivity*.xls*"
+  files_to_transform_pattern: "*.xls*"
 
   #### load config ####
   files_to_load_pattern: "*.csv"

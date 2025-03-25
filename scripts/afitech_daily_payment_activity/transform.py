@@ -30,6 +30,26 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
 
+        data = data.replace(np.nan, '')
+        data = data.applymap(lambda x: str(x).replace('.', ','))
+        data['Partner'] = data['Partner'].str.replace(',', '.', regex=False)
+        data['Date'] = data['Date'].str.replace('-', '/', regex=False)
+        data['t_amount_of_partner_deposits'] = 0
+        data['t_am_of_partner_withdrawals'] = 0
+        data.rename(
+            {
+                "Date": "jour",
+                "Partner": "partner",
+                "Payment Provider": "payment_provider",
+                "Total Amount of Deposit": "total_amount_of_deposit",
+                "Total Number of Deposit": "total_number_of_deposit",
+                "Total Amount of Withdrawals": "total_amount_of_withdrawals",
+                "Total Number of Withdrawals": "total_number_of_withdrawals",
+                "Total Commissions": "total_commissions"
+            }
+        )
+        data = data.astype(str)
+
         self._save_file(file, data, type="csv", index=False, sep=';', encoding='utf8')
 
 
