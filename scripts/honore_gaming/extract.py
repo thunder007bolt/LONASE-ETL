@@ -10,18 +10,11 @@ class ExtractHonoreGaming(BaseFTP):
         super().__init__('honore_gaming', 'logs/extract_honore_gaming.log', env_variables_list)
         self.file_path = None
 
-    def _setup_files_pattern(self):
-        if self.date:
-            self.files_pattern = f"'daily-modified-horse-racing-tickets-detailed_'{self.date}.csv"
-        else:
-            self.date = datetime.date.today().strftime("%Y%m%d")
-            self.files_pattern = f"daily-modified-horse-racing-tickets-detailed_{self.date}.csv"
-
     def process_extraction(self):
-        self._setup_files_pattern()
         self._login()
         self._download_files()
         self._verify_download()
+        self.rename_file()
 
 def run_honore_gaming():
     env_variables_list = ["FTP_HOST", "FTP_USERNAME", "FTP_PASSWORD"]

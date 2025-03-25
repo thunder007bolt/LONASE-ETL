@@ -1,10 +1,13 @@
+import sys
+sys.path.append("C:\ETL")
+
 from base.logger import Logger
-from extract import run_gitech as extract
-from transform import run_gitech_transformer as transform
-from load import run_gitech_loader as load
+from extract import run_honore_gaming as extract
+from transform import run_honore_gaming_transformer as transform
+from load import run_honore_gaming_loader as load
 
 def orchestrator():
-    logger = Logger(log_file="extract_gitech.log").get_logger()
+    logger = Logger(log_file="logs/orchestrator_honore_gaming.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
         extract()
