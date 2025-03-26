@@ -1,0 +1,38 @@
+zeturf:
+  extraction_dest_relative_path: "zeturf/extracted/"
+  transformation_dest_relative_path: "zeturf/transformed/"
+  error_dest_relative_path: "zeturf/error/"
+  loaded_dest_relative_path: "zeturf/loaded/"
+  processed_dest_relative_path: "zeturf/processed/"
+  file_downloaded_name: "Extranet*.csv"
+  file_pattern: "Extranet*.csv"
+  wait_time: 200
+  download_path: "C:/ETL/DATA_FICHIERS/zeturf/extracted/"
+  ##### extraction config #####
+  start_date: 2025-02-15
+  end_date: 2025-02-17
+  urls:
+    login: "https://ztat-extranet.zeturf.com/login"
+    report: "https://ztat-extranet.zeturf.com/lonase/stats"
+
+  html_elements:
+    ### login page ###
+    username_element_id: "inputUsername"
+    password_element_id: "inputPassword"
+    login_submit_button_element_xpath: "/html/body/div[1]/div/div/div/div/div/div/div[2]/div/form/input[2]"
+    verification_xpath: "/html/body/nav/div/ul/li[2]/a"
+
+    ### report page ###
+    date_selector_form_ui_from_id: "date_selector_form_ui_from"
+    date_selector_form_ui_to_id: "date_selector_form_ui_to"
+    date_selector_form_ui_submit_id: "date_selector_form_ui_submit"
+    download_button_element_xpath: '/html/body/div[1]/div[2]/div/div/div[2]/div/div/button[2]'
+    enjeux_vertical_element_xpath: '/html/body/div[1]/div[1]/div[1]/div[3]/div[2]/table/tbody/tr/td[1]'
+    marge_vertical_element_xpath: '/html/body/div[1]/div[1]/div[1]/div[3]/div[2]/table/tbody/tr/td[5]'
+
+  #### transform config ####
+  files_to_transform_pattern: "Recette paiement Journalier (par jour)*.xls"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

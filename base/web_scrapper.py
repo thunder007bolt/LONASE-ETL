@@ -102,7 +102,7 @@ class BaseScrapper(ABC):
         self.logger.info("Suppression des fichiers existant...")
         delete_file(self.config["download_path"], self.config["file_pattern"])
 
-    def _process_multiple_files(self):
+    def _process_multiple_files(self, ignore=False):
         start_date = self.start_date
         # todo: +1 if include_sup equals true
         end_date = self.start_date
@@ -111,16 +111,18 @@ class BaseScrapper(ABC):
             sleep(2)
             self._delete_old_files()
             self._process_download(start_date, end_date)
-            try:
-                self.start_date = start_date
-                self._verify_download()
-            except:
-                self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
-                #Faire juste 3 essais
-                continue
-            name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-            file_pattern = self.config['file_pattern']
-            rename_file(file_pattern, self.config["download_path"], name, self.logger)
+            # todo: renomer ignore
+            if ignore is False:
+                try:
+                    self.start_date = start_date
+                    self._verify_download()
+                except:
+                    self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
+                    # Faire juste 3 essais
+                    continue
+                name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
+                file_pattern = self.config['file_pattern']
+                rename_file(file_pattern, self.config["download_path"], name, self.logger)
             start_date += delta
             end_date += delta
 
@@ -130,7 +132,7 @@ class BaseScrapper(ABC):
             self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {file_pattern}")
             start_time = time.time()
             while time.time() - start_time < timeout:
-                files = glob(os.path.join(download_path, file_pattern))
+                files = glob.glob(os.path.join(download_path, file_pattern))
                 if patterns:
                     for file in files:
                         # Vérifie si tous les motifs sont présents
