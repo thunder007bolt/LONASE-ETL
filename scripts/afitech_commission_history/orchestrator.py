@@ -2,12 +2,12 @@ import sys
 sys.path.append("C:\ETL")
 
 from base.logger import Logger
-from extract import run_sunubet_online as extract
-from transform import run_sunubet_online_transformer as transform
-from load import run_sunubet_online_loader as load
+from extract import run_afitech_commission_history as extract
+from transform import run_afitech_commission_history_transformer as transform
+from load import run_afitech_commission_history_loader as load
 
 def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_sunubet_online.log").get_logger()
+    logger = Logger(log_file="logs/orchestrator_afitech_commission_history.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
         extract()

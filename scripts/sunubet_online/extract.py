@@ -201,14 +201,14 @@ class ExtractSunubetOnline(BaseScrapper):
             founded_file_name = "GlobalBettingHistory" in report_name and \
                                 type == 'CSV' and founded
 
-            if founded_file_name and "Disponible" in status:
+            if founded_file_name and (status in ["Disponible"]):
                 logger.info("Téléchargement du fichier...")
                 download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
                 WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
                 logger.info("Téléchargement lancé avec succès.")
                 try:
                     name = f"{self.name}_{date1.replace('/', '-')}"
-                    file = self._verify_download(start_date=date1, patterns=[date1_formated, date2_formated])
+                    file = self._verify_download_opt(start_date=date1, patterns=[date1_formated, date2_formated])
                     file = Path(file)
                     rename_file(file, self.config["download_path"], name, self.logger)
                     sleep(5)
@@ -221,14 +221,15 @@ class ExtractSunubetOnline(BaseScrapper):
 
             elif founded_file_name and (status in ["En attente", "En cours de traitement"]):
                 self.logger.info(f"Le fichier du {date1} est en attente de téléchargement")
-                sleep(30)
+                sleep(10)
                 self.logger.info("Rétéléchargement du fichier")
                 self._download_files()
                 self.logger.info("Break")
                 break
 
+            #todo: gestion des erreurs
             else:
-                self.logger.error(f"Le fichier du {date1} n'a pas pu être téléchargé")
+                self.logger.error(f"ligne Ignorée")
                 continue
 
     def process_extraction(self):

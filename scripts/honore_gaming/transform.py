@@ -1,16 +1,8 @@
-import os
-import re
-import shutil
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import win32com.client
-from datetime import datetime
-from base.logger import Logger
 from base.tranformer import Transformer
-from utils.config_utils import get_config
 from utils.file_manipulation import move_file
-
 
 class HonoreGamingTransformer(Transformer):
     def __init__(self):
@@ -43,22 +35,7 @@ class HonoreGamingTransformer(Transformer):
         data = data.replace(np.nan, '')
         data = data.astype(str)
 
-        # Construction du nom du fichier CSV de sortie
-        # Todo: setup dates
-        csv_filename = f"HonoreGaming.csv"
-        output_file = self.transformation_dest_path / csv_filename
-
-        try:
-            if output_file.exists():
-                output_file.unlink()
-            data.to_csv(output_file, index=False, sep=';', encoding='utf8')
-            move_file(file, self.processed_dest_path)
-            self.logger.info(f"Le fichier {csv_filename} a été transformé et sauvegardé avec succès.")
-
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de la sauvegarde du fichier {csv_filename} : {e}")
-            return
+        self._save_file(file, data, type='csv', index=False, sep=";", encoding='utf8')
 
 def run_honore_gaming_transformer():
     transformer = HonoreGamingTransformer()

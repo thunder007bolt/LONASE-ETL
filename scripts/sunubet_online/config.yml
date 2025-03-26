@@ -10,7 +10,7 @@ sunubet_online:
   file_pattern: "*GlobalBettingHistory*csv"
   wait_time: 7000
   start_date: 2025-02-15
-  end_date: 2025-02-16
+  end_date: 2025-02-18
   urls:
     login: "https://new-admin-sunubet.sporty-tech.net/"
     report: "https://new-admin-sunubet.sporty-tech.net/reports/create"

@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from base.logger import Logger
 from utils.config_utils import get_secret, get_config
 
-from datetime import datetime
+from datetime import datetime, date
 from ftplib import FTP
 from pathlib import Path
+from utils.file_manipulation import  rename_file
 import time, os, glob
 
 class BaseFTP(ABC):
@@ -24,10 +25,11 @@ class BaseFTP(ABC):
         self.loaded_path = data_path / config['loaded_dest_relative_path']
         self.error_path = data_path / config['error_dest_relative_path']
 
-        self.files_pattern = ''
-
         ### Dates
-        self.date: datetime | None = config["date"]
+        current_date = datetime.now()
+        self.date = config["date"] or current_date
+        self.file_pattern = config["file_pattern"]
+        self.filename = f"{config["file_prefix"]}{self.date.strftime("%Y%m%d")}"
 
         # wait time
         self.wait_time = config["wait_time"]
@@ -36,9 +38,6 @@ class BaseFTP(ABC):
         self.logger = logger
         self.logger.info("Initialisation...")
 
-    @abstractmethod
-    def _setup_files_pattern(self):
-        pass
 
     def _login(self):
         try:
@@ -61,13 +60,17 @@ class BaseFTP(ABC):
             self.ftp.cwd(self.source_path)
             files = self.ftp.nlst()
             for filename in files:
-                if self.files_pattern in filename:
+                if self.filename in filename:
                     destination = self.extraction_dest_relative_path / filename
                     self.logger.info(f"Téléchargement du fichier {filename}")
                     self.ftp.retrbinary("RETR %s" %filename, open(destination,'wb').write)
         except Exception as e:
             self.logger.error(f"Erreur lors du téléchargement des fichiers : {e}")
             raise e
+
+    def _delete_old_files(self):
+        self.logger.info("Suppression des fichiers existant...")
+        delete_file(self.config["download_path"], self.config["file_pattern"])
 
     def _verify_download(self):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
@@ -80,12 +83,16 @@ class BaseFTP(ABC):
                 time.sleep(poll_interval)
             return None
 
-        tmp_file = wait_for_download(os.path.join(self.extraction_dest_relative_path, self.files_pattern), timeout=self.wait_time, poll_interval=2)
+        tmp_file = wait_for_download(os.path.join(self.extraction_dest_relative_path, self.file_pattern), timeout=self.wait_time, poll_interval=2)
         if not tmp_file:
             print("Téléchargement anormalement long, nous allons recommencer")
             self._download_files()
         else:
             self.logger.info(f"Le fichier du {self.date} a bien ete telecharge")
+
+    def rename_file(self):
+        name = f"{self.name}_{self.date.strftime('%Y-%m-%d')}"
+        rename_file(self.file_pattern, self.extraction_dest_relative_path, name, self.logger)
 
     def _close_ftp_connection(self):
         try:

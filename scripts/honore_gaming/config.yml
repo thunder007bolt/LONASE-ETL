@@ -5,8 +5,10 @@ honore_gaming:
   error_dest_relative_path: "honore_gaming/error/"
   loaded_dest_relative_path: "honore_gaming/loaded/"
   processed_dest_relative_path: "honore_gaming/processed/"
-  download_path: "C:/Users/pauli/Documents/LONASE_ETL/DATA_FICHIERS/honore_gaming/extracted/"
-  wait_time:
+  download_path: "C:/ETL/DATA_FICHIERS/honore_gaming/extracted/"
+  file_pattern: "daily-modified-horse-racing-tickets-detailed_*"
+  file_prefix: "daily-modified-horse-racing-tickets-detailed_"
+  wait_time: 500
   date:
   ##### extraction config #####
 

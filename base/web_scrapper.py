@@ -102,7 +102,7 @@ class BaseScrapper(ABC):
         self.logger.info("Suppression des fichiers existant...")
         delete_file(self.config["download_path"], self.config["file_pattern"])
 
-    def _process_multiple_files(self):
+    def _process_multiple_files(self, ignore=False):
         start_date = self.start_date
         # todo: +1 if include_sup equals true
         end_date = self.start_date
@@ -111,22 +111,55 @@ class BaseScrapper(ABC):
             sleep(2)
             self._delete_old_files()
             self._process_download(start_date, end_date)
-            try:
-                self.start_date = start_date
-                self._verify_download()
-            except:
-                self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
-                #Faire juste 3 essais
-                continue
-            name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-            file_pattern = self.config['file_pattern']
-            rename_file(file_pattern, self.config["download_path"], name, self.logger)
+            # todo: renomer ignore
+            if ignore is False:
+                try:
+                    self.start_date = start_date
+                    self._verify_download()
+                except:
+                    self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
+                    # Faire juste 3 essais
+                    continue
+                name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
+                file_pattern = self.config['file_pattern']
+                rename_file(file_pattern, self.config["download_path"], name, self.logger)
             start_date += delta
             end_date += delta
+
+    def _verify_download_opt(self, file_pattern=None, start_date=None, patterns=None):
+        def wait_for_download(download_path, file_pattern, patterns=None, timeout=120, poll_interval=2):
+            """Attend l'apparition d'un fichier correspondant au motif donné."""
+            self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {file_pattern}")
+            start_time = time.time()
+            while time.time() - start_time < timeout:
+                files = glob.glob(os.path.join(download_path, file_pattern))
+                if patterns:
+                    for file in files:
+                        # Vérifie si tous les motifs sont présents
+                        if all(pat in file for pat in patterns):
+                            self.logger.info(f"Fichier trouvé correspondant aux motifs : {file}")
+                            return file
+                elif files:
+                    self.logger.info(f"Fichier trouvé : {files[0]}")
+                    return files[0]
+                time.sleep(poll_interval)
+            self.logger.warning(f"Aucun fichier trouvé pour {file_pattern} après {timeout} secondes")
+            return None
+
+        file_pattern = file_pattern or self.config["file_pattern"]
+        download_path = self.config["download_path"]
+        tmp_file = wait_for_download(download_path, file_pattern, patterns, timeout=self.config["wait_time"],
+                                     poll_interval=2)
+        if not tmp_file:
+            raise Exception(f"Téléchargement anormalement long, fichier non téléchargé pour le motif {file_pattern}")
+        else:
+            self.logger.info(f"Le fichier du {start_date or self.start_date} a bien été téléchargé : {tmp_file}")
+            return tmp_file
 
     def _verify_download(self, file_pattern=None, start_date=None, patterns=None):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
             """Attend l'apparition d'un fichier correspondant au motif donné."""
+            #todo: s'assurrer à un moment ou à un autre que le téléchargement progresse bien
             self.logger.info(f"Attente de {timeout} secondes pour le téléchargement du fichier {pattern}")
             start_time = time.time()
             while time.time() - start_time < timeout:
@@ -144,7 +177,6 @@ class BaseScrapper(ABC):
                 elif files:
                     self.logger.info(f"Files0: {files}")
                     return files[0]
-
                 time.sleep(poll_interval)
             return None
         file_pattern = file_pattern or self.config["file_pattern"]
@@ -157,7 +189,7 @@ class BaseScrapper(ABC):
                 f"Le fichier du {start_date or self.start_date} a bien ete telecharge")
             return tmp_file
 
-    def wait_and_click(self, element, locator_type='id', timeout=10, raise_error=False):
+    def wait_and_click(self, element, locator_type='id', timeout=60, raise_error=False):
         by_type = self._get_by_type(locator_type)
         try:
             element = WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element)))
@@ -168,7 +200,7 @@ class BaseScrapper(ABC):
                 raise(f"Élément non cliquable ou introuvable : {element}")
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_for_click(self, element, locator_type='xpath', timeout=10, raise_error=False):
+    def wait_for_click(self, element, locator_type='xpath', timeout=60, raise_error=False):
         by_type = self._get_by_type(locator_type)
         try:
             return  WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element)))
@@ -177,7 +209,7 @@ class BaseScrapper(ABC):
                 raise(f"Élément non cliquable ou introuvable : {element}")
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_for_invisibility(self, element, locator_type='xpath', timeout=10, raise_error=False):
+    def wait_for_invisibility(self, element, locator_type='xpath', timeout=60, raise_error=False):
             by_type = self._get_by_type(locator_type)
             try:
                 WebDriverWait(self.browser, timeout).until(EC.invisibility_of_element((by_type, element))).click()
@@ -186,7 +218,7 @@ class BaseScrapper(ABC):
                     raise(f"Élément non cliquable ou introuvable : {element}")
                 self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_for_presence(self, element, locator_type='xpath', timeout=10, raise_error=False):
+    def wait_for_presence(self, element, locator_type='xpath', timeout=60, raise_error=False):
         by_type = self._get_by_type(locator_type)
         try:
             WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
@@ -195,7 +227,7 @@ class BaseScrapper(ABC):
                 raise(f"Élément introuvable : {element}")
             self.logger.warning(f"Élément introuvable : {element}")
 
-    def wait_and_send_keys(self, element, locator_type='id', timeout=10, keys=None, raise_error=False):
+    def wait_and_send_keys(self, element, locator_type='id', timeout=60, keys=None, raise_error=False):
         try:
             by_type = self._get_by_type(locator_type)
             WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element))).send_keys(keys)
@@ -204,7 +236,7 @@ class BaseScrapper(ABC):
                 raise(f"Élément non cliquable ou introuvable : {element}")
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_element_visible(self, element, type='xpath', timeout=10):
+    def wait_element_visible(self, element, type='xpath', timeout=60):
         by_type = self._get_by_type(type)
         WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
 
