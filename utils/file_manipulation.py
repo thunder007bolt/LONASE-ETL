@@ -68,3 +68,6 @@ def delete_file(path: Path, file_pattern: str):
         return
     for file in files:
         file.unlink()
+
+def files_list(path, pattern="*"):
+    return list(Path(path).glob(pattern))
