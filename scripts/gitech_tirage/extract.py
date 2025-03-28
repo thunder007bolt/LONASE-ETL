@@ -1,8 +1,6 @@
 ### system ###
 import glob
-
 import pandas as pd
-
 ### base ###
 from base.logger import Logger
 from base.web_scrapper import BaseScrapper
@@ -12,12 +10,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 ### utils ###
 from utils.config_utils import get_config, get_secret
-from utils.date_utils import get_yesterday_date, sleep
-from utils.other_utils import move_file, loading
-from utils.file_manipulation import rename_file
+from utils.date_utils import sleep
 from datetime import timedelta
-import numpy as np
-
+from pathlib import Path
 
 
 class ExtractGitechTirage(BaseScrapper):
@@ -135,15 +130,14 @@ class ExtractGitechTirage(BaseScrapper):
                 mini_df['Clôture des paris'] = df.iloc[i, 6]
                 mini_df['N° Ticket'] = df.iloc[i, 7]
 
-
                 df_combined = pd.concat([df_combined, mini_df], ignore_index=True)
 
                 xpath = "html/body/form/div[3]/table[2]/tbody/tr[7]/td/div[1]/table[1]/tbody/tr/td/input"
                 self.wait_and_click(xpath, locator_type="xpath")
 
             self.logger.info("Déplacement du fichier...")
-            name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-            file = self.config["download_path"] / name
+            name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}.csv"
+            file = Path(self.config["download_path"]) / name
             df_combined.to_csv(file,sep=';',index=False, encoding='ISO-8859-1')
             start_date += delta
             end_date += delta
