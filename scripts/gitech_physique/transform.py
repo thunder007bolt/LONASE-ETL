@@ -23,7 +23,6 @@ class GitechPhysiqueTransformer(Transformer):
         data = pd.DataFrame(data, columns=['TerminalID', 'GameName', 'RaceNo', 'RaceDate', 'SelectedBets',
                                            'BetOption', 'TotalBets', 'BetAmount(CFA.)', 'TransactionDateTime',
                                            'CancelDateTime', 'categorie'])
-
         regex = r"\s*(\d{4}_\d{2}_\d{2})"
         format = "%Y_%m_%d"
         match = re.search(regex, file.name)

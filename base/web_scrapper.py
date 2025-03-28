@@ -110,7 +110,6 @@ class BaseScrapper(ABC):
         delta = timedelta(days=1)
         while end_date <= self.end_date:
             sleep(2)
-            self._delete_old_files()
             self._process_download(start_date, end_date)
             # todo: renomer ignore
             if ignore is False:

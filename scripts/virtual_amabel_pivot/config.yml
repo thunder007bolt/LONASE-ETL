@@ -1,0 +1,40 @@
+virtual_amabel_pivot:
+  extraction_dest_relative_path: "virtual_amabel_pivot/extracted/"
+  transformation_dest_relative_path: "virtual_amabel_pivot/transformed/"
+  error_dest_relative_path: "virtual_amabel_pivot/error/"
+  loaded_dest_relative_path: "virtual_amabel_pivot/loaded/"
+  processed_dest_relative_path: "virtual_amabel_pivot/processed/"
+  file_downloaded_name: "Pivot*.xls*"
+  download_path: "C:/ETL/DATA_FICHIERS/virtual_amabel_pivot/extracted/"
+  ##### extraction config #####
+  start_date: 2025-02-15
+  end_date: 2025-02-17
+  wait_time: 200
+  file_pattern: "Pivot*.xls*"
+  urls:
+    login: "https://virtual-admin.virtustec.com/backoffice/login"
+    report: "https://virtual-admin.virtustec.com/backoffice/manage/17828610/tickets/pivotTable"
+
+
+  html_elements:
+    ### login page ###
+    username_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[3]/div/input"
+    password_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[4]/div/p-password/div/input"
+    domain_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[2]/div/input"
+    login_submit_button_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[5]/div/button"
+    verification_xpath: "/html/body/app-root/app-logged-in/div/app-main-header-component/header/div/div[2]/ul/li/app-user-header/span/p-avatar/div/span"
+
+    ### report page ###
+    date_day_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlDate"
+    date_month_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlMonth"
+    date_year_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlYear"
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+  #### transform config ####
+  files_to_transform_pattern: "*xl*"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+
