@@ -9,8 +9,8 @@ afitech_commission_history:
   ##### extraction config #####
   file_pattern: "*CommissionHistory*xls*"
   wait_time: 300
-  start_date: 2025-02-15
-  end_date: 2025-02-16
+  start_date: 2025-03-01
+  end_date: 2025-03-31
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"
