@@ -16,6 +16,7 @@ class HonoreGamingTicketTransformer(Transformer):
 
     def _transform_file(self, file: Path):
        date = self._get_file_date(file)
+       prev_date = date - delta
        cols_to_import = [
            "TerminalDescription",
            "RetailCategoryName",
@@ -43,24 +44,32 @@ class HonoreGamingTicketTransformer(Transformer):
        df = pd.merge(self.agence_df, df, on="RetailCategoryName", how="right")
        df = pd.merge(self.mise_df, df, on=["BetType", "GameName"], how="right")
 
-       # Conditions vectorisées pour CATEGORIE_FINALE
-       df["CATEGORIE_FINALE"] = "Unknown"
-       df.loc[df["GameName"].str.upper().str.contains("ALR"), "CATEGORIE_FINALE"] = "ALR"
-       df.loc[df["GameName"].str.upper().str.contains("PLR"), "CATEGORIE_FINALE"] = "PLR"
-       df.loc[(df["GameName"].str.upper().str.contains("MCI")) & (df["BetType"].str.upper().str.contains("SIMPLE|COUPLE|TRIO")),"CATEGORIE_FINALE"] = "PLR"
-       df.loc[(df["GameName"].str.upper().str.contains("MCI")) & (df["BetType"].str.upper().str.contains("MULTI|QUINTE|QUARTE|TIERCE")),"CATEGORIE_FINALE"] = "ALR"
+       # Define conditions with contains
+       conditions = [
+           (df['GameName'].str.upper().str.contains('ALR')),  # GameName contains 'ALR'
+           (df['GameName'].str.upper().str.contains('PLR')),  # GameName contains 'PLR'
+           (df['GameName'].str.upper().str.contains('MCI')) & df['BetType'].str.upper().str.contains(
+               '|'.join(['SIMPLE', 'COUPLE', 'TRIO'])),  # BetType contains any of these
+           (df['GameName'].str.upper().str.contains('MCI')) & df['BetType'].str.upper().str.contains(
+               '|'.join(['MULTI', 'QUINTE', 'QUARTE', 'TIERCE']))  # BetType contains any of these
+       ]
 
+       # Define corresponding outputs
+       choices = ['ALR', 'PLR', 'PLR', 'ALR']
+
+       # Apply the conditions to create a new column
+       df['CATEGORIE_FINALE'] = np.select(conditions, choices, default='Unknown')
        # Conversion des types après fusion
+
        for col in ["TotalStake", "PayableAmount", "PaidAmount"]:
            df[col] = df[col].str.replace(",", ".").astype(float)
 
        df["MeetingDate"] = df["MeetingDate"].astype(str)
-       date_str_1 = date.strftime("%d/%m/%Y")
-       date_str_2 = str(date)
-       date_str_3 = date.strftime("%Y-%m-%d")
+       date_str_1 = prev_date.strftime("%d/%m/%Y")
+       date_str_2 = str(prev_date.date())
 
        # Filtrage optimisé
-       df = df[df["MeetingDate"].str.contains(date_str_1, regex=True) | df["MeetingDate"].str.contains(date_str_2, regex=True) | df["MeetingDate"].str.contains(date_str_3, regex=True)]
+       df = df[df["MeetingDate"].str.contains(date_str_1, regex=True) | df["MeetingDate"].str.contains(date_str_2, regex=True)]
 
        # Calculs vectorisés
        df["ANNULATION"] = np.where(df["State"].str.lower() == "cancelled", df["TotalStake"], np.nan)
@@ -69,13 +78,13 @@ class HonoreGamingTicketTransformer(Transformer):
        df["CA"] = df["TotalStake"].fillna(0) - df["ANNULATION"].fillna(0)
 
        # Suppression des colonnes inutiles
-       df = df.drop(["State", "ReportDateTime"], axis=1)
+       df = df.drop(["State", "ReportDateTime", "MeetingDate"], axis=1)
        df = df.fillna(0)
 
        # Préparation du fichier de sortie
-       df["Year"] = (date).strftime("%Y")
-       df["Month"] = int((date).strftime("%m"))
-       df["JOUR"] = (date).strftime("%d/%m/%Y")
+       df["Year"] = (prev_date).strftime("%Y")
+       df["Month"] = int((prev_date).strftime("%m"))
+       df["JOUR"] = (prev_date).strftime("%d/%m/%Y")
 
        # Regroupement et écriture
        grouped_df = df.groupby(
@@ -90,10 +99,26 @@ class HonoreGamingTicketTransformer(Transformer):
                "GameName",
                "BetType",
                "MinTotalStake",
+
            ]
        ).sum()
 
-       self._save_file(file, grouped_df, type='csv', sep=";", encoding="latin-1", decimal=",")
+       grouped_df = grouped_df.reset_index()
+
+       # Définir les colonnes à sélectionner
+       colonnes = [
+           'Year', 'Month', 'JOUR', 'RetailCategoryName', 'AGENCE',
+           'TerminalDescription', 'CATEGORIE_FINALE', 'GameName',
+           'BetType', 'TotalStake', 'PayableAmount', 'ANNULATION',
+           'TICKET_VENDU', 'TICKET_ANNULE', 'CA', 'MinTotalStake', 'PaidAmount'
+       ]
+
+       # Sélectionner les colonnes
+       grouped_df = grouped_df[colonnes]
+
+       name = f"{self.name}_transformed_{prev_date.strftime('%Y-%m-%d')}.csv"
+
+       self._save_file(file, grouped_df, name=name, type='csv', sep=";", encoding="latin-1", decimal=",", index=False)
 
 def run_honore_gaming_ticket_transformer():
     transformer = HonoreGamingTicketTransformer()
