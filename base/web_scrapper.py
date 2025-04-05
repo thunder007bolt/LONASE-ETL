@@ -1,4 +1,5 @@
 from selenium import webdriver
+from pathlib import Path
 
 from abc import ABC, abstractmethod
 import time, os, glob
@@ -100,7 +101,7 @@ class BaseScrapper(ABC):
 
     def _delete_old_files(self):
         self.logger.info("Suppression des fichiers existant...")
-        delete_file(self.config["download_path"], self.config["file_pattern"])
+        delete_file(self.config["download_path"], "*")
 
     def _process_multiple_files(self, ignore=False):
         start_date = self.start_date
@@ -109,7 +110,6 @@ class BaseScrapper(ABC):
         delta = timedelta(days=1)
         while end_date <= self.end_date:
             sleep(2)
-            self._delete_old_files()
             self._process_download(start_date, end_date)
             # todo: renomer ignore
             if ignore is False:
@@ -175,18 +175,19 @@ class BaseScrapper(ABC):
                         if temp == True :
                             return file
                 elif files:
-                    self.logger.info(f"Files0: {files}")
+
                     return files[0]
                 time.sleep(poll_interval)
             return None
         file_pattern = file_pattern or self.config["file_pattern"]
         tmp_file = wait_for_download(os.path.join(self.config["download_path"],file_pattern), timeout=self.config["wait_time"], poll_interval=2)
+        tmp_file = Path(tmp_file)
         if not tmp_file:
             raise Exception("Téléchargement anormalement long, fichier non téléchargé")
             # self._download_files()
         else:
             self.logger.info(
-                f"Le fichier du {start_date or self.start_date} a bien ete telecharge")
+                f"Le fichier {tmp_file.name} a bien ete telecharge")
             return tmp_file
 
     def wait_and_click(self, element, locator_type='id', timeout=60, raise_error=False):

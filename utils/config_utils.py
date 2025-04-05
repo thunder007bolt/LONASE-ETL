@@ -62,6 +62,8 @@ def get_transformation_configurations(name, log_file):
     logger = Logger(log_file=log_file).get_logger()
 
     return (
+        config,
+        base_config,
         logger,
         transformation_dest_path,
         processed_dest_path,

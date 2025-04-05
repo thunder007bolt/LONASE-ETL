@@ -1,0 +1,53 @@
+gitech_physique:
+  extraction_dest_relative_path: "gitech_physique/extracted/"
+  transformation_dest_relative_path: "gitech_physique/transformed/"
+  error_dest_relative_path: "gitech_physique/error/"
+  loaded_dest_relative_path: "gitech_physique/loaded/"
+  processed_dest_relative_path: "gitech_physique/processed/"
+  file_downloaded_name: "Cumul CA des * types de jeux*xls"
+  files_patterns:
+    - "*ALR1.zip"
+    - "*ALR2.zip"
+    - "*ALR3.zip"
+    - "*ALR_Gagnant_1.zip"
+    - "*ALR_Gagnant_2.zip"
+    - "*ALR_Gagnant_3.zip"
+    - "*ALR_Payment.zip"
+    - "*PGDetails.zip"
+  unused_files_patterns:
+    - "ALR_Payment"
+  download_path: "C:/ETL/DATA_FICHIERS/gitech_physique/extracted/"
+  ##### extraction config #####
+  file_pattern: "Cumul CA des * types de jeux*xls"
+  start_date: 2025-03-01 # defaut is today - 1 day
+  end_date: 2025-03-04
+  include_sup: false
+  wait_time: 120
+  urls:
+    login: "https://www.pmuonline.sn/filedownload/login.aspx"
+    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/Gamepayoutsummary.aspx"
+
+  html_elements:
+    ### login page ###
+    username_element_id: "Username"
+    password_element_id: "Password"
+    login_submit_button_element_id: "btnSubmit"
+    verification_xpath: "/html/body/form/table/tbody/tr[2]/td/a/span"
+
+    ### report page ###
+    start_date_day_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlDate"
+    start_date_month_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlMonth"
+    start_date_year_element_id: "OpsValidator_ContentPlaceHolder1_ddlFDate_ddlYear"
+    end_date_day_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlDate"
+    end_date_month_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlMonth"
+    end_date_year_element_id: "OpsValidator_ContentPlaceHolder1_ddlTDate_ddlYear"
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+  #### transform config ####
+  files_to_transform_pattern: "*.csv"
+
+  #### load config ####
+  files_to_load_pattern: "gitech_physique*.csv"
+
