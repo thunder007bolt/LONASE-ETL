@@ -41,6 +41,9 @@ def get_config(job_name: str = None) -> Dict[str, Any]:
 def get_secret(keys):
     return {key: getenv(key) for key in keys}
 
+def get_secret_v2(dict):
+    return {key: getenv(env_var) for key, env_var in dict.items()}
+
 def get_transformation_configurations(name, log_file):
     """
     Lit la configuration et renvoie le logger, le chemin de destination pour la transformation,
@@ -97,3 +100,24 @@ def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_
         error_path,
         files_pattern
     )
+
+def get_database_extractor_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST ):
+    configs = get_config(name)
+    secret_config = get_secret_v2(env_variables_list)
+    logger = Logger(log_file=log_file).get_logger()
+
+    #### Récupération des confiurations ####
+    config = configs[name]
+    base_config = configs['base']
+    data_path = Path(base_config["paths"]["data_path"])
+
+    extraction_dest_path = data_path / config["extraction_dest_relative_path"]
+
+    return (
+        secret_config,
+        config,
+        logger,
+        extraction_dest_path
+    )
+
+

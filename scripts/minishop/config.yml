@@ -1,0 +1,19 @@
+minishop:
+  ftp_remote_path: "/HONOREGAMING/"
+  extraction_dest_relative_path: "minishop/extracted/"
+  transformation_dest_relative_path: "minishop/transformed/"
+  error_dest_relative_path: "minishop/error/"
+  loaded_dest_relative_path: "minishop/loaded/"
+  processed_dest_relative_path: "minishop/processed/"
+  download_path: "C:/ETL/DATA_FICHIERS/minishop/extracted/"
+  wait_time: 500
+  date:
+  ##### extraction config #####
+
+
+  #### transform config ####
+  files_to_transform_pattern: "*.csv"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+
