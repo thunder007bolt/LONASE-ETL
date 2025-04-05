@@ -58,8 +58,8 @@ class ExtractMinishop(DatabaseExtractor):
         if len(data) == 0:
             self.logger.info("Aucune donnée")
         else:
-            name = f"minishop_{day}.csv"
-            self._save_file(data, type="csv", name=name)
+            name = f"minishop_{start_date}.csv"
+            self._save_file(data, type="csv", name=name, index=False)
 
 def run_minishop():
     env_variables_list = {

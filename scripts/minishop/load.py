@@ -25,7 +25,6 @@ class MinishopLoad(Loader):
         df = pd.read_csv(file, sep=';', index_col=False)
         return df
 
-
 def run_minishop_loader():
     loader = MinishopLoad()
     loader.process_loading()

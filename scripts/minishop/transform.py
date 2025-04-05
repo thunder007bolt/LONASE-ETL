@@ -28,7 +28,7 @@ class MinishopTransformer(Transformer):
 
         data = pd.DataFrame(data, columns=['DATE', 'ETABLISSEMENT', 'JEU', 'TERMINAL', 'VENDEUR', 'MONTANT A VERSER', 'MONTANT A PAYER'])
 
-        self._save_file(file=file, data=data, type="csv", sep=';', encoding='latin-1', index_col=False)
+        self._save_file(file=file, data=data, type="csv", sep=';', encoding='latin-1', index=False)
 
 
 def run_minishop_transformer():

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from scripts.minishop.transform import delta
 from utils.config_utils import get_secret, get_config
 from pathlib import Path
 from utils.config_utils import get_database_extractor_configurations
@@ -35,7 +34,6 @@ class DatabaseExtractor(ABC):
     def _load_data_from_db(self, start_date, end_date=None):
         pass
 
-
     def _set_date(self):
         _, _, _, yesterday_date = get_yesterday_date()
         if self.config["start_date"] is not None:
@@ -51,10 +49,10 @@ class DatabaseExtractor(ABC):
     def _process_download(self, start_date, end_date=None):
         pass
 
-    def process_extraction(self):
+    def _download_files(self):
         start_date = self.start_date
         end_date = self.start_date
-        while start_date < end_date:
+        while start_date <= self.end_date:
             self._load_data_from_db(start_date, end_date)
             start_date += delta
             end_date += delta
@@ -74,3 +72,9 @@ class DatabaseExtractor(ABC):
         except Exception as e:
             self.logger.error(f"Erreur lors de la sauvegarde du fichier {name} : {e}")
             return
+
+
+    def process_extraction(self):
+        self._set_date()
+        self._connection_to_db()
+        self._download_files()
