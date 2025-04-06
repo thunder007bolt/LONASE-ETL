@@ -1,0 +1,46 @@
+pmu_lots:
+  extraction_dest_relative_path: "pmu_lots/extracted/"
+  transformation_dest_relative_path: "pmu_lots/transformed/"
+  error_dest_relative_path: "pmu_lots/error/"
+  loaded_dest_relative_path: "pmu_lots/loaded/"
+  processed_dest_relative_path: "pmu_lots/processed/"
+  file_downloaded_name: "Pmu_Senegal_lots_*csv"
+  download_path: "C:/ETL/DATA_FICHIERS/pmu_lots/extracted/"
+  ##### extraction config #####
+  start_date: 2025-02-01
+  end_date: 2025-02-04
+  wait_time: 200
+  file_pattern: "Pmu_Senegal_lots_*csv"
+  produits:
+    - "ALR1"
+    - "ALR2"
+    - "ALR3"
+  urls:
+    login: "https://backoffice.pmu.sn/"
+    report: "https://backoffice.pmu.sn/winner"
+
+  html_elements:
+    ### login page ###
+    login_step1_xpath: "/html/body/jhi-main/div[1]/jhi-navbar/nav/div/ul/li[3]/a"
+    login_step2_xpath: "/html/body/jhi-main/div[1]/jhi-navbar/nav/div/ul/li[3]/ul"
+    username_element_xpath: "/html/body/ngb-modal-window/div/div/jhi-login-modal/div[2]/div/div[2]/form/div[1]/input"
+    password_element_xpath: "/html/body/ngb-modal-window/div/div/jhi-login-modal/div[2]/div/div[2]/form/div[2]/input"
+    login_submit_button_element_xpath: "/html/body/ngb-modal-window/div/div/jhi-login-modal/div[2]/div/div[2]/form/button"
+    verification_xpath: "/html/body/jhi-main/div[1]/jhi-navbar/nav/div/ul/li[2]/a/span/span"
+
+    ### report page ###
+    date_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/div[1]/div/div/div/form/div/div[5]/div/div/input"
+    product_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/div[1]/div/div/div/form/div/div[1]/div/select"
+    submit_button_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/div[1]/div/div/div/form/div/div[6]/div/button"
+    step_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/p"
+    step1_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/div[2]/table"
+    step2_element_xpath: "/html/body/jhi-main/div[2]/div/jhi-winner/div/div[3]/div[2]/ngb-pagination/ul/li"
+
+
+  #### transform config ####
+  files_to_transform_pattern: "*.csv"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+
+
