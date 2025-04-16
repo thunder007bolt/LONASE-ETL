@@ -21,6 +21,7 @@ class AcajouDigitalLoad(Loader):
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False)
+        df['Gross Payout'] = df['Gross Payout'].astype(float).round(2).astype(str)
         return df
 
 def run_acajou_digital_loader():

@@ -19,7 +19,7 @@ class LonasebetOnlineTransformer(Transformer):
     def _transform_file(self, file: Path):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
-            data = pd.read_csv(file, sep=';')
+            data = pd.read_csv(file, sep=';',index_col=False)
 
         except Exception as e:
             self.set_error(file.name)

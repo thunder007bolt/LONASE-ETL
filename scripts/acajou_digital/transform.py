@@ -34,6 +34,7 @@ class AcajouDigitalTransformer(Transformer):
         data['Produit'] = str("Pari Sportif")
         data = pd.DataFrame(data, columns=['Date Created', 'Ticket ID', 'Msisdn', 'Purchase Method', 'Collection',
                                            'Gross Payout', 'Status', 'Produit'])
+        data['Gross Payout'] = data['Gross Payout'].astype(float).round(2).astype(str)
         data = data.replace(np.nan, '')
         data = data.astype(str)
 

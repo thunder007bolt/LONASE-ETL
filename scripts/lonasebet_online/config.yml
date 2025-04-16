@@ -8,8 +8,8 @@ lonasebet_online:
   download_path: "C:/ETL/DATA_FICHIERS/lonasebet_online/extracted/"
   ##### extraction config #####
   file_pattern: "*GlobalBettingHistory*csv"
-  start_date: 2025-02-15
-  end_date: 2025-02-16
+  start_date: #2025-04-08
+  end_date: #2025-04-09
   wait_time: 200
   urls:
     login: "https://new-admin-lonase.sporty-tech.net/"

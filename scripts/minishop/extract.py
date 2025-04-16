@@ -59,7 +59,7 @@ class ExtractMinishop(DatabaseExtractor):
             self.logger.info("Aucune donnée")
         else:
             name = f"minishop_{start_date}.csv"
-            self._save_file(data, type="csv", name=name, index=False)
+            self._save_file(data, type="csv", name=name, sep=";",index=False)
 
 def run_minishop():
     env_variables_list = {

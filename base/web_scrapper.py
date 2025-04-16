@@ -14,6 +14,10 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from utils.file_manipulation import rename_file, delete_file
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
+
 
 """
 Classe pour scrapper un site Web.
@@ -54,6 +58,8 @@ class BaseScrapper(ABC):
                 chrome_options = webdriver.ChromeOptions()
                 prefs = {"download.default_directory": download_path}
                 chrome_options.add_experimental_option("prefs", prefs)
+                chrome_options.add_argument("--headless")
+                chrome_options.add_argument("--disable-gpu")
                 if len(self.chrome_options_arguments) > 0:
                     for argument in self.chrome_options_arguments:
                         chrome_options.add_argument(argument)
@@ -210,20 +216,26 @@ class BaseScrapper(ABC):
                 raise(f"Élément non cliquable ou introuvable : {element}")
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_for_invisibility(self, element, locator_type='xpath', timeout=60, raise_error=False):
+    def wait_for_invisibility(self, element, locator_type='xpath', timeout=60, raise_error=False, exit_on_error=False):
             by_type = self._get_by_type(locator_type)
             try:
-                WebDriverWait(self.browser, timeout).until(EC.invisibility_of_element((by_type, element))).click()
+                WebDriverWait(self.browser, timeout).until(EC.invisibility_of_element((by_type, element)))
             except:
+                if exit_on_error:
+                    self.logger.error(f"Élément n'a pas disparu : {element}")
+                    exit(1)
                 if raise_error:
                     raise(f"Élément non cliquable ou introuvable : {element}")
                 self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
-    def wait_for_presence(self, element, locator_type='xpath', timeout=60, raise_error=False):
+    def wait_for_presence(self, element, locator_type='xpath', timeout=60, raise_error=False, exit_on_error=False):
         by_type = self._get_by_type(locator_type)
         try:
             WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
         except:
+            if exit_on_error:
+                self.logger.error(f"Élément n'est pas apparu : {element}")
+                exit(1)
             if raise_error:
                 raise(f"Élément introuvable : {element}")
             self.logger.warning(f"Élément introuvable : {element}")
@@ -237,6 +249,15 @@ class BaseScrapper(ABC):
                 raise(f"Élément non cliquable ou introuvable : {element}")
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
 
+    def wait_and_send_keys2(self, element, locator_type='id', timeout=60, keys=None, raise_error=False):
+        try:
+            by_type = self._get_by_type(locator_type)
+            WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element))).send_keys(keys)
+        except:
+            if raise_error:
+                raise (f"Élément non cliquable ou introuvable : {element}")
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+
     def wait_element_visible(self, element, type='xpath', timeout=60):
         by_type = self._get_by_type(type)
         WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
@@ -247,6 +268,19 @@ class BaseScrapper(ABC):
             (Select(self.browser.find_element(by=by_type, value=element))).select_by_visible_text(str(value))
         except:
             self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+
+    def wait_for_staleness(self, element, timeout=30):
+        """Attend qu'un élément devienne obsolète (stale)."""
+        try:
+            WebDriverWait(self.browser, timeout).until(EC.staleness_of(element))
+            self.logger.info("L'ancien élément table est devenu obsolète (stale).")
+            return True
+        except TimeoutException:
+            self.logger.warning(f"Timeout ({timeout}s) en attendant que l'élément devienne obsolète.")
+            return False
+        except Exception as e:
+            self.logger.error(f"Erreur inattendue pendant wait_for_staleness : {e}")
+            return False
 
     def _quit(self, error=None):
         self.logger.info(f"erreur : {error}")

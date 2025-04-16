@@ -7,8 +7,8 @@ virtual_amabel_pivot:
   file_downloaded_name: "Pivot*.xls*"
   download_path: "C:/ETL/DATA_FICHIERS/virtual_amabel_pivot/extracted/"
   ##### extraction config #####
-  start_date: 2025-02-15
-  end_date: 2025-02-17
+  start_date: #2025-02-15
+  end_date: #2025-02-17
   wait_time: 200
   file_pattern: "Pivot*.xls*"
   urls:

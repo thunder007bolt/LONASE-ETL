@@ -73,9 +73,12 @@ class ExtractPmuCA(BaseScrapper):
         date_month_element_xpath = date_month_element_xpath.replace('variable_to_be_set', month)
         date = start_date.strftime('%d-%m-%Y')
         date_element_xpath = date_element_xpath.replace('variable_to_be_set', date)
-        sleep(3)
+
         self.wait_and_click(date_month_element_xpath, locator_type="xpath", timeout=120)
+        sleep(5)
         self.wait_and_click(date_element_xpath, locator_type="xpath", timeout=120)
+        self.wait_and_click(date_element_xpath, locator_type="xpath", timeout=120)
+        sleep(10)
 
         step1_element_xpath = step1_element_xpath.replace('variable_to_be_set', date)
         self.wait_for_presence(step1_element_xpath, raise_error=True)

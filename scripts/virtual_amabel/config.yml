@@ -7,8 +7,8 @@ virtual_amabel:
   file_downloaded_name: "VirtuelAmabel*csv"
   download_path: "C:/ETL/DATA_FICHIERS/virtual_amabel/extracted/"
   ##### extraction config #####
-  start_date: 2025-02-15
-  end_date: 2025-02-17
+  start_date: #2025-04-04
+  end_date: #2025-04-06
   wait_time: 200
   file_pattern: "VirtuelAmabel*csv"
   urls:
@@ -18,10 +18,10 @@ virtual_amabel:
 
   html_elements:
     ### login page ###
-    username_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[3]/div/input"
-    password_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[4]/div/p-password/div/input"
-    domain_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[2]/div/input"
-    login_submit_button_element_xpath: "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[5]/div/button"
+    username_element_xpath: "/html/body/app-root/ng-component/div/div/div/div[3]/div[1]/div/form/div/div[3]/div/input"
+    password_element_xpath: "/html/body/app-root/ng-component/div/div/div/div[3]/div[1]/div/form/div/div[4]/div/p-password/div/input"
+    domain_element_xpath: "/html/body/app-root/ng-component/div/div/div/div[3]/div[1]/div/form/div/div[2]/div/input"
+    login_submit_button_element_xpath: "/html/body/app-root/ng-component/div/div/div/div[3]/div[1]/div/form/div/div[5]/div/button"
     verification_xpath: "/html/body/app-root/app-logged-in/div/app-main-header-component/header/div/div[2]/ul/li/app-user-header/span/p-avatar/div/span"
 
     ### report page ###

@@ -7,8 +7,8 @@ pmu_ca:
   file_downloaded_name: "Pmu_Senegal_ca_*csv"
   download_path: "C:/ETL/DATA_FICHIERS/pmu_ca/extracted/"
   ##### extraction config #####
-  start_date: 2025-02-01
-  end_date: 2025-02-04
+  start_date:
+  end_date:
   wait_time: 200
   file_pattern: "Pmu_Senegal_ca_*csv"
   urls:
