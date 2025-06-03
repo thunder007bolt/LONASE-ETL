@@ -63,10 +63,10 @@ class ExtractPmuLots(BaseScrapper):
         password = secret_config["PMU_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60*10)
-        self.wait_and_click(login_step2_xpath, locator_type='xpath', timeout=60*3)
-        self.wait_and_send_keys(username_xpath, locator_type='xpath', keys=username, raise_error=True)
-        self.wait_and_send_keys(password_xpath, locator_type='xpath', keys=password, raise_error=True)
+        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60*10, raise_error=True)
+        self.wait_and_click(login_step2_xpath, locator_type='xpath', timeout=60*3, raise_error=True)
+        self.wait_and_send_keys(username_xpath, locator_type='xpath', keys=username)
+        self.wait_and_send_keys(password_xpath, locator_type='xpath', keys=password)
 
         self.logger.info("Envoi du formulaire...")
         self.wait_and_click(submit_button_xpath, locator_type='xpath')
@@ -84,98 +84,6 @@ class ExtractPmuLots(BaseScrapper):
 
     def _download_files(self):
        self._process_multiple_files()
-
-    def _process_download2(self, start_date, end_date):
-        browser = self.browser
-        self.logger.info("Chargement de la page des rapports...")
-        reports_url = self.config['urls']['report']
-        products = self.config['produits']
-
-        datas = []
-        for product in products:
-            browser.get(reports_url)
-            self.logger.info("Remplissage des champs de date...")
-            html_elements = self.config['html_elements']
-
-            date_element_xpath = html_elements["date_element_xpath"]
-            product_element_xpath = html_elements["product_element_xpath"]
-            submit_button_element_xpath = html_elements["submit_button_element_xpath"]
-            step1_element_xpath = html_elements["step1_element_xpath"]
-            step2_element_xpath = html_elements["step2_element_xpath"]
-            step_element_xpath = html_elements["step_element_xpath"]
-
-            date_element = self.wait_for_click(date_element_xpath, locator_type="xpath")
-            date_element.clear()
-            date_element.send_keys(str(start_date))
-
-            self.fill_select(product_element_xpath, "xpath", value=product)
-
-            self.logger.info("Soumission du formulaire...")
-            self.wait_and_click(submit_button_element_xpath, locator_type="xpath")
-            sleep(3)
-
-            self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60*20)
-            sleep(5)
-
-            while True:
-                try:
-                    table = self.wait_for_click(step1_element_xpath, locator_type="xpath", raise_error=True)
-                    sleep(5)
-                except:
-                    break
-
-                df = pd.read_html(table.get_attribute('outerHTML'))
-                df = df[0].dropna(axis=0, thresh=4)
-
-                for index, row in df.iterrows():
-                    for column in df.columns:
-                        df.at[index, column] = str(row[column]).strip().replace('\u202f', ' ')
-                    if len(str(df.at[index, 'Joueur'])) < 9:
-                        df = df.drop(index=(index))
-
-                df['produit'] = str(product)
-                datas.append(df)
-
-                step2_element = browser.find_elements(by=By.XPATH, value=step2_element_xpath)[-2]
-                if 'disabled' in str(step2_element.get_attribute('class')):
-                    break
-                step2_element.click()
-
-                try:
-                    self.wait_for_invisibility(step_element_xpath, locator_type="xpath", raise_error=True, timeout=60*50)
-                    sleep(5)
-                except:
-                    continue
-
-        df = pd.concat(datas, ignore_index=True)
-        try:
-            df = df.drop(['Unnamed: 6'], axis=1)
-        except:
-            pass
-        try:
-            df = df.drop(['Unnamed: 7'], axis=1)
-        except:
-            pass
-        try:
-            df = df.drop(['Unnamed: 8'], axis=1)
-        except:
-            pass
-
-        df['JOUR'] = str(start_date.strftime('%d/%m/%Y'))
-        df['ANNEE'] = str(start_date.strftime('%Y'))
-        df['MOIS'] = str(start_date.strftime('%m'))
-
-        try:
-            self.logger.info(f"Enregistrement du fichier PMU Senegal du {start_date} ...")
-            filename = "Pmu_Senegal_lots_" + str(start_date) + ".csv"
-            # todo: update path
-            destination = Path(self.config["download_path"])
-            final_file = destination / filename
-            df.to_csv(final_file, index=False, sep=';', encoding='latin1')
-
-        except Exception as e:
-            self.logger.error(f"Erreur lors de la telechargement du fichier PMU Senegal : {e}")
-            raise e
 
     def _process_download(self, start_date, end_date):
         browser = self.browser
@@ -198,12 +106,15 @@ class ExtractPmuLots(BaseScrapper):
             self.logger.info(f"Traitement du produit : {product}")
             browser.get(reports_url)
 
+            self.wait_for_presence(step_element_xpath, locator_type="xpath", timeout=15)
+            self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60*5)
+
             # Remplissage et soumission du formulaire
             self.logger.info("Remplissage des champs de date et produit...")
+            date_element = self.wait_for_click(date_element_xpath, locator_type="xpath", raise_error=True)
+            date_element.clear()
+            date_element.send_keys(str(start_date))
             try:
-                date_element = self.wait_for_click(date_element_xpath, locator_type="xpath")
-                date_element.clear()
-                date_element.send_keys(str(start_date))
 
                 self.fill_select(product_element_xpath, "xpath", value=product)
 
@@ -211,8 +122,8 @@ class ExtractPmuLots(BaseScrapper):
                 self.wait_and_click(submit_button_element_xpath, locator_type="xpath")
 
                 self.logger.info("Attente de la fin du chargement initial...")
-                self.wait_for_presence(step_element_xpath, locator_type="xpath", timeout=60*5, exit_on_error=True)
-                self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=120, exit_on_error=True)
+                self.wait_for_presence(step_element_xpath, locator_type="xpath", timeout=15, exit_on_error=True)
+                self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60*5, exit_on_error=True)
                 sleep(2)  # Délai pour stabiliser le DOM
 
             except Exception as e:
@@ -226,7 +137,7 @@ class ExtractPmuLots(BaseScrapper):
                 try:
                     # Attendre la table
                     self.logger.info("Attente de l'apparition de la table...")
-                    self.wait_for_presence(step1_element_xpath, locator_type="xpath", timeout=120, exit_on_error=True)
+                    self.wait_for_presence(step1_element_xpath, locator_type="xpath", timeout=120)
                     current_table_element = WebDriverWait(browser, 10 ).until(
                         EC.presence_of_element_located((By.XPATH, step1_element_xpath))
                     )
@@ -261,7 +172,8 @@ class ExtractPmuLots(BaseScrapper):
 
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la lecture de la table page {page_num} : {e}")
-                    raise RuntimeError("Échec de l'extraction")
+                    break
+                    #raise RuntimeError("Échec de l'extraction")
 
 
                 # Gestion du bouton "suivant"
@@ -305,7 +217,7 @@ class ExtractPmuLots(BaseScrapper):
                     self.logger.info("Bouton 'suivant' non trouvé, fin de la pagination.")
                     break
                 except RuntimeError as e:
-                    self.logger.error(f"Erreur lors de la pagination : {e}")
+                    self.logger.error(f"Echec de l'extraction : {e}")
                     raise RuntimeError("Échec de l'extraction")
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la pagination : {e}")
@@ -329,6 +241,8 @@ class ExtractPmuLots(BaseScrapper):
             destination = Path(self.config["download_path"])
             final_file = destination / filename
             df_final.to_csv(final_file, index=False, sep=';', encoding='latin1')
+            filesInitialDirectory = r"K:\DATA_FICHIERS\PMUSENEGAL\\"
+            df_final.to_csv(filesInitialDirectory+filename, index=False, sep=';', encoding='latin1')
 
         except Exception as e:
             self.logger.error(f"Erreur lors de la telechargement du fichier PMU Senegal : {e}")

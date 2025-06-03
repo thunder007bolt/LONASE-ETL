@@ -5,12 +5,12 @@ sunubet_casino:
   loaded_dest_relative_path: "sunubet_casino/loaded/"
   processed_dest_relative_path: "sunubet_casino/processed/"
   file_downloaded_name: "*InstantGamesTransactionsHistory*csv"
-  download_path: "C:/ETL/DATA_FICHIERS/sunubet_casino/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/sunubet_casino/extracted/"
   ##### extraction config #####
   file_pattern: "*InstantGamesTransactionsHistory*csv"
   wait_time: 7000
-  start_date: 2025-04-13
-  end_date: 2025-04-13
+  start_date: #2025-04-13
+  end_date: #2025-04-13
   urls:
     login: "https://new-admin-sunubet.sporty-tech.net/"
     report: "https://new-admin-sunubet.sporty-tech.net/reports/create"

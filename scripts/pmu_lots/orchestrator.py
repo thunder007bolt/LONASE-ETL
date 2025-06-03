@@ -11,7 +11,7 @@ def run_pmu_lots_orchestrator():
         name="pmu_lots",
         extractor=run_pmu_lots,
         transformer=run_pmu_lots_transformer,
-        loader=run_pmu_lots_loader
+        #loader=run_pmu_lots_loader
     )
     orchestrator.run()
 

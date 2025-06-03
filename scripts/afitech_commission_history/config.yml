@@ -5,12 +5,12 @@ afitech_commission_history:
   loaded_dest_relative_path: "afitech_commission_history/loaded/"
   processed_dest_relative_path: "afitech_commission_history/processed/"
   file_downloaded_name: "*CommissionHistory*xls*"
-  download_path: "C:/ETL/DATA_FICHIERS/afitech_commission_history/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/afitech_commission_history/extracted/"
   ##### extraction config #####
   file_pattern: "*CommissionHistory*xls*"
   wait_time: 300
-  start_date: 2025-03-01
-  end_date: 2025-03-31
+  start_date: #2025-05-21
+  end_date: #2025-04-21
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

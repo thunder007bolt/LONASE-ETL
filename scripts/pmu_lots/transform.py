@@ -32,6 +32,13 @@ class PmuLotsTransformer(Transformer):
         data = data.replace(np.nan, '')
         data = data.astype(str)
 
+        date = self._get_file_date(file)
+        date = date.strftime("%Y-%m-%d")
+        filename = "Pmu_Senegal_lots_" + str(date) + ".csv"
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\PMUSENEGAL\\"
+        data.to_csv(filesInitialDirectory+filename, index=False, sep=';', encoding='latin1')
+
         self._save_file(file, data, type="csv", index=False, sep=";", encoding="utf8")
 
 

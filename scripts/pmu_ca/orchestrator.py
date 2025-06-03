@@ -11,7 +11,7 @@ def run_pmu_ca_orchestrator():
         name="pmu_ca",
         extractor=run_pmu_ca,
         transformer=run_pmu_ca_transformer,
-        loader=run_pmu_ca_loader
+        #loader=run_pmu_ca_loader
     )
     orchestrator.run()
 

@@ -31,7 +31,7 @@ class ExtractPmuCA(BaseScrapper):
         password = secret_config["PMU_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_click(login_step1_xpath, locator_type='xpath')
+        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60*10, raise_error=True)
         self.wait_and_click(login_step2_xpath, locator_type='xpath')
         self.wait_and_send_keys(username_xpath, locator_type='xpath', keys=username, raise_error=True)
         self.wait_and_send_keys(password_xpath, locator_type='xpath', keys=password, raise_error=True)

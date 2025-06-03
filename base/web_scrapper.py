@@ -25,7 +25,15 @@ Classe pour scrapper un site Web.
 
 
 class BaseScrapper(ABC):
-    def __init__(self, name: str, env_variables_list: list, log_file: str, chrome_options_arguments: list = []):
+    def __init__(
+            self,
+            name: str,
+            env_variables_list: list,
+            log_file: str,
+            chrome_options_arguments: list = [],
+            start_date = None,
+            end_date= None
+    ):
         configs = get_config(name)
         self.base_config = configs["base"]
         self.config = configs[name]
@@ -33,14 +41,20 @@ class BaseScrapper(ABC):
         self.chrome_options_arguments = chrome_options_arguments
         self.secret_config = get_secret(env_variables_list)
         self.browser = None
+        # logger
         logger = Logger(log_file=log_file).get_logger()
         self.logger = logger
         self.logger.info("Initialisation...")
+
         self.retry_count = 0
 
+        data_path = Path(self.base_config["paths"]["data_path"])
+        self.extraction_dest_path = data_path / self.config["extraction_dest_relative_path"]
+        self.transformation_dest_path = data_path / self.config["transformation_dest_relative_path"]
+
         ### Dates
-        self.start_date: datetime
-        self.end_date: datetime
+        self.start_date: datetime = start_date
+        self.end_date: datetime = end_date
 
     def process_extraction(self):
         self._set_date()
@@ -54,12 +68,15 @@ class BaseScrapper(ABC):
         self.logger.info("Ouverture du navigateur")
         for _ in range(5):
             try:
+                #os.system("taskkill /im chrome.exe /f")
                 download_path = fr"{self.config["download_path"].replace('/', '\\')}"
                 chrome_options = webdriver.ChromeOptions()
-                prefs = {"download.default_directory": download_path}
+                prefs = {
+                    "download.default_directory": download_path
+                }
                 chrome_options.add_experimental_option("prefs", prefs)
-                chrome_options.add_argument("--headless")
-                chrome_options.add_argument("--disable-gpu")
+                #chrome_options.add_argument("--headless")
+                #chrome_options.add_argument("--disable-gpu")
                 if len(self.chrome_options_arguments) > 0:
                     for argument in self.chrome_options_arguments:
                         chrome_options.add_argument(argument)
@@ -72,15 +89,8 @@ class BaseScrapper(ABC):
 
     def _set_date(self):
         _, _, _, yesterday_date = get_yesterday_date()
-        if self.config["start_date"] is not None:
-            self.start_date = self.config["start_date"]
-        else:
-            self.start_date = yesterday_date
-
-        if self.config["end_date"] is not None:
-            self.end_date = self.config["end_date"]
-        else:
-            self.end_date = yesterday_date
+        self.start_date = self.start_date or self.config.get("start_date") or yesterday_date
+        self.end_date = self.end_date or self.config.get("end_date") or yesterday_date
 
     @staticmethod
     def _get_by_type(locator_type):
@@ -109,26 +119,44 @@ class BaseScrapper(ABC):
         self.logger.info("Suppression des fichiers existant...")
         delete_file(self.config["download_path"], "*")
 
+    def _process_transformation(self, file_pattern, date):
+        pass
+    def _handle_success_download(self, start_date):
+        pass
+    def _handle_failed_download(self, start_date):
+        return True
+
     def _process_multiple_files(self, ignore=False):
         start_date = self.start_date
         # todo: +1 if include_sup equals true
         end_date = self.start_date
         delta = timedelta(days=1)
         while end_date <= self.end_date:
-            sleep(2)
-            self._process_download(start_date, end_date)
-            # todo: renomer ignore
-            if ignore is False:
-                try:
-                    self.start_date = start_date
-                    self._verify_download()
-                except:
-                    self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
-                    # Faire juste 3 essais
-                    continue
-                name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-                file_pattern = self.config['file_pattern']
-                rename_file(file_pattern, self.config["download_path"], name, self.logger)
+            try:
+                sleep(2)
+                self._process_download(start_date, end_date)
+                # todo: renomer ignore
+                if ignore is False:
+                    try:
+                        self.start_date = start_date
+                        self._verify_download()
+                    except:
+                        self.logger.error(
+                            f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
+                        # Faire juste 3 essais
+                        result = self._handle_failed_download(start_date)
+                        if result:
+                            continue
+                        else:
+                            break
+                    name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
+                    file_pattern = self.config['file_pattern']
+                    rename_file(file_pattern, self.config["download_path"], name, self.logger)
+                    self._process_transformation(name, start_date)
+                    self._handle_success_download(start_date)
+            except (RuntimeError, IndexError) as e:
+                self.logger.error(f"Erreur lors du traitement de start_date : {start_date}")
+
             start_date += delta
             end_date += delta
 
@@ -162,6 +190,156 @@ class BaseScrapper(ABC):
             self.logger.info(f"Le fichier du {start_date or self.start_date} a bien été téléchargé : {tmp_file}")
             return tmp_file
 
+    def _verify_download_v2(self, file_pattern: str = None, target_date: datetime.date = None, patterns_in_name: list = None, timeout: int = None) -> Path:
+        """
+        Attend et vérifie l'apparition d'un fichier téléchargé correspondant
+        à un motif dans le répertoire de téléchargement.
+
+        Args:
+            file_pattern (str, optional): Motif Glob pour rechercher le fichier. Utilise config['file_pattern'] si None.
+            target_date (datetime.date, optional): Date concernée (pour le logging). Utilise self.start_date si None.
+            patterns_in_name (list, optional): Liste de chaînes qui doivent être présentes dans le nom du fichier trouvé.
+            timeout (int, optional): Temps d'attente maximum en secondes. Utilise config['wait_time'] si None.
+
+        Raises:
+            TimeoutException: Si le fichier n'est pas trouvé dans le délai imparti.
+
+        Returns:
+            Path: Chemin d'accès au fichier téléchargé vérifié.
+        """
+        effective_pattern = file_pattern or self.config.get("file_pattern", "*")
+        effective_timeout = timeout or self.config.get("wait_time", 120)
+        log_date_str = (target_date or self.start_date).strftime('%Y-%m-%d')
+
+        self.logger.info(f"Attente ({effective_timeout}s max) du fichier pour la date {log_date_str} correspondant à '{effective_pattern}' dans {self.extraction_dest_path}")
+        if patterns_in_name:
+            self.logger.info(f"Le nom du fichier doit aussi contenir: {patterns_in_name}")
+
+        start_time = time.time()
+        poll_interval = 2 # secondes
+
+        while time.time() - start_time < effective_timeout:
+            # Recherche des fichiers correspondant au motif principal
+            found_files = list(self.extraction_dest_path.glob(effective_pattern))
+
+            # Filtrage supplémentaire si patterns_in_name est fourni
+            valid_files = []
+            if found_files:
+                 # Exclure les fichiers temporaires courants
+                 potential_files = [
+                     f for f in found_files
+                     if not f.name.endswith(('.tmp', '.crdownload', '.part'))
+                        and f.stat().st_size > 1024  # Exclure les fichiers ≤ 1 Ko
+                ]
+
+                 if patterns_in_name:
+                    for file_path in potential_files:
+                         # Vérifie si TOUS les motifs requis sont dans le nom du fichier
+                         if all(p in file_path.name for p in patterns_in_name):
+                             valid_files.append(file_path)
+                 else:
+                     valid_files = potential_files # Prend tous les fichiers non temporaires si pas de motifs spécifiques
+
+            if valid_files:
+                 # Pour l'instant, on prend le premier fichier valide trouvé.
+                 #Todo:  Ajouter une logique pour choisir le plus récent si plusieurs correspondent.
+                 found_file_path = valid_files[0]
+                 self.logger.info(f"Fichier trouvé pour la date {log_date_str}: {found_file_path.name}")
+                 return found_file_path
+
+            # Attendre avant la prochaine vérification
+            time.sleep(poll_interval)
+
+        # Si la boucle se termine sans trouver de fichier
+        self.logger.error(f"Timeout: Aucun fichier correspondant trouvé pour la date {log_date_str} et le motif '{effective_pattern}' après {effective_timeout} secondes.")
+        raise TimeoutException(f"Téléchargement non détecté ou anormalement long pour la date {log_date_str} (motif: {effective_pattern})")
+
+    def _verify_download_v3(self, file_pattern: str = None, target_date: datetime.date = None,
+                            patterns_in_name: list = None, timeout: int = None, files_before_click: set = None) -> Path:
+        effective_pattern = file_pattern or self.config.get("file_pattern",
+                                                            "*BettingOperation*xlsx")  # Soyez spécifique si possible
+        effective_timeout = timeout or self.config.get("wait_time", 300)
+
+        # Utilise target_date si fourni (date de début du rapport), sinon une date par défaut.
+        log_date_str = (target_date if target_date else getattr(self, 'start_date', datetime.date.today())).strftime(
+            '%Y-%m-%d')
+
+        self.logger.info(
+            f"Attente ({effective_timeout}s max) du fichier pour la date de référence {log_date_str} correspondant à '{effective_pattern}' dans {self.extraction_dest_path}")
+        if patterns_in_name:
+            self.logger.info(f"Le nom du fichier doit aussi contenir: {patterns_in_name}")
+        if files_before_click is not None:  # Logique pour identifier le NOUVEAU fichier
+            self.logger.info(
+                f"Mode de détection du nouveau fichier activé (comparaison avec {len(files_before_click)} fichier(s) préexistants).")
+
+        start_time = time.time()
+        poll_interval = 2  # secondes
+
+        while time.time() - start_time < effective_timeout:
+            # Liste tous les fichiers correspondant au pattern global dans le dossier
+            current_files_on_disk = list(self.extraction_dest_path.glob(effective_pattern))
+
+            candidate_files = []
+            if files_before_click is not None:
+                # Si files_before_click est fourni, on ne considère que les nouveaux fichiers
+                newly_appeared = [f for f in current_files_on_disk if f not in files_before_click]
+                candidate_files = [f for f in newly_appeared if not f.name.endswith(('.tmp', '.crdownload', '.part'))]
+            else:
+                # Comportement original: considère tous les fichiers non temporaires
+                candidate_files = [f for f in current_files_on_disk if
+                                   not f.name.endswith(('.tmp', '.crdownload', '.part'))]
+
+            valid_files = []
+            if candidate_files:
+                if patterns_in_name:  # Filtrage additionnel par `patterns_in_name`
+                    for file_path in candidate_files:
+                        if all(p in file_path.name for p in patterns_in_name):
+                            valid_files.append(file_path)
+                else:
+                    valid_files = candidate_files
+
+            if valid_files:
+                # Trie les fichiers par date de modification (le plus récent en premier)
+                # C'est crucial si plusieurs fichiers correspondent (ex: un ancien téléchargement partiel)
+                valid_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+
+                # Prend le fichier le plus récent
+                found_file_path = valid_files[0]
+
+                # Vérification supplémentaire de la stabilité du fichier (taille ne change plus)
+                try:
+                    last_size = -1
+                    stable_count = 0
+                    # Attendre que la taille du fichier se stabilise pendant un court instant
+                    for _ in range(3):  # Check 3 times
+                        current_size = found_file_path.stat().st_size
+                        if current_size > 0 and current_size == last_size:  # Fichier non vide et taille stable
+                            stable_count += 1
+                            break
+                        elif current_size == 0 and last_size == 0:  # Fichier vide, mais taille stable (peut être un problème)
+                            pass  # On continue de vérifier, peut-être qu'il va grossir
+                        last_size = current_size
+                        time.sleep(0.5)  # Court délai entre les vérifications de taille
+
+                    if stable_count > 0 or (
+                            found_file_path.stat().st_size > 0 and time.time() - found_file_path.stat().st_mtime > 5):  # Soit stable, soit >0 octets et existe depuis >5s
+                        self.logger.info(
+                            f"Fichier trouvé et considéré stable pour la date {log_date_str}: {found_file_path.name} (taille: {found_file_path.stat().st_size} octets)")
+                        return found_file_path
+                    else:
+                        self.logger.debug(
+                            f"Fichier {found_file_path.name} trouvé mais sa taille ({found_file_path.stat().st_size} octets) n'est pas encore stable ou est nulle. Attente...")
+                except FileNotFoundError:
+                    self.logger.debug(f"Fichier {found_file_path.name} a disparu pendant la vérification de stabilité.")
+                    # Continue la boucle while pour chercher à nouveau
+
+            time.sleep(poll_interval)
+
+        self.logger.error(
+            f"Timeout: Aucun fichier correspondant et stable trouvé pour la date {log_date_str} et le motif '{effective_pattern}' après {effective_timeout} secondes.")
+        raise TimeoutException(
+            f"Téléchargement non détecté, anormalement long, ou fichier vide/instable pour la date de référence {log_date_str} (motif: {effective_pattern})")
+
     def _verify_download(self, file_pattern=None, start_date=None, patterns=None):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
             """Attend l'apparition d'un fichier correspondant au motif donné."""
@@ -187,11 +365,11 @@ class BaseScrapper(ABC):
             return None
         file_pattern = file_pattern or self.config["file_pattern"]
         tmp_file = wait_for_download(os.path.join(self.config["download_path"],file_pattern), timeout=self.config["wait_time"], poll_interval=2)
-        tmp_file = Path(tmp_file)
         if not tmp_file:
             raise Exception("Téléchargement anormalement long, fichier non téléchargé")
             # self._download_files()
         else:
+            tmp_file = Path(tmp_file)
             self.logger.info(
                 f"Le fichier {tmp_file.name} a bien ete telecharge")
             return tmp_file

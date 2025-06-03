@@ -5,11 +5,11 @@ gitech_tirage:
   loaded_dest_relative_path: "gitech_tirage/loaded/"
   processed_dest_relative_path: "gitech_tirage/processed/"
   file_downloaded_name: "Etat de la course*.xls"
-  download_path: "C:/ETL/DATA_FICHIERS/gitech_tirage/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/gitech_tirage/extracted/"
   ##### extraction config #####
   file_pattern: "Etat de la course*.xls"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
+  start_date: #2025-03-01 # defaut is today - 1 day
+  end_date: #2025-03-04
   include_sup: false
   wait_time: 120
   urls:

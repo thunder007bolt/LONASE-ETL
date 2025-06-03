@@ -5,11 +5,11 @@ parifoot_online:
   loaded_dest_relative_path: "parifoot_online/loaded/"
   processed_dest_relative_path: "parifoot_online/processed/"
   file_downloaded_name: "AgentCasinoAndBettingReport*cs*"
-  download_path: "C:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
   ##### extraction config #####
   file_pattern: "AgentCasinoAndBettingReport*csv"
-  start_date: #2025-04-11 # defaut is today - 1 day
-  end_date: #2025-04-11
+  start_date: 2025-05-30 # defaut is today - 1 day
+  end_date: #2025-04-24
   include_sup: false
   wait_time: 30
   urls:

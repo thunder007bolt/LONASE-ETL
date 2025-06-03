@@ -1,6 +1,7 @@
 ### system ###
 from base.database_extractor import DatabaseExtractor
 import pandas as pd
+import datetime
 
 class ExtractMinishop(DatabaseExtractor):
     def __init__(self, env_variables_list):
@@ -61,6 +62,18 @@ class ExtractMinishop(DatabaseExtractor):
             name = f"minishop_{start_date}.csv"
             self._save_file(data, type="csv", name=name, sep=";",index=False)
 
+    def _set_date(self):
+        date = datetime.date.today() - datetime.timedelta(days=2)
+        
+        if self.config["start_date"] is not None:
+            self.start_date = self.config["start_date"]
+        else:
+            self.start_date = date
+
+        if self.config["end_date"] is not None:
+            self.end_date = self.config["end_date"]
+        else:
+            self.end_date = date
 def run_minishop():
     env_variables_list = {
         "SERVER": "LONASE_DEF_SERVER",

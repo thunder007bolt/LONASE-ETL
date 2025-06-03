@@ -5,10 +5,10 @@ pmu_ca:
   loaded_dest_relative_path: "pmu_ca/loaded/"
   processed_dest_relative_path: "pmu_ca/processed/"
   file_downloaded_name: "Pmu_Senegal_ca_*csv"
-  download_path: "C:/ETL/DATA_FICHIERS/pmu_ca/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/pmu_ca/extracted/"
   ##### extraction config #####
-  start_date:
-  end_date:
+  start_date: #2025-05-23
+  end_date:  #2025-03-08
   wait_time: 200
   file_pattern: "Pmu_Senegal_ca_*csv"
   urls:
@@ -37,3 +37,4 @@ pmu_ca:
   #### load config ####
   files_to_load_pattern: "*.csv"
 
+#

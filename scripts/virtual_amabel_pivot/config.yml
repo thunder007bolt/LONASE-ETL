@@ -5,16 +5,15 @@ virtual_amabel_pivot:
   loaded_dest_relative_path: "virtual_amabel_pivot/loaded/"
   processed_dest_relative_path: "virtual_amabel_pivot/processed/"
   file_downloaded_name: "Pivot*.xls*"
-  download_path: "C:/ETL/DATA_FICHIERS/virtual_amabel_pivot/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/virtual_amabel_pivot/extracted/"
   ##### extraction config #####
-  start_date: #2025-02-15
-  end_date: #2025-02-17
+  start_date: #2025-05-28
+  end_date: #2025-05-28
   wait_time: 200
   file_pattern: "Pivot*.xls*"
   urls:
     login: "https://virtual-admin.virtustec.com/backoffice/login"
     report: "https://virtual-admin.virtustec.com/backoffice/manage/17828610/tickets/pivotTable"
-
 
   html_elements:
     ### login page ###

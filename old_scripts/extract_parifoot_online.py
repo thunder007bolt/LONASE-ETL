@@ -642,10 +642,10 @@ start_date = end_date - delta
 
 #end_date = datetime.date.today() - deltastart_date = end_date - delta
 
-#start_date = datetime.date(2025, 4, 6)
+#start_date = datetime.date(2025, 4, 24)
 #end_date = start_date + 3*delta
 #end_date = datetime.date.today()
-#end_date = datetime.date(2025, 4, 6)
+#end_date = datetime.date(2025, 4, 25)
 
 #path = "C:\\Users\\CFAC\\Downloads\\"
 #filesInitialDirectory = 'C:\\Users\\CFAC\\Documents\\jules\\Stage\\ExtractedFiles\\'

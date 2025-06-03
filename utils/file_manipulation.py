@@ -55,6 +55,57 @@ def _rename_file(file, rename_name, logger):
     file.rename(new_file)
     return new_file
 
+def _rename_file2(file: Path, rename_name: str, logger) -> Path:
+    """Effectue le renommage d'un fichier."""
+    try:
+        new_file = file.parent / f"{rename_name}{file.suffix}"
+        file.rename(new_file)
+        return new_file
+    except Exception as e:
+        logger.error(f"Échec du renommage de {file} en {rename_name}: {e}")
+        raise
+from pathlib import Path
+import time
+
+def rename_file2(pattern, source_folder, rename_name, logger):
+    """Renomme un fichier et vérifie que le renommage est effectif."""
+    if isinstance(pattern, Path):
+        file = pattern
+        try:
+            new_file = _rename_file(file, rename_name, logger)
+            # Vérifier que le fichier original n'existe plus
+            if file.exists():
+                logger.error(f"Le fichier original {file} existe toujours après le renommage.")
+                raise FileExistsError(f"Échec du renommage : {file} n'a pas été supprimé.")
+            # Vérifier que le nouveau fichier existe
+            if not new_file.exists():
+                logger.error(f"Le nouveau fichier {new_file} n'a pas été créé.")
+                raise FileNotFoundError(f"Échec du renommage : {new_file} n'existe pas.")
+            logger.info(f"Fichier renommé avec succès : {new_file}")
+            return new_file
+        except Exception as e:
+            logger.error(f"Erreur lors du renommage de {file}: {e}")
+            raise
+    else:
+        files = list(Path(source_folder).glob(pattern))
+        if not files:
+            logger.info(f"Aucun fichier trouvé avec le pattern : {pattern}")
+            return
+        for file in files:
+            try:
+                new_file = _rename_file(file, rename_name, logger)
+                if file.exists():
+                    logger.error(f"Le fichier original {file} existe toujours après le renommage.")
+                    raise FileExistsError(f"Échec du renommage : {file} n'a pas été supprimé.")
+                if not new_file.exists():
+                    logger.error(f"Le nouveau fichier {new_file} n'a pas été créé.")
+                    raise FileNotFoundError(f"Échec du renommage : {new_file} n'existe pas.")
+                logger.info(f"Fichier renommé avec succès : {new_file}")
+                return new_file
+            except Exception as e:
+                logger.error(f"Erreur lors du renommage de {file}: {e}")
+                raise
+
 def delete_file(path: Path, file_pattern: str):
     """
     Supprime les fichiers correspondant au pattern spécifié dans le dossier spécifié.

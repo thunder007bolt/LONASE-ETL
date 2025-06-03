@@ -4,13 +4,13 @@ afitech_daily_payment_activity:
   error_dest_relative_path: "afitech_daily_payment_activity/error/"
   loaded_dest_relative_path: "afitech_daily_payment_activity/loaded/"
   processed_dest_relative_path: "afitech_daily_payment_activity/processed/"
-  download_path: "C:/ETL/DATA_FICHIERS/afitech_daily_payment_activity/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/afitech_daily_payment_activity/extracted/"
   file_downloaded_name: "*DailyPaymentActivity*xls*"
   ##### extraction config #####
   file_pattern: "*DailyPaymentActivity*xls*"
   wait_time: 300
-  start_date: 2025-03-01
-  end_date: 2025-03-31
+  start_date: #2025-05-21
+  end_date: #2025-04-20
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

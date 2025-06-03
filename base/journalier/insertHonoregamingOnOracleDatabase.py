@@ -517,9 +517,9 @@ while start_date<end_date:
         data=data.astype(str)
         data = list(data.to_records(index=False))
         #print(len(data))
-
         first = 0
-        second = 30000
+        second = 1000
+        print(f"{len(data)} - {second}")
         status = False
         while True:
                      
@@ -564,7 +564,7 @@ while start_date<end_date:
           ,"PAIDAMOUNT"
           ,"GAMENAME") VALUES(:1, :2, :3, :4, :5,:6, :7, :8, :9, :10,:11, :12, :13, :14, :15,:16, :17, :18, :19, :20,:21, :22, :23, :24, :25,:26, :27, :28, :29, :30,:31, :32, :33, :34, :35,:36)""", data[first:second])
             first = second
-            second += 30000
+            second += 1000
                      
             if status:
                 break

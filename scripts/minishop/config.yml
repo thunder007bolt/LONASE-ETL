@@ -5,10 +5,10 @@ minishop:
   error_dest_relative_path: "minishop/error/"
   loaded_dest_relative_path: "minishop/loaded/"
   processed_dest_relative_path: "minishop/processed/"
-  download_path: "C:/ETL/DATA_FICHIERS/minishop/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/minishop/extracted/"
   wait_time: 500
-  start_date : #2025-04-14
-  end_date: #2025-04-14
+  start_date : #2025-04-01
+  end_date: #2025-04-30
   ##### extraction config #####
 
 

@@ -5,7 +5,7 @@ virtual_amabel:
   loaded_dest_relative_path: "virtual_amabel/loaded/"
   processed_dest_relative_path: "virtual_amabel/processed/"
   file_downloaded_name: "VirtuelAmabel*csv"
-  download_path: "C:/ETL/DATA_FICHIERS/virtual_amabel/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/virtual_amabel/extracted/"
   ##### extraction config #####
   start_date: #2025-04-04
   end_date: #2025-04-06

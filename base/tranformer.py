@@ -75,7 +75,7 @@ class Transformer(ABC):
         else:
             return f"{self.name}_transformed_{dates.strftime('%Y-%m-%d')}.csv"
 
-    def _save_file(self, file, data, type="csv",date=None, name=None, reverse=False, is_multiple=False, **kwargs):
+    def _save_file(self, file, data, type="csv",date=None, name=None, reverse=False, is_multiple=False,move=True, **kwargs):
         csv_filename = name or self._build_name(file, reverse=reverse, date=date, is_multiple=is_multiple)
         output_file = self.transformation_dest_path / csv_filename
         try:
@@ -86,11 +86,11 @@ class Transformer(ABC):
             elif type == "excel":
                 data.to_excel(output_file, **kwargs)
 
-            move_file(file, self.processed_dest_path)
+            if move: move_file(file, self.processed_dest_path)
             self.logger.info(f"Le fichier {csv_filename} a été transformé et sauvegardé avec succès.")
 
         except Exception as e:
-            move_file(file, self.error_dest_path)
+            if move: move_file(file, self.error_dest_path)
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de la sauvegarde du fichier {csv_filename} : {e}")
             return
