@@ -157,7 +157,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                 self.wait_for_presence(end_calendar_input_xpath, raise_error=True)
                 end_calendar_input = browser.find_element(by=By.XPATH, value=end_calendar_input_xpath)
                 end_calendar_input.send_keys(end_date_formated + Keys.ENTER)
-                self.wait_and_click("/html/body", locator_type="xpath")
+                sleep(1)
                 logger.info("Soumission du formulaire...")
                 report_submit_button_xpath = html_elements["report_submit_button_xpath"]
                 browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")

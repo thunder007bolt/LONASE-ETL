@@ -750,7 +750,7 @@ delta = timedelta(days=1)
 
 
 
-#start_date = date(2025, 5, 25)
+#start_date = date(2025, 6, 1)
 
 #end_date = start_date+delta
 

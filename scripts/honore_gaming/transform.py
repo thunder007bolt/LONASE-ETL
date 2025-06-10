@@ -8,7 +8,7 @@ class HonoreGamingTransformer(Transformer):
     def __init__(self):
         super().__init__('honore_gaming', 'logs/transformer_honore_gaming.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
             # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)

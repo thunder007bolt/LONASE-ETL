@@ -19,7 +19,7 @@ delta = datetime.timedelta(days=1)
 end_date = datetime.date.today()- delta
 start_date = end_date - delta
 
-#start_date = datetime.date(2025, 4, 3)
+start_date = datetime.date(2025, 6, 6)
 #debut = datetime.date(2022, 7, 1)
 #end_date = datetime.date(2025, 4, 5)
 

@@ -9,8 +9,8 @@ afitech_daily_payment_activity:
   ##### extraction config #####
   file_pattern: "*DailyPaymentActivity*xls*"
   wait_time: 300
-  start_date: #2025-05-21
-  end_date: #2025-04-20
+  start_date: #2025-05-30
+  end_date: #2025-05-31
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

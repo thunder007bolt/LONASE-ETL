@@ -2,16 +2,14 @@ import sys
 sys.path.append("C:\ETL")
 
 from base.logger import Logger
-from extract import run_acajou_digital as extract
-from transform import run_acajou_digital_transformer as transform
-from load import run_acajou_digital_loader as load
+from extract import run_mojabet_ussd as extract
+from load import run_mojabet_ussd_loader as load
 
 def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_acajou_digital.log").get_logger()
+    logger = Logger(log_file="logs/orchestrator_mojabet_ussd.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
         extract()
-        transform()
         load()
         logger.info("Orchestrateur terminé avec succès.")
 

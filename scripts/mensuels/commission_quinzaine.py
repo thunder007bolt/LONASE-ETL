@@ -125,21 +125,17 @@ class ExtractCommissionQuinzaine(DatabaseExtractor):
 
           # 2. Insert data into temporary table
           self.logger.info(f"Inserting {len(data_tuples)} rows into OPTIWARETEMP.SRC_COMMISSION_PRD...")
-          insert_sql = """
-              INSERT INTO OPTIWARETEMP.SRC_COMMISSION_PRD (
+          batch_size = 1000
+          for i in range(0, len(data_tuples), batch_size):
+              batch = data_tuples[i:i + batch_size]
+              self.cursor_oracle.executemany("""
+                  INSERT INTO OPTIWARETEMP.SRC_COMMISSION_PRD (
                   "QUINZAINE", "AGENCE", "PRODUIT", "IDENTIFIANT", "PRENOM", "NOM",
                   "CA_CAL", "CA_V", "REMB", "COM_B", "ECART", "RET_F", "DEC_AN",
                   "ENG", "MUS", "DEC_AC", "REGUL", "COM_N"
               ) VALUES (TO_DATE(:1, 'DD/MM/YYYY'), :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18)
-          """
-          # Adjust column count (:1 to :18) based on actual columns in data_tuples
-          if len(data.columns) != 18:
-                self.logger.error(f"Data has {len(data.columns)} columns, but insert statement expects 18. Check query and table structure.")
-                return False
-
-          self.cursor_oracle.executemany(insert_sql, data_tuples, batcherrors=True)
-          self.conn_oracle.commit()
-
+              """, batch)
+              self.conn_oracle.commit()
           # Check for batch errors
           errors = self.cursor_oracle.getbatcherrors()
           if errors:

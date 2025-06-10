@@ -3751,7 +3751,7 @@ else:
     
     #print(data)
 
-    #chargeParifootonline(data,debut,fin)
+    chargeParifootonline(data,debut,fin)
 
 
 

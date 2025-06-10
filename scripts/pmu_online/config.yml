@@ -8,8 +8,8 @@ pmu_online:
   download_path: "K:/ETL/DATA_FICHIERS/pmu_online/extracted/"
   ##### extraction config #####
   file_pattern: "Rapport Gestion des joueur*xls"
-  start_date: #2025-04-01 # defaut is today - 1 day
-  end_date: #2025-04-30
+  start_date: #2025-05-01 # defaut is today - 1 day
+  end_date: #2025-05-31
   include_sup: false
   wait_time: 120
   urls:

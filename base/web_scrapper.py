@@ -17,7 +17,14 @@ from utils.file_manipulation import rename_file, delete_file
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
-
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+    UnexpectedTagNameException,
+    WebDriverException,
+    ElementClickInterceptedException
+)
 
 """
 Classe pour scrapper un site Web.
@@ -112,7 +119,7 @@ class BaseScrapper(ABC):
     def _download_files(self):
         pass
 
-    def _process_download(self, start_date, end_date):
+    def _process_download(self, start_date=None, end_date=None):
         pass
 
     def _delete_old_files(self):
@@ -134,7 +141,7 @@ class BaseScrapper(ABC):
         while end_date <= self.end_date:
             try:
                 sleep(2)
-                self._process_download(start_date, end_date)
+                self._process_download(start_date=start_date, end_date=end_date)
                 # todo: renomer ignore
                 if ignore is False:
                     try:
@@ -159,6 +166,12 @@ class BaseScrapper(ABC):
 
             start_date += delta
             end_date += delta
+
+    def _get_text_from_xpath(self, xpath_selector):
+            try:
+                return self.browser.find_element(By.XPATH, xpath_selector).text.strip()
+            except :
+                return None
 
     def _verify_download_opt(self, file_pattern=None, start_date=None, patterns=None):
         def wait_for_download(download_path, file_pattern, patterns=None, timeout=120, poll_interval=2):
@@ -374,6 +387,46 @@ class BaseScrapper(ABC):
                 f"Le fichier {tmp_file.name} a bien ete telecharge")
             return tmp_file
 
+    def wait_and_click_v2(self, locator: str, locator_type: str = 'xpath', timeout: int = 60, raise_error: bool = True,
+                       is_element: bool = False):
+        """Attend qu'un élément soit cliquable, puis clique dessus."""
+        by_type = self._get_by_type(locator_type)
+        self.logger.debug(f"Attente (max {timeout}s) et clic sur l'élément: [{by_type}: {locator}]")
+        try:
+            if is_element:
+                locator.click()
+            else:
+                element = WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, locator)))
+                element.click()
+                self.logger.debug(f"Clic effectué sur [{by_type}: {locator}]")
+                return element
+        except TimeoutException:
+            msg = f"Timeout: Élément non cliquable après {timeout}s: [{by_type}: {locator}]"
+            self.logger.error(msg)
+            if raise_error: raise TimeoutException(msg)
+        except ElementClickInterceptedException:
+            self.logger.warning(f"Clic intercepté sur [{by_type}: {locator}]. Tentative de clic via JavaScript.")
+            try:
+                # Utiliser JavaScript pour forcer le clic
+                self.browser.execute_script("arguments[0].click();", element)
+                self.logger.debug(f"Clic effectué via JavaScript sur [{by_type}: {locator}]")
+                return element
+            except Exception as js_e:
+                msg = f"Échec du clic via JavaScript sur [{by_type}: {locator}]: {js_e}"
+                self.logger.error(msg, exc_info=True)
+                if raise_error: raise
+        except ElementNotInteractableException:
+            msg = f"Erreur: Élément trouvé mais non interactable (pas cliquable): [{by_type}: {locator}]"
+            self.logger.error(msg)
+            if raise_error: raise ElementNotInteractableException(msg)
+        except NoSuchElementException:
+            msg = f"Erreur: Élément introuvable: [{by_type}: {locator}]"
+            self.logger.error(msg)
+            if raise_error: raise NoSuchElementException(msg)
+        except Exception as e:
+            msg = f"Erreur inattendue lors du clic sur [{by_type}: {locator}]: {e}"
+            self.logger.error(msg, exc_info=True)
+            if raise_error: raise
     def wait_and_click(self, element, locator_type='id', timeout=60, raise_error=False):
         by_type = self._get_by_type(locator_type)
         try:
@@ -409,7 +462,7 @@ class BaseScrapper(ABC):
     def wait_for_presence(self, element, locator_type='xpath', timeout=60, raise_error=False, exit_on_error=False):
         by_type = self._get_by_type(locator_type)
         try:
-            WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
+            return WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
         except:
             if exit_on_error:
                 self.logger.error(f"Élément n'est pas apparu : {element}")
@@ -460,11 +513,11 @@ class BaseScrapper(ABC):
             self.logger.error(f"Erreur inattendue pendant wait_for_staleness : {e}")
             return False
 
-    def _quit(self, error=None):
+    def _quit(self, error=None, status=1):
         self.logger.info(f"erreur : {error}")
         self.logger.info(f"Fermeture de la fenêtre...")
         self.browser.quit()
-        exit(1)
+        exit(status)
 
     def __del__(self):
         self.logger.info('------------ Ending --------------')

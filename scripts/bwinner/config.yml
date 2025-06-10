@@ -37,7 +37,7 @@ bwinner:
     download_button_element_xpath : "/html/body/div[5]/section/div[3]/div[1]/div/a"
 
   #### transform config ####
-  transformed_start_date: 2025-04-01
+  transformed_start_date: #2025-06-05
   transformed_end_date: #2025-04-02
   files_to_transform_pattern: "*.xlsx"
 

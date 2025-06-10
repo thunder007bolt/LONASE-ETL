@@ -7,8 +7,8 @@ pmu_lots:
   file_downloaded_name: "Pmu_Senegal_lots_*csv"
   download_path: "K:/ETL/DATA_FICHIERS/pmu_lots/extracted/"
   ##### extraction config #####
-  start_date: #2025-05-28
-  end_date:  #2025-05-29
+  start_date: #2025-06-02
+  end_date:  #2025-06-06
   wait_time: 200
   file_pattern: "Pmu_Senegal_lots_*csv"
   produits:

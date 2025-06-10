@@ -47,7 +47,7 @@ class BwinnerGambieTransformer(Transformer):
         except Exception:
             return 0
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:

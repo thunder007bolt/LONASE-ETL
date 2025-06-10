@@ -7,7 +7,7 @@ minishop:
   processed_dest_relative_path: "minishop/processed/"
   download_path: "K:/ETL/DATA_FICHIERS/minishop/extracted/"
   wait_time: 500
-  start_date : #2025-04-01
+  start_date : 2025-06-06
   end_date: #2025-04-30
   ##### extraction config #####
 

@@ -16,7 +16,7 @@ class MinishopTransformer(Transformer):
     def __init__(self):
         super().__init__('minishop', 'logs/transformer_minishop.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
             data = pd.read_csv(file, sep=';')

@@ -16,7 +16,7 @@ class LonasebetOnlineTransformer(Transformer):
     def __init__(self):
         super().__init__('lonasebet_online', 'logs/transformer_lonasebet_online.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
             data = pd.read_csv(file, sep=';',index_col=False)
@@ -26,13 +26,17 @@ class LonasebetOnlineTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
         # todo: get date from file or current date
-        date = self._get_file_date(file)
         data["JOUR"] = str(date.strftime("%d/%m/%Y"))
         data["ANNEE"] = str(date.strftime("%Y"))
         data["MOIS"] = str(date.strftime("%m"))
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\LONASEBET\ALR_PARIFOOT\\"
+        data.to_csv(filesInitialDirectory + "OnlineLonasebet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
+
         data = pd.DataFrame(data,columns=["BetId","JOUR","Stake","BetCategory","State","PaidAmount","CustomerLogin","Freebet"])
         data = data.replace(np.nan, '')
         data = data.astype(str)
+
 
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
 

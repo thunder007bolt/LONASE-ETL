@@ -272,8 +272,8 @@ def openBrowser():
             prefs = {"download.default_directory" : filesInitialDirectory}
             chromeOptions.add_experimental_option("prefs",prefs)
             chromedriver = r"C:\Users\optiware\Documents\jupyterNotebook\chromedriver.exe"
-            chromeOptions.add_argument("--headless")
-            chromeOptions.add_argument("--disable-gpu")
+            #chromeOptions.add_argument("--headless")
+            #chromeOptions.add_argument("--disable-gpu")
             #driver = webdriver.Chrome(executable_path=chromedriver, options=chromeOptions)
             browser = webdriver.Chrome(options=chromeOptions)
             
@@ -541,7 +541,7 @@ start_date = end_date - delta
 
 
 
-#start_date = datetime.date(2025, 4, 4)
+start_date = datetime.date(2025, 6, 6)
 #end_date = datetime.date(2025, 4, 6)
 #end_date = start_date + delta
 

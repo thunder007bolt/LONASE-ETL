@@ -16,7 +16,7 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
     def __init__(self):
         super().__init__('afitech_daily_payment_activity', 'logs/transformer_afitech_daily_payment_activity.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         """
         """
         self.logger.info(f"Traitement du fichier : {file.name}")

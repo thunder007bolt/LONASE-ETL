@@ -16,7 +16,7 @@ class ParifootOnlineTransformer(Transformer):
     def __init__(self):
         super().__init__('parifoot_online', 'logs/transformer_parifoot_online.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:

@@ -16,7 +16,7 @@ class VirtualAmabelTransformer(Transformer):
     def __init__(self):
         super().__init__('virtual_amabel', 'logs/transformer_virtual_amabel.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:

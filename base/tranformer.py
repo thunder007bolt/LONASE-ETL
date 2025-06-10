@@ -32,14 +32,18 @@ class Transformer(ABC):
         self.error_file_names_list.append(filename)
 
     @abstractmethod
-    def _transform_file(self, file):
+    def _transform_file(self, file, date=None):
         pass
 
     def process_transformation(self):
         self.logger.info(f"Transformation des fichiers de {self.source_path} en {self.file_pattern}")
         for file in self.source_path.glob(self.file_pattern):
             self.logger.info(f"Transformation du fichier {file}")
-            self._transform_file(file)
+            try:
+                date = self._get_file_date(file)
+            except :
+                date = None
+            self._transform_file(file, date=date)
         pass
 
     def set_filename(self, date_str, prefix):
@@ -57,6 +61,8 @@ class Transformer(ABC):
         else:
             regex = r"\s*(\d{2}-\d{2}-\d{4})"
             format = "%d-%m-%Y"
+
+
 
         if is_multiple:
             matches = re.findall(regex, file.name)

@@ -1,13 +1,13 @@
-acajou_digital:
-  extraction_dest_relative_path: "acajou_digital/extracted/"
-  transformation_dest_relative_path: "acajou_digital/transformed/"
-  error_dest_relative_path: "acajou_digital/error/"
-  loaded_dest_relative_path: "acajou_digital/loaded/"
-  processed_dest_relative_path: "acajou_digital/processed/"
+mojabet_ussd:
+  extraction_dest_relative_path: "mojabet_ussd/extracted/"
+  transformation_dest_relative_path: "mojabet_ussd/transformed/"
+  error_dest_relative_path: "mojabet_ussd/error/"
+  loaded_dest_relative_path: "mojabet_ussd/loaded/"
+  processed_dest_relative_path: "mojabet_ussd/processed/"
   file_downloaded_name: "Accounting.csv"
   file_pattern: "Accounting.csv"
   wait_time: 300
-  download_path: "K:/ETL/DATA_FICHIERS/acajou_digital/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/mojabet_ussd/extracted/"
   ##### extraction config #####
   start_date:  #2025-05-30 # defaut is today - 1 day
   end_date: #2025-05-12
@@ -36,7 +36,7 @@ acajou_digital:
     error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
 
   #### transform config ####
-  files_to_transform_pattern: "acajou_digital*csv"
+  files_to_transform_pattern: "mojabet_ussd*csv"
 
   #### load config ####
   files_to_load_pattern: "*.csv"

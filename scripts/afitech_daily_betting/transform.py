@@ -16,7 +16,7 @@ class AfitechDailyBettingTransformer(Transformer):
     def __init__(self):
         super().__init__('afitech_daily_betting', 'logs/transformer_afitech_daily_betting.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
 
         self.logger.info(f"Traitement du fichier : {file.name}")
 

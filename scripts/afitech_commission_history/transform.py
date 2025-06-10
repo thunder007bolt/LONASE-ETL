@@ -16,7 +16,7 @@ class AfitechCommissionHistoryTransformer(Transformer):
     def __init__(self):
         super().__init__('afitech_commission_history', 'logs/transformer_afitech_commission_history.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
             data = pd.read_excel(file, sheet_name='Data')

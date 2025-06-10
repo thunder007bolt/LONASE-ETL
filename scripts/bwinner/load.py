@@ -1,5 +1,5 @@
 import pandas as pd, numpy as np
-from base.loader import Loader
+from base.loader2 import Loader
 from utils.other_utils import load_env
 load_env()
 
@@ -8,8 +8,16 @@ class BwinnerLoad(Loader):
         name = ('bwinner')
         log_file = 'logs/loader_bwinner.log'
         columns = ["create_time", "product", "stake", "max payout"]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_BWINNERS]"
-        super().__init__(name, log_file, columns, table_name)
+        super().__init__(name, log_file)
+
+        self.oracle_columns = columns
+        self.oracle_table_name = "OPTIWARETEMP.SRC_PRD_BWINNERS"
+
+        # Sql server
+        self.sql_server_columns = columns
+        self.sql_server_table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_BWINNERS]"
+
+
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False, dtype=str)

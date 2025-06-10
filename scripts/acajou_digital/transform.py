@@ -16,7 +16,7 @@ class AcajouDigitalTransformer(Transformer):
     def __init__(self):
         super().__init__('acajou_digital', 'logs/transformer_acajou_digital.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date):
         """
         """
         self.logger.info(f"Traitement du fichier : {file.name}")
@@ -37,6 +37,9 @@ class AcajouDigitalTransformer(Transformer):
         data['Gross Payout'] = data['Gross Payout'].astype(float).round(2).astype(str)
         data = data.replace(np.nan, '')
         data = data.astype(str)
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\ACAJOU\DIGITAIN\\"
+        data.to_csv(filesInitialDirectory + "Listing_Tickets_Sports_betting "+ date.strftime('%Y%m%d') + "_"+date.strftime('%Y%m%d')+ ".csv", index=False,sep=';',encoding='utf8')
 
         self._save_file(file=file, data=data, type="csv", index=False, sep=';', encoding='utf8')
 

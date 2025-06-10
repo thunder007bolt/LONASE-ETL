@@ -12,7 +12,7 @@ load_env()
 
 def load_yaml_config(file_path: Path) -> Dict[str, Any]:
     try:
-        with file_path.open('r') as file:
+        with file_path.open('r', encoding="utf-8") as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
         logging.error(f"Config file not found: {file_path}")

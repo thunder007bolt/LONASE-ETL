@@ -88,7 +88,7 @@ class GitechCasinoTransformer(Transformer):
         except Exception:
             return 0
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date):
         """
         Traite un fichier correspondant au motif "Etat de la course".
         Cette méthode effectue les étapes suivantes :
@@ -146,6 +146,10 @@ class GitechCasinoTransformer(Transformer):
             data[col] = data[col].apply(self.process_numeric_column)
 
         xlsx_file.unlink()
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\CASINO\\"
+        data.to_csv(filesInitialDirectory + "GITECH CASINO " + date.strftime('%Y-%m-%d') + ".csv", index=False, sep=';',
+                    encoding='utf8')
 
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
 

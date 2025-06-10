@@ -14,7 +14,7 @@ class HonoreGamingTicketTransformer(Transformer):
         self.mise_df = pd.read_csv(mise_file, sep=";", encoding="latin-1",index_col=False)
         self.agence_df = pd.read_csv(agence_file, sep=";", encoding="latin-1",index_col=False)
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
        date = self._get_file_date(file)
        prev_date = date - delta
        cols_to_import = [

@@ -88,7 +88,7 @@ class PmuOnlineTransformer(Transformer):
         except Exception:
             return 0
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         """
         Traite un fichier correspondant au motif "Etat de la course".
         Cette méthode effectue les étapes suivantes :
