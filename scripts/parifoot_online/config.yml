@@ -8,8 +8,8 @@ parifoot_online:
   download_path: "K:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
   ##### extraction config #####
   file_pattern: "AgentCasinoAndBettingReport*csv"
-  start_date: #2025-06-06 # defaut is today - 1 day
-  end_date: #2025-06-06
+  start_date: #2025-06-02 # defaut is today - 1 day
+  end_date: #2025-06-02
   include_sup: false
   wait_time: 30
   urls:

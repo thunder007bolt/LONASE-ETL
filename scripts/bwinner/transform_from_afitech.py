@@ -6,7 +6,7 @@ from pathlib import Path
 from base.logger import Logger
 from base.tranformer import Transformer
 from utils.config_utils import get_config
-from utils.date_utils import get_yesterday_date
+from utils.date_utils import get_yesterday_date, date_string_to_date
 import sys
 
 
@@ -58,8 +58,9 @@ class BwinnerTransformer(Transformer):
 
     def process_transformation(self):
         _, _, _, yesterday_date = get_yesterday_date()
-        self.start_date = self.config.get("transformed_start_date") or yesterday_date
-        self.end_date = self.config.get("transformed_end_date") or yesterday_date
+        import os
+        self.start_date =  date_string_to_date(os.getenv("transformed_start_date")) or self.config.get("transformed_start_date") or yesterday_date
+        self.end_date = date_string_to_date(os.getenv("transformed_end_date")) or self.config.get("transformed_end_date") or yesterday_date
         start_date = self.start_date
         # todo: +1 if include_sup equals true
         end_date = self.start_date

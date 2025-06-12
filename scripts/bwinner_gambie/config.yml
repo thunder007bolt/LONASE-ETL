@@ -8,8 +8,8 @@ bwinner_gambie:
   download_path: "K:/ETL/DATA_FICHIERS/bwinner_gambie/extracted/"
   ##### extraction config #####
   file_pattern: "Recette paiement Journalier*.xls"
-  start_date: #2025-03-01 # defaut is today - 1 day
-  end_date: #2025-03-04
+  start_date: #2025-06-02 # defaut is today - 1 day
+  end_date: #2025-06-02
   include_sup: false
   wait_time: 30
   urls:

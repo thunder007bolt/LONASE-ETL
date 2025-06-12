@@ -8,8 +8,8 @@ gitech_casino:
   download_path: "K:/ETL/DATA_FICHIERS/gitech_casino/extracted/"
   ##### extraction config #####
   file_pattern: "Cumul CA des * types de jeux*xls"
-  start_date: #2025-05-04 # defaut is today - 1 day
-  end_date: #2025-04-14
+  start_date: #2025-06-02 # defaut is today - 1 day
+  end_date: #2025-06-02
   include_sup: false
   wait_time: 120
   urls:

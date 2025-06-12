@@ -9,8 +9,8 @@ ussd_irv:
   ##### extraction config #####
   file_pattern: "GFM_CDR_DETAILS*xls"
 
-  start_date: #2025-05-18 # defaut is today - 1 day
-  end_date: #2025-03-04
+  start_date: #2025-06-02 # defaut is today - 1 day
+  end_date: #2025-06-02
   include_sup: false
   wait_time: 120
   urls:

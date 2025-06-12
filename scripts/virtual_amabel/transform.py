@@ -28,6 +28,10 @@ class VirtualAmabelTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
 
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\VIRTUEL_AMABEL\\"
+        data.to_csv(filesInitialDirectory + "virtuelAmabel"+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';')
+
         self._save_file(file, data, type="csv", index=False, sep=';')
 
 def run_virtual_amabel_transformer():

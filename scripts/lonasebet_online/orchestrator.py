@@ -12,7 +12,7 @@ def orchestrator():
         logger.info("Lancement de l'orchestrateur...")
         extract()
         transform()
-        # load()
+        load()
         logger.info("Orchestrateur terminé avec succès.")
 
     except Exception as e:

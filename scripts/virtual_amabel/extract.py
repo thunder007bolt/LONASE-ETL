@@ -15,7 +15,8 @@ from selenium.webdriver.common.keys import Keys
 from utils.config_utils import get_config, get_secret
 from utils.date_utils import get_yesterday_date, sleep
 from utils.other_utils import move_file, loading
-
+from load_env import load_env
+load_env()
 
 class ExtractVirtualAmabel(BaseScrapper):
     def __init__(self, env_variables_list):
@@ -46,13 +47,13 @@ class ExtractVirtualAmabel(BaseScrapper):
             self.logger.info(f"Tentative {attempt}")
             try:
                 browser = self.browser
-                username = 'sadio.fall'
+                username = 'HadiaSouadouGaye'
 
                 WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
                                                                                          "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[3]/div/input"))).send_keys(
                     username)
 
-                password = "Passer1234!"
+                password = "Controledegestion2025@"
                 WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
                                                                                          "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[4]/div/p-password/div/input"))).send_keys(
                     password)

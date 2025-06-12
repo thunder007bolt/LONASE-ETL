@@ -537,6 +537,8 @@ start_date = end_date - delta
 #end_date = datetime.date(2025, 4, 6)
 #end_date = start_date + delta
 
+#start_date = date(2025, 6, 2)
+#end_date = start_date + delta
 delta = datetime.timedelta(days=1)
 #end_date = start_date+delta
 

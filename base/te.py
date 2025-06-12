@@ -89,7 +89,7 @@ def main_cycle():
     #run_script(script_casino_gitech)
     run_script(script_gitech_physique)
     
-    run_script(script_virtuel_amabel)
+    #run_script(script_virtuel_amabel)
 
     # lonasebet
     run_script(script_casino_lonasebett)

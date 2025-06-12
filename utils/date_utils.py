@@ -1,5 +1,5 @@
 
-from datetime import  date, timedelta
+from datetime import  date, timedelta, datetime
 import time
 
 
@@ -23,3 +23,9 @@ def get_previous_month_date_range():
     end_date = last_day_previous_month
 
     return start_date, end_date
+
+def date_string_to_date(date_str, format="%Y-%m-%d"):
+    try:
+       return datetime.strptime(date_str, format).date()
+    except :
+        return None

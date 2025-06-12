@@ -8,7 +8,7 @@ from time import sleep
 
 from base.logger import Logger
 from utils.config_utils import get_config, get_secret
-from utils.date_utils import get_yesterday_date
+from utils.date_utils import get_yesterday_date, date_string_to_date
 from datetime import datetime
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
@@ -96,8 +96,8 @@ class BaseScrapper(ABC):
 
     def _set_date(self):
         _, _, _, yesterday_date = get_yesterday_date()
-        self.start_date = self.start_date or self.config.get("start_date") or yesterday_date
-        self.end_date = self.end_date or self.config.get("end_date") or yesterday_date
+        self.start_date = date_string_to_date(os.getenv("start_date")) or self.start_date or  self.config.get("start_date") or yesterday_date
+        self.end_date = date_string_to_date(os.getenv("end_date")) or self.end_date or self.config.get("end_date") or yesterday_date
 
     @staticmethod
     def _get_by_type(locator_type):
