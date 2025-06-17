@@ -34,6 +34,9 @@ class ParifootOnlineTransformer(Transformer):
         data = data.replace(np.nan, '')
         data=data.astype(str)
 
+        filesInitialDirectory = r"K:\DATA_FICHIERS\PARIFOOT_ONLINE\\"
+        data.to_csv(filesInitialDirectory + "ParifootOnline "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
+
         self._save_file(file, data, type="csv", index=False, sep=';', encoding='utf8')
 
 

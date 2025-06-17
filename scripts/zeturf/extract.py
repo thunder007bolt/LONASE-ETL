@@ -121,9 +121,14 @@ class ExtractZeturf(BaseScrapper):
             df = df.astype(str)
             df['Date du départ'] = date
             df['Annulations'] = ''
-
             filename = f"{self.name}_{start_date.strftime('%Y-%m-%d')}.csv"
             df.to_csv(transformation_dest_path / filename, index=False, sep=";", encoding='utf8')
+
+
+            filesInitialDirectory = r"K:\DATA_FICHIERS\ZETURF\\"
+            df['Date du dÃ©part'] = start_date.strftime('%d/%m/%Y')
+            df.to_csv(filesInitialDirectory + "ZEturf " + start_date.strftime('%Y-%m-%d') + ".csv", index=False, sep=';', encoding='utf8')
+
             move_file(file, processed_dest_path)
 
     def process_extraction(self):

@@ -71,17 +71,17 @@ def main_cycle():
 
     # Exécution des scripts avec les variables de chemin
     # afitech
-    run_script(script_afitech_daily)
-    run_script(script_afitech_commission)
+    #run_script(script_afitech_daily)
+    #run_script(script_afitech_commission)
     '''
     #'''
 
     # bwinners
-    run_script(script_bwinners)
-    run_script(script_bwinner_gambie)
+    #run_script(script_bwinners)
+    #run_script(script_bwinner_gambie)
     
     #'''
-    run_script(script_digitain_acajou)
+    #run_script(script_digitain_acajou)
     #'''
 
     # gitech
@@ -92,16 +92,16 @@ def main_cycle():
     #run_script(script_virtuel_amabel)
 
     # lonasebet
-    run_script(script_casino_lonasebett)
+    #run_script(script_casino_lonasebett)
     #run_script(script_online_lonasebett)
 
-    run_script(script_mini_shop)
-    run_script(script_parifoot_online)
-    run_script(script_zeturf)
+    #run_script(script_mini_shop)
+    #run_script(script_parifoot_online)
+    #run_script(script_zeturf)
 
     # sunubet
-    run_script(script_casino_sunubett)
-    run_script(script_online_sunubett)
+    #run_script(script_casino_sunubett)
+    #run_script(script_online_sunubett)
     
     # pmu
     #run_script(script_pmu_senegal_ca)
@@ -113,7 +113,7 @@ def main_cycle():
     run_script(script_honore_gaming)
     run_script(script_insert_honore_oracle)
     '''
-    run_script(script_ussd)
+    #run_script(script_ussd)
     print("\n=== Fin ===\n")
     exit(0)
 

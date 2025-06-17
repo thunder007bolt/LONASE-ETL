@@ -28,6 +28,9 @@ class MinishopTransformer(Transformer):
 
         data.columns=['DATE', 'ETABLISSEMENT', 'JEU', 'TERMINAL', 'VENDEUR', 'MONTANT A VERSER', 'MONTANT A PAYER']
 
+        filesInitialDirectory = r"K:\DATA_FICHIERS\MINI_SHOP\\"
+        data.to_csv(filesInitialDirectory + "minishop_"+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='latin-1' )
+
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='latin-1', index=False)
 
 

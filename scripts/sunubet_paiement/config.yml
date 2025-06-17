@@ -9,7 +9,7 @@ sunubet_paiement:
   ##### extraction config #####
   file_pattern: "*InstantGamesTransactionsHistory*csv"
   wait_time: 7000
-  start_date: #2025-02-15
+  start_date: #2025-06-10
   end_date: #2025-02-17
   urls:
     login: "https://new-admin-sunubet.sporty-tech.net/"
@@ -34,6 +34,8 @@ sunubet_paiement:
     calendar_month_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-payment-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
     calendar_day_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-payment-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
     fournisseur_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-payment-analysis/div[1]/div/form/div[2]/hg-multi-select/ng-select/div/span"
+    fournisseur_dropdown_ng_select_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-payment-analysis/div[1]/div/form/div[2]/hg-multi-select/ng-select"
+
     fournisseur_element_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div"
     search_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-payment-analysis/div[1]/div/form/div[3]/button[1]"
     nombre_depots_text_xpath: "//div[contains(@class, 'title') and starts-with(normalize-space(.), 'Nombre de dépôts')]/following-sibling::div[contains(@class, 'data')]"

@@ -18,6 +18,25 @@ from utils.config_utils import get_config, get_secret
 from utils.date_utils import get_yesterday_date, sleep
 from utils.other_utils import move_file, loading, retry_operation
 from utils.file_manipulation import rename_file
+from selenium.common.exceptions import TimeoutException
+
+
+
+def clean_value(text_value, is_currency=False, is_numeric=False):
+    if text_value is None:
+        # Pour les nombres/devises, retourner 0. Pour les dates/textes, retourner chaîne vide ou None.
+        return 0 if is_numeric or is_currency else ""
+
+    cleaned = str(text_value).replace('\u202f', '').replace(' ', '')  # Espace insécable et espace normal
+    if is_currency:
+        cleaned = cleaned.replace('FCFA', '')
+
+    if is_numeric or is_currency:
+        try:
+            return int(cleaned)
+        except ValueError:
+            return 0  # Valeur par défaut si la conversion échoue
+    return cleaned
 
 
 class ExtractSunubetPaiement(BaseScrapper):
@@ -75,179 +94,219 @@ class ExtractSunubetPaiement(BaseScrapper):
         end_date = self.start_date + delta
 
         while end_date <= (self.end_date + delta):
-            data = []
-            calendar_xpath = html_elements["calendar_xpath"]
-            calendar_year_button_xpath = html_elements["calendar_year_button_xpath"]
-            calendar_year_xpath = html_elements["calendar_year_xpath"]
-            calendar_month_xpath = html_elements["calendar_month_xpath"]
-            calendar_day_xpath = html_elements["calendar_day_xpath"]
-            search_button_xpath = html_elements["search_button_xpath"]
+            try:
+                data = []
+                calendar_xpath = html_elements["calendar_xpath"]
+                calendar_year_button_xpath = html_elements["calendar_year_button_xpath"]
+                calendar_year_xpath = html_elements["calendar_year_xpath"]
+                calendar_month_xpath = html_elements["calendar_month_xpath"]
+                calendar_day_xpath = html_elements["calendar_day_xpath"]
+                search_button_xpath = html_elements["search_button_xpath"]
 
-            self.wait_and_click_v2(calendar_xpath, locator_type="xpath")
-            self.wait_and_click_v2(calendar_year_button_xpath, locator_type="xpath")
+                self.wait_and_click_v2(calendar_xpath, locator_type="xpath")
+                self.wait_and_click_v2(calendar_year_button_xpath, locator_type="xpath")
 
-            # Sélection de la date de début
-            for i in browser.find_elements(By.XPATH, calendar_year_xpath):
-                if start_date.strftime('%Y') in i.text:
-                    i.click()
-                    break
-            sleep(0.5)
-            for i in browser.find_elements(By.XPATH, calendar_month_xpath):
-                if start_date.strftime('%b').lower() in i.text.lower():
-                    i.click()
-                    break
-            sleep(0.5)
-            for i in browser.find_elements(By.XPATH, calendar_day_xpath):
-                if i.text.strip() == start_date.strftime('%d').lstrip('0'):
-                    i.click()
-                    break
-            sleep(0.5)
+                # Sélection de la date de début
+                for i in browser.find_elements(By.XPATH, calendar_year_xpath):
+                    if start_date.strftime('%Y') in i.text:
+                        i.click()
+                        break
+                sleep(0.5)
+                for i in browser.find_elements(By.XPATH, calendar_month_xpath):
+                    if start_date.strftime('%b').lower() in i.text.lower():
+                        i.click()
+                        break
+                sleep(0.5)
+                for i in browser.find_elements(By.XPATH, calendar_day_xpath):
+                    if i.text.strip() == start_date.strftime('%d').lstrip('0'):
+                        i.click()
+                        break
+                sleep(0.5)
 
-            # Sélection de la date de fin
-            for i in browser.find_elements(By.XPATH, calendar_year_xpath):
-                if start_date.strftime('%Y') in i.text:
-                    i.click()
-                    break
-            sleep(0.5)
-            for i in browser.find_elements(By.XPATH, calendar_month_xpath):
-                if start_date.strftime('%b').lower() in i.text.lower():
-                    i.click()
-                    break
-            sleep(0.5)
-            for i in browser.find_elements(By.XPATH, calendar_day_xpath):
-                if i.text.strip() == start_date.strftime('%d').lstrip('0'):
-                    i.click()
-                    break
-            sleep(0.5)
+                # Sélection de la date de fin
+                for i in browser.find_elements(By.XPATH, calendar_year_xpath):
+                    if start_date.strftime('%Y') in i.text:
+                        i.click()
+                        break
+                sleep(0.5)
+                for i in browser.find_elements(By.XPATH, calendar_month_xpath):
+                    if start_date.strftime('%b').lower() in i.text.lower():
+                        i.click()
+                        break
+                sleep(0.5)
+                for i in browser.find_elements(By.XPATH, calendar_day_xpath):
+                    if i.text.strip() == start_date.strftime('%d').lstrip('0'):
+                        i.click()
+                        break
+                sleep(0.5)
 
+                fournisseur_dropdown_xpath = html_elements["fournisseur_dropdown_xpath"]
+                fournisseur_dropdown_ng_select_xpath = html_elements["fournisseur_dropdown_ng_select_xpath"]
+                fournisseur_element_xpath = html_elements["fournisseur_element_xpath"]
 
-            def clean_value(text_value, is_currency=False, is_numeric=False):
-                if text_value is None:
-                    # Pour les nombres/devises, retourner 0. Pour les dates/textes, retourner chaîne vide ou None.
-                    return 0 if is_numeric or is_currency else ""
+                def manage_dropdown_state(desired_state: str):
+                    """
+                    Ouvre ou ferme le dropdown ng-select de manière fiable et uniquement si nécessaire,
+                    en utilisant un clic JavaScript pour une meilleure robustesse.
 
-                cleaned = str(text_value).replace('\u202f', '').replace(' ', '')  # Espace insécable et espace normal
-                if is_currency:
-                    cleaned = cleaned.replace('FCFA', '')
+                    Args:
+                        desired_state (str): L'état souhaité pour le dropdown. Accepte 'open' ou 'close'.
+                    """
 
-                if is_numeric or is_currency:
                     try:
-                        return int(cleaned)
-                    except ValueError:
-                        return 0  # Valeur par défaut si la conversion échoue
-                return cleaned
+                        wait = WebDriverWait(self.browser, 10)  # Augmentation du timeout à 10s par sécurité
 
-            fournisseur_dropdown_xpath = html_elements["fournisseur_dropdown_xpath"]
-            fournisseur_element_xpath = html_elements["fournisseur_element_xpath"]
+                        # Attendre que l'élément existe dans le DOM
+                        dropdown_element = wait.until(EC.presence_of_element_located((By.XPATH, fournisseur_dropdown_ng_select_xpath)))
 
-            self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
-            sleep(1)
-            initial_supplier_web_elements = browser.find_elements(By.XPATH, fournisseur_element_xpath)
-            supplier_names_to_process = []
-            for el in initial_supplier_web_elements:
-                name = el.text.strip()
-                if name:  # S'assurer que le nom n'est pas vide
-                    supplier_names_to_process.append(name)
+                        current_classes = dropdown_element.get_attribute('class')
+                        is_currently_open = 'ng-select-opened' in current_classes
 
-            self.logger.info(f"Nombre de fournisseurs détectés initialement: {len(supplier_names_to_process)}")
-            self.logger.info(f"Fournisseurs à traiter: {supplier_names_to_process}")
-            self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
+                        action_needed = (desired_state == 'open' and not is_currently_open) or \
+                                        (desired_state == 'close' and is_currently_open)
 
-            for fournisseur_nom_cible in supplier_names_to_process:
-                self.logger.info(f"--- Début du traitement pour le fournisseur : {fournisseur_nom_cible} ---")
+                        if action_needed:
+                            self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
 
-                try:
-                    self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
-                    sleep(0.5)
+                            # Attendre la confirmation du changement d'état
+                            if desired_state == 'open':
+                                wait.until(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                                          fournisseur_dropdown_ng_select_xpath).get_attribute(
+                                    'class'))
+                            else:
+                                wait.until_not(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                                              fournisseur_dropdown_ng_select_xpath).get_attribute(
+                                    'class'))
+                        else:
+                            pass
+                            #self.logger.info("Le dropdown est déjà dans l'état souhaité, aucune action n'est nécessaire.")
 
-                    found_element_for_selection = None
-                    current_elements_in_dropdown = browser.find_elements(By.XPATH, fournisseur_element_xpath)
-                    for el_sel in current_elements_in_dropdown:
-                        if el_sel.text.strip() == fournisseur_nom_cible:
-                            found_element_for_selection = el_sel
-                            break
+                    except TimeoutException:
+                        # Si le timeout se produit, on log l'état final des classes pour le débogage
+                        final_classes = self.browser.find_element(By.XPATH, fournisseur_dropdown_ng_select_xpath).get_attribute(
+                            'class')
+                        self.logger.error(
+                            f"Timeout: L'état du dropdown n'a pas changé comme attendu. Classes finales: '{final_classes}'")
+                        raise
+                    except Exception as e:
+                        self.logger.error(f"Une erreur imprévue est survenue lors de la gestion du dropdown: {e}")
+                        raise
+                manage_dropdown_state('open')
+                #sleep(1)
+                initial_supplier_web_elements = browser.find_elements(By.XPATH, fournisseur_element_xpath)
+                supplier_names_to_process = []
+                for el in initial_supplier_web_elements:
+                    name = el.text.strip()
+                    if name:  # S'assurer que le nom n'est pas vide
+                        supplier_names_to_process.append(name)
 
-                    if not found_element_for_selection:
-                        self.logger.info(f"ERREUR: Impossible de trouver '{fournisseur_nom_cible}' pour la SÉLECTION.")
+                self.logger.info(f"Nombre de fournisseurs détectés initialement: {len(supplier_names_to_process)}")
+                self.logger.info(f"Fournisseurs à traiter: {supplier_names_to_process}")
+
+                for fournisseur_nom_cible in supplier_names_to_process:
+                    self.logger.info(f"--- Début du traitement pour le fournisseur : {fournisseur_nom_cible} ---")
+
+                    try:
+                        manage_dropdown_state( 'open')
+
+                        found_element_for_selection = None
+                        current_elements_in_dropdown = browser.find_elements(By.XPATH, fournisseur_element_xpath)
+                        for el_sel in current_elements_in_dropdown:
+                            if el_sel.text.strip() == fournisseur_nom_cible:
+                                found_element_for_selection = el_sel
+                                break
+
+                        if not found_element_for_selection:
+                            self.logger.info(f"ERREUR: Impossible de trouver '{fournisseur_nom_cible}' pour la SÉLECTION.")
+                            continue
+
+                        self.logger.info(f"Sélection de : {fournisseur_nom_cible}")
+                        found_element_for_selection.click()
+                    except Exception as e_select:
+                        self.logger.info(f"ERREUR Exception lors de la SÉLECTION de '{fournisseur_nom_cible}': {e_select}")
                         continue
 
-                    self.logger.info(f"Sélection de : {fournisseur_nom_cible}")
-                    found_element_for_selection.click()
-                    sleep(0.5)
-                except Exception as e_select:
-                    self.logger.info(f"ERREUR Exception lors de la SÉLECTION de '{fournisseur_nom_cible}': {e_select}")
-                    continue
+                    manage_dropdown_state( 'close')
 
-                self.wait_and_click_v2(search_button_xpath, locator_type="xpath")
-                sleep(5)
+                    self.wait_and_click_v2(search_button_xpath, locator_type="xpath")
+                    sleep(5)
 
-                kpi_data = {
-                    "fournisseur": fournisseur_nom_cible,
-                    "jour": start_date.strftime('%d/%m/%Y'),
-                    "annee": start_date.strftime('%Y'),
-                    "mois": start_date.strftime('%m')
-                }
+                    kpi_data = {
+                        "fournisseur": fournisseur_nom_cible,
+                        "jour": start_date.strftime('%d/%m/%Y'),
+                        "annee": start_date.strftime('%Y'),
+                        "mois": start_date.strftime('%m')
+                    }
 
-                try:
-                    nombre_depots_text_xpath = html_elements["nombre_depots_text_xpath"]
-                    montant_depots_text_xpath = html_elements["montant_depots_text_xpath"]
-                    nombre_retraits_text_xpath = html_elements["nombre_retraits_text_xpath"]
-                    montant_retraits_text_xpath = html_elements["montant_retraits_text_xpath"]
+                    try:
+                        nombre_depots_text_xpath = html_elements["nombre_depots_text_xpath"]
+                        montant_depots_text_xpath = html_elements["montant_depots_text_xpath"]
+                        nombre_retraits_text_xpath = html_elements["nombre_retraits_text_xpath"]
+                        montant_retraits_text_xpath = html_elements["montant_retraits_text_xpath"]
 
-                    nombre_depots_text = self._get_text_from_xpath(nombre_depots_text_xpath)
-                    montant_depots_text = self._get_text_from_xpath(montant_depots_text_xpath)
-                    nombre_retraits_text = self._get_text_from_xpath(nombre_retraits_text_xpath)
-                    montant_retraits_text = self._get_text_from_xpath(montant_retraits_text_xpath)
+                        nombre_depots_text = self._get_text_from_xpath(nombre_depots_text_xpath)
+                        montant_depots_text = self._get_text_from_xpath(montant_depots_text_xpath)
+                        nombre_retraits_text = self._get_text_from_xpath(nombre_retraits_text_xpath)
+                        montant_retraits_text = self._get_text_from_xpath(montant_retraits_text_xpath)
 
-                    kpi_data["nombre_depots"] = clean_value(nombre_depots_text, is_numeric=True)
-                    kpi_data["montant_depots"] = clean_value(montant_depots_text, is_currency=True)
-                    kpi_data["nombre_retraits"] = clean_value(nombre_retraits_text, is_numeric=True)
-                    kpi_data["montant_retraits"] = clean_value(montant_retraits_text, is_currency=True)
+                        kpi_data["nombre_depots"] = clean_value(nombre_depots_text, is_numeric=True)
+                        kpi_data["montant_depots"] = clean_value(montant_depots_text, is_currency=True)
+                        kpi_data["nombre_retraits"] = clean_value(nombre_retraits_text, is_numeric=True)
+                        kpi_data["montant_retraits"] = clean_value(montant_retraits_text, is_currency=True)
 
-                    data.append(kpi_data)
-                    self.logger.info(f"Données extraites pour {fournisseur_nom_cible}: OK")
+                        data.append(kpi_data)
+                        self.logger.info(f"Données extraites pour {fournisseur_nom_cible}: OK")
 
-                except Exception as e_kpi:
-                    self.logger.info(f"ERREUR Exception lors de l'EXTRACTION des KPI pour '{fournisseur_nom_cible}': {e_kpi}")
-                    raise (e_kpi)
-                    kpi_data.update({
-                        "nombre_depots": 0, "montant_depots": 0, "nombre_retraits": 0, "montant_retraits": 0,
-                    })
-                    data.append(kpi_data)
+                    except Exception as e_kpi:
+                        self.logger.info(f"ERREUR Exception lors de l'EXTRACTION des KPI pour '{fournisseur_nom_cible}': {e_kpi}")
+                        raise (e_kpi)
+                        kpi_data.update({
+                            "nombre_depots": 0, "montant_depots": 0, "nombre_retraits": 0, "montant_retraits": 0,
+                        })
+                        data.append(kpi_data)
 
-                try:
-                    self.logger.info(f"Début de la déselection pour : {fournisseur_nom_cible}")
-                    #self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
-                    sleep(0.5)
+                    try:
+                        self.logger.info(f"Début de la déselection pour : {fournisseur_nom_cible}")
 
-                    found_element_for_deselection = None
-                    current_elements_in_dropdown_desel = browser.find_elements(By.XPATH, fournisseur_element_xpath)
-                    for el_desel in current_elements_in_dropdown_desel:
-                        if el_desel.text.strip() == fournisseur_nom_cible:
-                            found_element_for_deselection = el_desel
-                            break
+                        # --- DÉBUT DE LA MODIFICATION ---
+                        manage_dropdown_state( 'open')
+                        # --- FIN DE LA MODIFICATION ---
 
-                    if not found_element_for_deselection:
-                        self.logger.info(f"AVERTISSEMENT: Impossible de trouver '{fournisseur_nom_cible}' pour la DÉSÉLECTION.")
+                        # Le code ci-dessous s'exécute maintenant avec la certitude que le dropdown est ouvert
+                        found_element_for_deselection = None
+                        # Il est conseillé de relancer la recherche des éléments pour éviter les "StaleElementReferenceException"
+                        current_elements_in_dropdown_desel = browser.find_elements(By.XPATH, fournisseur_element_xpath)
+                        for el_desel in current_elements_in_dropdown_desel:
+                            if el_desel.text.strip() == fournisseur_nom_cible:
+                                found_element_for_deselection = el_desel
+                                break
 
-                    else:
-                        found_element_for_deselection.click()
-                        self.logger.info(f"Fournisseur '{fournisseur_nom_cible}' déselectionné (par clic).")
-                        sleep(0.5)
+                        if not found_element_for_deselection:
+                            self.logger.info(
+                                f"AVERTISSEMENT: Impossible de trouver '{fournisseur_nom_cible}' pour la DÉSÉLECTION.")
 
-                except Exception as e_deselect:
-                    self.logger.info(f"ERREUR Exception lors de la DÉSÉLECTION de '{fournisseur_nom_cible}': {e_deselect}")
-                    raise e_deselect
+                        else:
+                            found_element_for_deselection.click()
+                            self.logger.info(f"Fournisseur '{fournisseur_nom_cible}' déselectionné (par clic).")
+                            sleep(0.5)
 
-                self.wait_and_click_v2(fournisseur_dropdown_xpath, locator_type="xpath")
-                self.logger.info(f"--- Fin du traitement pour le fournisseur : {fournisseur_nom_cible} ---")
+                    except Exception as e_deselect:
+                        self.logger.info(
+                            f"ERREUR Exception lors de la DÉSÉLECTION de '{fournisseur_nom_cible}': {e_deselect}")
 
-            import pandas as pd
-            df = pd.DataFrame(data)
-            self.logger.info("DataFrame final :")
-            filename = f"sunubet_paiement_transformed_{start_date}.xlsx"
-            full_path = self.transformation_dest_path / filename
-            df.to_excel(full_path, index=False)
+
+                    self.logger.info(f"--- Fin du traitement pour le fournisseur : {fournisseur_nom_cible} ---")
+                    manage_dropdown_state( 'close')
+                import pandas as pd
+                df = pd.DataFrame(data)
+                self.logger.info(f"DataFrame final : {start_date}")
+                filename = f"sunubet_paiement_transformed_{start_date}.xlsx"
+                full_path = self.transformation_dest_path / filename
+                df.to_excel(full_path, index=False)
+
+            except:
+                continue
+
             start_date += delta
             end_date += delta
 

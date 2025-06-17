@@ -25,15 +25,22 @@ class AfitechCommissionHistoryTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
 
-        data.columns = ['Debut de la periode', 'Fin de la periode', 'Partner',
+        data.columns = ['Début de la période', 'Fin de la période', 'Partner',
                       'Payement Provider', 'Total Commisson', 'Deposit Total Amount',
                       'Deposit Count', 'Withdrawal Total Amount', 'Withdrawal Count']
         data = data.replace(np.nan, '')
-        data = data.applymap(lambda x: str(x).replace('.', ','))
         data['Partner'] = data['Partner'].str.replace(',', '.', regex=False)
-        data['Debut de la periode'] = data['Debut de la periode'].str.replace('-', '/', regex=False)  # Fin de la période
-        data['Fin de la periode'] = data['Fin de la periode'].str.replace('-', '/', regex=False)
+
+        start_date = data['Début de la période'][0].date()
+        end_date = data['Fin de la période'][0].date()
+        filesInitialDirectory = r"K:\DATA_FICHIERS\AFITECH\CommissionHistory\\"
         data = data.astype(str)
+        data.to_csv(filesInitialDirectory + "AFITECH_CommissionHistory "+ start_date.strftime('%Y-%m-%d')+"_"+end_date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';')
+
+        data = data.applymap(lambda x: str(x).replace('.', ','))
+
+        data['Début de la période'] = data['Début de la période'].str.replace('-', '/', regex=False)  # Fin de la période
+        data['Fin de la période'] = data['Fin de la période'].str.replace('-', '/', regex=False)
         self._save_file(file, data, type="csv", is_multiple=True, reverse=True, index=False, sep=';', encoding='utf8')
 
 def run_afitech_commission_history_transformer():

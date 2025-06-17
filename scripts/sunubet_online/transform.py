@@ -34,6 +34,10 @@ class SunubetonlineTransformer(Transformer):
         data["JOUR"] = str(date.strftime("%d/%m/%Y"))
         data["ANNEE"] = str(date.strftime("%Y"))
         data["MOIS"] = str(date.strftime("%m"))
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\SUNUBET\ONLINE\\"
+        data.to_csv(filesInitialDirectory + "onlineSunubet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
+
         data = pd.DataFrame(data, columns=["JOUR", "Stake", "PaidAmount", "BetCategory", "Freebet"])
         data = data.replace(np.nan, '')
         data = data.astype(str)

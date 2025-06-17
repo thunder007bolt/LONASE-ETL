@@ -3014,6 +3014,13 @@ def chargeAFITECHDailyPaymentActivity(data,debut,fin):
     #print(data)
     
     #global start_date
+    format_string = '%d/%m/%Y'
+    # format_string = '%Y-%m-%d'
+    # datetime.strptime(date_string, format_string)
+
+    # print(data)
+    data['Date'] = [str(datetime.strptime(i, format_string).strftime('%Y-%m-%d')) for i in data['Date']]
+
     data = data.replace(np.nan, '')
     data = data.applymap(lambda x: str(x).replace('.',','))
     data['Partner'] = data['Partner'].str.replace(',', '.',regex=False)
@@ -3021,9 +3028,7 @@ def chargeAFITECHDailyPaymentActivity(data,debut,fin):
     data=data.astype(str)
     data = list(data.to_records(index=False))
     
-    #print(data)
 
-    
     #username = 'OPTIWARETEMP'
     #password = 'optiwaretemp'
     username = 'USER_DWHPR'
