@@ -9,7 +9,7 @@ from utils.file_manipulation import move_file
 import numpy as np
 
 class Loader(ABC):
-    def __init__(self, name, log_file, columns, table_name):
+    def __init__(self, name, log_file, columns, table_name, config_path=None):
         self.error_file_count = 0
         self.error_file_names_list = []
         self.columns = columns
@@ -22,7 +22,7 @@ class Loader(ABC):
             self.source_path,
             self.error_path,
             self.file_pattern
-        ) = get_loading_configurations(name, log_file)
+        ) = get_loading_configurations(name, log_file, config_path=config_path)
 
     def check_error(self):
         if self.error_file_count > 0:

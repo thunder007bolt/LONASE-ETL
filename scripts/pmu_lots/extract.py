@@ -25,14 +25,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
 
+
 def content_has_changed(self, element_hash, previous_hash):
     """Vérifie si le contenu HTML de l'élément a changé"""
 
     return element_hash != previous_hash
 
+
 class ExtractPmuLots(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('pmu_lots', env_variables_list, 'logs/extract_pmu_lots.log')
+    def __init__(self, env_variables_list, config_path=None, log_file=None):
+        super().__init__('pmu_lots', env_variables_list, log_file or 'logs/extract_pmu_lots.log',
+                         config_path=config_path)
         self.file_path = None
 
     def _connection_to_platform(self):
@@ -41,7 +44,7 @@ class ExtractPmuLots(BaseScrapper):
         login_url = self.config['urls']['login']
 
         attempts = 3
-        for attempt in range(0,attempts):
+        for attempt in range(0, attempts):
             self.logger.info(f"Tentative n {attempt}")
             try:
                 browser.get(login_url)
@@ -50,7 +53,6 @@ class ExtractPmuLots(BaseScrapper):
                 if attempt == 3:
                     self.logger.info(f"Toutes les tentatives de connexions ont échoué")
                     self._quit()
-
 
         html_elements = self.config['html_elements']
         secret_config = self.secret_config
@@ -63,8 +65,8 @@ class ExtractPmuLots(BaseScrapper):
         password = secret_config["PMU_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60*10, raise_error=True)
-        self.wait_and_click(login_step2_xpath, locator_type='xpath', timeout=60*3, raise_error=True)
+        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60 * 10, raise_error=True)
+        self.wait_and_click(login_step2_xpath, locator_type='xpath', timeout=60 * 3, raise_error=True)
         self.wait_and_send_keys(username_xpath, locator_type='xpath', keys=username)
         self.wait_and_send_keys(password_xpath, locator_type='xpath', keys=password)
 
@@ -83,7 +85,7 @@ class ExtractPmuLots(BaseScrapper):
         pass
 
     def _download_files(self):
-       self._process_multiple_files()
+        self._process_multiple_files()
 
     def _process_download(self, start_date, end_date):
         browser = self.browser
@@ -107,7 +109,7 @@ class ExtractPmuLots(BaseScrapper):
             browser.get(reports_url)
 
             self.wait_for_presence(step_element_xpath, locator_type="xpath", timeout=15)
-            self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60*5)
+            self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60 * 5)
 
             # Remplissage et soumission du formulaire
             self.logger.info("Remplissage des champs de date et produit...")
@@ -123,7 +125,7 @@ class ExtractPmuLots(BaseScrapper):
 
                 self.logger.info("Attente de la fin du chargement initial...")
                 self.wait_for_presence(step_element_xpath, locator_type="xpath", timeout=15, exit_on_error=True)
-                self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60*5, exit_on_error=True)
+                self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=60 * 5, exit_on_error=True)
                 sleep(2)  # Délai pour stabiliser le DOM
 
             except Exception as e:
@@ -138,7 +140,7 @@ class ExtractPmuLots(BaseScrapper):
                     # Attendre la table
                     self.logger.info("Attente de l'apparition de la table...")
                     self.wait_for_presence(step1_element_xpath, locator_type="xpath", timeout=120)
-                    current_table_element = WebDriverWait(browser, 10 ).until(
+                    current_table_element = WebDriverWait(browser, 10).until(
                         EC.presence_of_element_located((By.XPATH, step1_element_xpath))
                     )
 
@@ -173,8 +175,7 @@ class ExtractPmuLots(BaseScrapper):
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la lecture de la table page {page_num} : {e}")
                     break
-                    #raise RuntimeError("Échec de l'extraction")
-
+                    # raise RuntimeError("Échec de l'extraction")
 
                 # Gestion du bouton "suivant"
                 try:
@@ -194,7 +195,8 @@ class ExtractPmuLots(BaseScrapper):
                     # Attendre la mise à jour
                     self.logger.info("Attente de la disparition du loader...")
                     self.wait_for_presence(step_element_xpath, locator_type="xpath", exit_on_error=True)
-                    self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=180*2, exit_on_error=True)
+                    self.wait_for_invisibility(step_element_xpath, locator_type="xpath", timeout=180 * 2,
+                                               exit_on_error=True)
 
                     self.logger.info("Vérification du changement de contenu...")
                     attempts = 20
@@ -208,7 +210,7 @@ class ExtractPmuLots(BaseScrapper):
                         else:
                             if attempt == attempts - 1:
                                 self.logger.warning("Contenu inchangé après plusieurs tentatives. Annulation du script")
-                                #todo: mieux gérer
+                                # todo: mieux gérer
                                 raise RuntimeError("Échec de la mise à jour du contenu")
                         sleep(10)
                     page_num += 1
@@ -242,7 +244,7 @@ class ExtractPmuLots(BaseScrapper):
             final_file = destination / filename
             df_final.to_csv(final_file, index=False, sep=';', encoding='latin1')
             filesInitialDirectory = r"K:\DATA_FICHIERS\PMUSENEGAL\\"
-            df_final.to_csv(filesInitialDirectory+filename, index=False, sep=';', encoding='latin1')
+            df_final.to_csv(filesInitialDirectory + filename, index=False, sep=';', encoding='latin1')
 
         except Exception as e:
             self.logger.error(f"Erreur lors de la telechargement du fichier PMU Senegal : {e}")
@@ -255,9 +257,9 @@ class ExtractPmuLots(BaseScrapper):
         self._download_files()
 
 
-def run_pmu_lots():
+def run_pmu_lots(config_path=None, log_file=None):
     env_variables_list = ["PMU_LOGIN_USERNAME", "PMU_LOGIN_PASSWORD"]
-    job = ExtractPmuLots(env_variables_list)
+    job = ExtractPmuLots(env_variables_list, config_path=config_path, log_file=log_file)
     job.process_extraction()
 
 

@@ -6,9 +6,9 @@ load_env()
 
 
 class PmuLotsLoad(Loader):
-    def __init__(self):
+    def __init__(self, log_file=None, config_path=None):
         name = ('pmu_lots')
-        log_file = 'logs/loader_pmu_lots.log'
+        log_file = log_file or 'logs/loader_pmu_lots.log'
         columns = [
             "joueur",
             "nombre de fois gagne",
@@ -22,15 +22,15 @@ class PmuLotsLoad(Loader):
             "mois"
         ]
         table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_PMUSENEGAL_LOTS]"
-        super().__init__(name, log_file, columns, table_name)
+        super().__init__(name, log_file, columns, table_name, config_path=config_path)
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False)
         return df
 
 
-def run_pmu_lots_loader():
-    loader = PmuLotsLoad()
+def run_pmu_lots_loader(config_path=None, log_file=None):
+    loader = PmuLotsLoad(config_path=config_path, log_file=log_file)
     loader.process_loading()
 
 

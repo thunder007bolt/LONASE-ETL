@@ -47,12 +47,12 @@ def get_secret(keys):
 def get_secret_v2(dict):
     return {key: getenv(env_var) for key, env_var in dict.items()}
 
-def get_transformation_configurations(name, log_file):
+def get_transformation_configurations(name, log_file, config_path=None):
     """
     Lit la configuration et renvoie le logger, le chemin de destination pour la transformation,
     le chemin pour les fichiers traités et le chemin complet du fichier téléchargé.
     """
-    configs = get_config(name)
+    configs = get_config(name, config_path=config_path)
     config = configs[name]
     base_config = configs['base']
 
@@ -78,8 +78,8 @@ def get_transformation_configurations(name, log_file):
         error_dest_path
     )
 
-def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST ):
-    configs = get_config(name)
+def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST, config_path=None ):
+    configs =get_config(name, config_path=config_path)
     secret_config = get_secret(env_variables_list)
     logger = Logger(log_file=log_file).get_logger()
 

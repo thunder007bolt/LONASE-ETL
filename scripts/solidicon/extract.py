@@ -19,7 +19,7 @@ from datetime import timedelta
 class ExtractSolidicon(BaseScrapper):
     def __init__(self, env_variables_list):
         chrome_options_arguments = [
-            "--user-data-dir=C:\\Users\\optiware2\\AppData\\Local\\Google\\Chrome\\User Data\\",
+            "--user-data-dir=C:\\Users\\optiware3\\AppData\\Local\\Google\\Chrome\\User Data\\",
             "--profile-directory=Default"
         ]
 
@@ -129,6 +129,8 @@ class ExtractSolidicon(BaseScrapper):
 
 def run_solidicon():
     env_variables_list = ["SOLIDICON_LOGIN_USERNAME", "SOLIDICON_LOGIN_PASSWORD"]
+    import os
+    os.system("taskkill /im chrome.exe /f")
     job = ExtractSolidicon(env_variables_list)
     job.process_extraction()
 

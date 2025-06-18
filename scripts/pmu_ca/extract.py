@@ -10,8 +10,8 @@ from utils.date_utils import sleep
 
 
 class ExtractPmuCA(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('pmu_ca', env_variables_list, 'logs/extract_pmu_ca.log')
+    def __init__(self, env_variables_list,  config_path=None, log_file=None):
+        super().__init__('pmu_ca', env_variables_list, log_file or 'logs/extract_pmu_ca.log', config_path=config_path)
         self.file_path = None
 
     def _connection_to_platform(self):
@@ -127,9 +127,9 @@ class ExtractPmuCA(BaseScrapper):
         self._download_files()
 
 
-def run_pmu_ca():
+def run_pmu_ca(config_path=None, log_file=None):
     env_variables_list = ["PMU_LOGIN_USERNAME", "PMU_LOGIN_PASSWORD"]
-    job = ExtractPmuCA(env_variables_list)
+    job = ExtractPmuCA(env_variables_list, config_path=config_path, log_file=log_file)
     job.process_extraction()
 
 

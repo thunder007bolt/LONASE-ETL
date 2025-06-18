@@ -1,25 +1,16 @@
 ### system ###
-import glob
-from datetime import timedelta, datetime
+from datetime import timedelta
+
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+### selenium ###
+from selenium.webdriver.support.ui import WebDriverWait
 
 ### base ###
-from base.logger import Logger
 from base.web_scrapper import BaseScrapper
-### selenium ###
-from selenium.common.exceptions import StaleElementReferenceException
-from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from pathlib import Path
-
 ### utils ###
-from utils.config_utils import get_config, get_secret
-from utils.date_utils import get_yesterday_date, sleep
-from utils.other_utils import move_file, loading, retry_operation
-from utils.file_manipulation import rename_file
-from selenium.common.exceptions import TimeoutException
-
+from utils.date_utils import sleep
 
 
 def clean_value(text_value, is_currency=False, is_numeric=False):
@@ -192,7 +183,7 @@ class ExtractSunubetPaiement(BaseScrapper):
                         self.logger.error(f"Une erreur imprévue est survenue lors de la gestion du dropdown: {e}")
                         raise
                 manage_dropdown_state('open')
-                #sleep(1)
+
                 initial_supplier_web_elements = browser.find_elements(By.XPATH, fournisseur_element_xpath)
                 supplier_names_to_process = []
                 for el in initial_supplier_web_elements:

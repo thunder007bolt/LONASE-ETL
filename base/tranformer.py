@@ -7,7 +7,7 @@ import re
 import datetime
 
 class Transformer(ABC):
-    def __init__(self, name, log_file):
+    def __init__(self, name, log_file,config_path=None):
         self.error_file_count = 0
         self.error_file_names_list = []
         self.name = name
@@ -20,7 +20,7 @@ class Transformer(ABC):
             self.source_path,
             self.file_pattern,
             self.error_dest_path
-        ) = get_transformation_configurations(name, log_file)
+        ) = get_transformation_configurations(name, log_file, config_path)
 
     def check_error(self):
         if self.error_file_count > 0:

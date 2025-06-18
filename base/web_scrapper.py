@@ -39,9 +39,10 @@ class BaseScrapper(ABC):
             log_file: str,
             chrome_options_arguments: list = [],
             start_date = None,
-            end_date= None
+            end_date= None,
+            config_path= None
     ):
-        configs = get_config(name)
+        configs = get_config(name, config_path=config_path)
         self.base_config = configs["base"]
         self.config = configs[name]
         self.name = name
