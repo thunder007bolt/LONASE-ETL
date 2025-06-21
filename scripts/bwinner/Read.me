@@ -1,0 +1,56 @@
+# Pipeline ETL pour Bwinner
+
+Ce pipeline gère l'extraction, la transformation et le chargement des données "Total Tax Report" de la plateforme Bwinner.
+
+## Fonctionnement
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Bwinner (`https://a.bwinners.sn/oldbo/`) avec les identifiants configurés.
+    *   Navigue vers la page "Total Tax Report".
+    *   Effectue une série d'actions (clics sur des listes déroulantes) pour configurer le type de rapport souhaité.
+    *   Pour chaque jour de la période configurée (par défaut, la veille) :
+        *   Remplit les champs de date "FromDate" et "ToDate" avec la date du jour.
+        *   Clique sur le bouton "Filter".
+        *   Clique sur le bouton de téléchargement pour obtenir le rapport au format Excel (`.xlsx`).
+    *   Les fichiers téléchargés sont stockés dans `extracted/` et renommés (`{job_name}_{date}.xlsx`).
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel (`.xlsx`) bruts depuis `extracted/` directement avec Pandas (sans utiliser `win32com`).
+    *   Applique les transformations :
+        *   Filtre les lignes où la colonne 'Name' est nulle.
+        *   Filtre les lignes où 'Name' contient "Totals" (insensible à la casse).
+        *   Transforme la colonne 'Report Date' : ajoute 1 jour à la date lue (format `dd/mm/yyyy`) et la reformate en `dd/mm/yyyy`.
+        *   Sélectionne et réordonne les colonnes finales : `['Report Date', 'Name', 'Total Stakes', 'Total Paid Win']`.
+    *   Sauvegarde les fichiers transformés en format CSV (séparateur ';', encodage UTF-8) dans `transformed/`.
+    *   Les fichiers sources Excel traités avec succès sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   **Renomme les colonnes** lues du CSV pour correspondre au schéma de la table cible :
+        *   'Report Date' -> 'create_time'
+        *   'Name' -> 'product'
+        *   'Total Stakes' -> 'stake'
+        *   'Total Paid Win' -> 'max_payout'
+    *   Se connecte à la base de données temporaire configurée.
+    *   **TRUNCATE la table cible** `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_BWINNERS]` avant chaque chargement.
+    *   Charge les nouvelles données transformées et renommées dans la table.
+    *   Les fichiers transformés chargés avec succès sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, de transformation et de chargement en utilisant les classes de base.
+
+## Configuration
+
+*   Configurations spécifiques au job : `scripts/bwinner/config.yml` (URLs, sélecteurs, noms de fichiers, etc.).
+*   Identifiants (Bwinner, BD) : fichier `.env` à la racine du projet (voir `BWINNER_LOGIN_USERNAME`, `BWINNER_LOGIN_PASSWORD`, et les variables SQL Server).
+
+## Exécution
+
+Pour exécuter le pipeline complet pour Bwinner :
+
+```bash
+python scripts/bwinner/orchestrator.py
+```
+
+Assurez-vous que l'environnement Python est configuré et que le fichier `.env` est correctement rempli.
+Les logs sont générés dans `logs/`. Les données sont gérées dans `DATA_FICHIERS/bwinner/`.

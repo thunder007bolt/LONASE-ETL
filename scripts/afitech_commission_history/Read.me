@@ -1,0 +1,60 @@
+# Pipeline ETL pour Afitech Commission History
+
+Ce pipeline est responsable de l'extraction, la transformation et le chargement des rapports "Commission History" provenant de la plateforme Afitech.
+
+## Fonctionnement
+
+Le processus est un peu plus complexe que pour d'autres sources car il implique une étape de génération de rapport suivie d'une étape de téléchargement depuis un historique.
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Afitech (`https://lonase-prod.afite.ch/`) en utilisant les identifiants configurés et gère l'authentification à deux facteurs (MFA) via un code OTP (Google Authenticator).
+    *   **Génération des Rapports** : Pour chaque mois inclus dans la plage de dates configurée (par défaut, la veille, mais ajustable via `start_date` et `end_date` dans `config.yml`), le script :
+        *   Navigue vers la page de création de rapports.
+        *   Sélectionne le type de rapport "Commission History".
+        *   Soumet une demande de génération de rapport pour la période mensuelle (ou une partie du mois si les dates de début/fin du job sont en milieu de mois).
+        *   Conserve une liste des rapports dont la génération a été demandée.
+    *   **Téléchargement depuis l'Historique** : Après avoir demandé la génération de tous les rapports :
+        *   Navigue vers la page d'historique des rapports.
+        *   Recherche les rapports précédemment générés.
+        *   Si un rapport est marqué comme "Available", il est téléchargé.
+        *   Les fichiers téléchargés (généralement des fichiers Excel `.xls` ou `.xlsx` contenant "CommissionHistory" dans leur nom) sont stockés dans le sous-dossier `extracted/` et renommés selon le format `{job_name}_{start_date}_{end_date}.ext`.
+    *   Le script effectue plusieurs tentatives pour vérifier et télécharger les rapports depuis l'historique, car la génération peut prendre du temps.
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel bruts (`.xls*`) depuis `extracted/` (spécifiquement la feuille nommée 'Data').
+    *   Applique les transformations :
+        *   Renomme les colonnes selon un schéma défini.
+        *   Remplace les valeurs `NaN` par des chaînes vides.
+        *   Remplace les séparateurs décimaux '.' par ',' dans toutes les cellules (après conversion en chaîne).
+        *   Effectue une correction spécifique pour la colonne 'Partner' en remplaçant ',' par '.'.
+        *   Reformate les colonnes de date en remplaçant '-' par '/'.
+        *   Convertit toutes les colonnes en type `str`.
+    *   Sauvegarde les fichiers transformés en format CSV (séparateur ';', encodage UTF-8) dans le sous-dossier `transformed/`.
+    *   Les fichiers sources Excel traités avec succès sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   Se connecte à la base de données temporaire configurée.
+    *   **Supprime toutes les données existantes** de la table cible `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_AFITECH_COMMISSION]`. (Attention : cette opération vide la table avant chaque chargement).
+    *   Charge les nouvelles données transformées dans la table cible.
+    *   Les fichiers transformés chargés avec succès sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, de transformation et de chargement.
+    *   Utilise les classes de base (`BaseScrapper`, `Transformer`, `Loader`, `Orchestrator`) pour la logique commune.
+
+## Configuration
+
+*   Les configurations spécifiques (URLs, sélecteurs HTML, noms de fichiers, colonnes, etc.) se trouvent dans `scripts/afitech_commission_history/config.yml`.
+*   Les identifiants de connexion à Afitech (username, password, clé secrète OTP) et à la base de données doivent être définis dans le fichier `.env` (voir `AFITECH_LOGIN_USERNAME`, `AFITECH_LOGIN_PASSWORD`, `AFITECH_GET_OTP_URL`, et les variables SQL Server).
+
+## Exécution
+
+Pour exécuter le pipeline complet pour Afitech Commission History :
+
+```bash
+python scripts/afitech_commission_history/orchestrator.py
+```
+
+Assurez-vous que l'environnement Python est configuré et que le fichier `.env` est correctement rempli.
+Les logs sont générés dans `logs/`. Les fichiers de données sont gérés dans `DATA_FICHIERS/afitech_commission_history/`.

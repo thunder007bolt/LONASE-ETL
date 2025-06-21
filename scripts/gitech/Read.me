@@ -1,0 +1,54 @@
+# Pipeline ETL pour Gitech (PMU Online)
+
+Ce pipeline est responsable de l'extraction, la transformation et le chargement des rapports "Etat de la course" provenant de la plateforme Gitech (PMU Online).
+
+## Fonctionnement
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Gitech (`https://www.pmuonline.sn/lonasemis/lonase_administration/`) avec les identifiants configurés.
+    *   Navigue vers la page de rapport "HorseDrawWiseSales.aspx".
+    *   Pour chaque jour de la période configurée (par défaut, la veille) :
+        *   Sélectionne la date du jour dans les listes déroulantes pour "From Date" et "To Date".
+        *   Soumet le formulaire.
+        *   Vérifie la présence d'un message d'erreur "Aucun enregistrement trouv". Si le message est présent, aucune donnée n'est téléchargée pour ce jour.
+        *   Sinon, clique sur le bouton de téléchargement pour obtenir le rapport au format Excel (`.xls`).
+    *   Les fichiers téléchargés sont stockés dans `extracted/` et renommés (`{job_name}_{date}.xls`).
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel (`.xls`) bruts depuis `extracted/` en utilisant `pandas.read_excel` (moteur `xlrd`), en sautant les 6 premières lignes d'en-tête.
+    *   **Extrait la date du rapport** à partir du contenu du fichier Excel (recherche du motif "Du: DD/MM/YYYY" dans les premières lignes).
+    *   Applique les transformations :
+        *   Renomme les colonnes selon un schéma prédéfini.
+        *   Filtre les lignes où la colonne 'Operateur' est 'Total' ou 'montant global'.
+        *   Supprime la colonne 'No'.
+        *   Insère une colonne "Date vente" avec la date extraite du contenu du fichier.
+        *   Applique un `ffill()` sur la colonne 'Agences' pour propager les valeurs.
+        *   Nettoie et convertit plusieurs colonnes numériques en entiers (avec une logique spécifique pour gérer les formats et les erreurs de conversion).
+        *   Convertit toutes les colonnes en type `str`.
+    *   Sauvegarde les fichiers transformés en format CSV (séparateur ';', encodage UTF-8) dans le sous-dossier `transformed/`.
+    *   Les fichiers sources Excel traités avec succès sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   **Renomme les colonnes** du CSV pour correspondre au schéma de la table cible en base de données (ex: 'Operateur' -> 'Operateurs', 'Date vente' -> 'date_de_vente', 'Vente' -> 'Recette_CFA', etc.). Les colonnes 'Remboursement' et 'Resultat' du CSV sont ignorées.
+    *   Se connecte à la base de données temporaire configurée.
+    *   **TRUNCATE la table cible** `[DWHPR_TEMP].[OPTIWARETEMP].[GITECH]` avant chaque chargement.
+    *   Charge les nouvelles données transformées et renommées dans la table.
+    *   Les fichiers transformés chargés avec succès sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, de transformation et de chargement.
+
+## Configuration
+
+*   Configurations spécifiques au job : `scripts/gitech/config.yml` (URLs, sélecteurs, etc.).
+*   Identifiants (Gitech, BD) : fichier `.env` à la racine du projet (voir `GITECH_LOGIN_USERNAME`, `GITECH_LOGIN_PASSWORD`, et les variables SQL Server).
+*   Variables d'environnement pour les dates (optionnel, pour Jenkins) : `GITECH_START_DATE`, `GITECH_END_DATE` (noms configurables).
+
+## Exécution
+
+```bash
+python scripts/gitech/orchestrator.py
+```
+Assurez-vous que l'environnement Python est configuré (avec `xlrd` pour les `.xls`) et que le `.env` est rempli.
+Les logs sont dans `logs/`. Les données dans `DATA_FICHIERS/gitech/`.

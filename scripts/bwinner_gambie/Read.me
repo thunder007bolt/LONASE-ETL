@@ -1,0 +1,55 @@
+# Pipeline ETL pour Bwinner Gambie
+
+Ce pipeline gère l'extraction, la transformation et le chargement des données "Recette paiement Journalier" de la plateforme Bwinner Gambie.
+
+## Fonctionnement
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Bwinner Gambie (`http://115.110.148.83/bwinnersmis/Administration/`) avec les identifiants configurés. Une option Chrome pour traiter une origine non sécurisée comme sécurisée est utilisée.
+    *   Navigue vers la page de rapport "DatewisePa.aspx".
+    *   Pour chaque jour de la période configurée (par défaut, la veille) :
+        *   Sélectionne la date du jour dans les listes déroulantes pour "From Date" et "To Date".
+        *   Soumet le formulaire.
+        *   Vérifie la présence d'un message d'erreur "Aucun enregistrement trouv". Si le message est présent, aucune donnée n'est téléchargée pour ce jour.
+        *   Sinon, clique sur le bouton de téléchargement pour obtenir le rapport au format Excel (`.xls`).
+    *   Les fichiers téléchargés sont stockés dans `extracted/` et renommés (`{job_name}_{date}.xls`).
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel (`.xls`) bruts depuis `extracted/` en utilisant `pandas.read_excel` avec le moteur `xlrd`, en sautant les 6 premières lignes.
+    *   Applique les transformations :
+        *   Renomme les colonnes selon un schéma prédéfini.
+        *   Supprime les 6 dernières lignes (correspondant aux totaux).
+        *   Remplace les `NaN` dans la colonne 'Operateurs' par des chaînes vides.
+        *   Nettoie et convertit plusieurs colonnes numériques en entiers (avec une logique spécifique pour enlever les séparateurs de milliers et gérer les erreurs de conversion en retournant 0).
+        *   Transforme la colonne 'date de vente' en ne gardant que les 10 premiers caractères (format date).
+        *   Convertit toutes les colonnes en type `str`.
+    *   Sauvegarde les fichiers transformés en format CSV (séparateur ';', encodage UTF-8) dans le sous-dossier `transformed/`.
+    *   Les fichiers sources Excel traités avec succès sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   **Renomme les colonnes** lues du CSV pour correspondre au schéma de la table cible en base de données (principalement pour ajuster la casse et les espaces, par exemple 'No' -> 'no', 'date de vente' -> 'date_de_vente').
+    *   Se connecte à la base de données temporaire configurée.
+    *   **TRUNCATE la table cible** `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_BWINNERS_GAMBIE]` avant chaque chargement.
+    *   Charge les nouvelles données transformées et renommées dans la table.
+    *   Les fichiers transformés chargés avec succès sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, de transformation et de chargement en utilisant les classes de base.
+
+## Configuration
+
+*   Configurations spécifiques au job : `scripts/bwinner_gambie/config.yml` (URLs, sélecteurs, noms de fichiers, etc.).
+*   Identifiants (Bwinner Gambie, BD) : fichier `.env` à la racine du projet (voir `BWINNER_GAMBIE_LOGIN_USERNAME`, `BWINNER_GAMBIE_LOGIN_PASSWORD`, et les variables SQL Server).
+*   Variables d'environnement pour les dates (optionnel, pour Jenkins) : `BWGAMBIE_START_DATE`, `BWGAMBIE_END_DATE` (noms configurables dans `config.yml`).
+
+## Exécution
+
+Pour exécuter le pipeline complet pour Bwinner Gambie :
+
+```bash
+python scripts/bwinner_gambie/orchestrator.py
+```
+
+Assurez-vous que l'environnement Python est configuré (avec `xlrd` pour la lecture des `.xls`) et que le fichier `.env` est correctement rempli.
+Les logs sont générés dans `logs/`. Les données sont gérées dans `DATA_FICHIERS/bwinner_gambie/`.

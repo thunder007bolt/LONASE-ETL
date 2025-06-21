@@ -1,11 +1,25 @@
 gitech_physique:
+  # Chemins relatifs au DATA_PATH global du projet
   extraction_dest_relative_path: "gitech_physique/extracted/"
   transformation_dest_relative_path: "gitech_physique/transformed/"
   error_dest_relative_path: "gitech_physique/error/"
   loaded_dest_relative_path: "gitech_physique/loaded/"
   processed_dest_relative_path: "gitech_physique/processed/"
-  file_downloaded_name: "Cumul CA des * types de jeux*xls"
-  files_patterns:
+
+  # Configuration pour l'extraction
+  # Le `download_path` est utilisé par BaseScrapper pour configurer Chrome et doit pointer vers `extraction_dest_relative_path` résolu.
+  download_path: "gitech_physique/extracted/"
+
+  # file_downloaded_name: "Cumul CA des * types de jeux*xls" # Commenté, file_pattern est prioritaire.
+
+  # file_pattern est utilisé par BaseScrapper pour le rapport "Cumul CA..." via l'interface web Gamepayoutsummary.aspx
+  file_pattern: "Cumul CA des * types de jeux*.xls" # Motif pour le rapport XLS principal.
+
+  # La section files_patterns et unused_files_patterns semble concerner une autre source de fichiers (ZIPs).
+  # Elle sera gérée spécifiquement dans le script extract.py si c'est une source FTP ou un téléchargement manuel.
+  # Ces fichiers ZIP ne sont probablement PAS téléchargés via le BaseScrapper standard avec les URLs ci-dessous.
+  zip_files_source_path: "gitech_physique/zips_from_ftp_or_manual/" # Exemple de chemin si les ZIPs viennent d'ailleurs (relatif à DATA_PATH)
+  zip_file_patterns: # Renommé pour clarté
     - "*ALR1.zip"
     - "*ALR2.zip"
     - "*ALR3.zip"
@@ -14,15 +28,20 @@ gitech_physique:
     - "*ALR_Gagnant_3.zip"
     - "*ALR_Payment.zip"
     - "*PGDetails.zip"
-  unused_files_patterns:
-    - "ALR_Payment"
-  download_path: "C:/ETL/DATA_FICHIERS/gitech_physique/extracted/"
-  ##### extraction config #####
-  file_pattern: "Cumul CA des * types de jeux*xls"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
-  include_sup: false
-  wait_time: 120
+  unused_zip_file_patterns: # Renommé pour clarté
+    - "ALR_Payment" # Peut-être utilisé pour exclure certains zips du traitement.
+
+  wait_time: 120 # Temps d'attente pour le téléchargement du rapport XLS (secondes).
+
+  # Dates pour l'extraction du rapport XLS "Cumul CA..."
+  # Laisser vide pour que BaseScrapper utilise la veille par défaut ou les variables d'env Jenkins.
+  start_date: # 2025-03-01
+  end_date: # 2025-03-04
+  # include_sup: false # Non utilisé par BaseScrapper refactorisé.
+
+  # Noms des variables d'environnement pour les dates (si fournies par Jenkins)
+  env_start_date_variable: "GITECH_PHYSIQUE_START_DATE" # Exemple
+  env_end_date_variable: "GITECH_PHYSIQUE_END_DATE"   # Exemple
   urls:
     login: "https://www.pmuonline.sn/filedownload/login.aspx"
     report: "https://www.pmuonline.sn/lonasemis/lonase_administration/Gamepayoutsummary.aspx"

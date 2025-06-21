@@ -1,17 +1,26 @@
 gitech_casino:
+  # Chemins relatifs au DATA_PATH global du projet
   extraction_dest_relative_path: "gitech_casino/extracted/"
   transformation_dest_relative_path: "gitech_casino/transformed/"
   error_dest_relative_path: "gitech_casino/error/"
   loaded_dest_relative_path: "gitech_casino/loaded/"
   processed_dest_relative_path: "gitech_casino/processed/"
-  file_downloaded_name: "Cumul CA des * types de jeux*xls"
-  download_path: "C:/ETL/DATA_FICHIERS/gitech_casino/extracted/"
-  ##### extraction config #####
-  file_pattern: "Cumul CA des * types de jeux*xls"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
-  include_sup: false
-  wait_time: 120
+
+  # Configuration pour l'extraction (BaseScrapper)
+  download_path: "gitech_casino/extracted/" # Sera résolu en chemin absolu.
+  # file_downloaded_name: "Cumul CA des * types de jeux*xls" # Optionnel.
+  file_pattern: "Cumul CA des * types de jeux*.xls" # Motif pour identifier le fichier téléchargé. Note: ajout d'un point avant xls.
+  wait_time: 120 # Temps d'attente max pour le téléchargement (secondes).
+
+  # Dates pour l'extraction. Format YYYY-MM-DD.
+  # Laisser vide pour que BaseScrapper utilise la veille par défaut ou les variables d'env Jenkins.
+  start_date: # 2025-03-01
+  end_date: # 2025-03-04
+  # include_sup: false # Non utilisé par BaseScrapper refactorisé.
+
+  # Noms des variables d'environnement pour les dates (si fournies par Jenkins, par exemple)
+  env_start_date_variable: "GITECH_CASINO_START_DATE" # Exemple
+  env_end_date_variable: "GITECH_CASINO_END_DATE"   # Exemple
   urls:
     login: "https://www.pmuonline.sn/lonasemis/lonase_administration/Login.aspx"
     report: "https://www.pmuonline.sn/lonasemis/lonase_administration/Gamepayoutsummary.aspx"

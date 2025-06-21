@@ -4,12 +4,30 @@ acajou_digital:
   error_dest_relative_path: "acajou_digital/error/"
   loaded_dest_relative_path: "acajou_digital/loaded/"
   processed_dest_relative_path: "acajou_digital/processed/"
-  file_downloaded_name: "Accounting.csv"
-  file_pattern: "Accounting.csv"
-  wait_time: 30
-  download_path: "C:/ETL/DATA_FICHIERS/acajou_digital/extracted/"
+  file_downloaded_name: "Accounting.csv" # Nom du fichier tel qu'il est téléchargé depuis la plateforme
+  file_pattern: "Accounting.csv" # Motif pour retrouver le fichier après téléchargement (peut inclure des wildcards si le nom varie)
+  wait_time: 60 # Temps d'attente pour le téléchargement en secondes, augmenté pour plus de robustesse
+  # download_path: "C:/ETL/DATA_FICHIERS/acajou_digital/extracted/" # Ce chemin sera maintenant géré par la config globale (DOWNLOAD_PATH) et la classe de base.
+                                                                  # La classe de base construira {DOWNLOAD_PATH}/{job_name}/ pour les téléchargements bruts si nécessaire,
+                                                                  # ou utilisera directement DOWNLOAD_PATH si les fichiers ne sont pas spécifiques à un job au moment du téléchargement.
+                                                                  # Pour ce scraper, il semble que les fichiers soient directement téléchargés dans un dossier qui sera ensuite
+                                                                  # extraction_dest_relative_path. La config de BaseScrapper utilisera 'download_path' du job_config
+                                                                  # qui sera maintenant {DATA_PATH}/acajou_digital/extracted/
+  download_path: "acajou_digital/extracted/" # Relatif à DATA_PATH, ou un placeholder qui sera résolu.
+                                             # Pour BaseScrapper, il est préférable que ce soit un chemin absolu ou résolu.
+                                             # La classe BaseScrapper utilisera `self.config["download_path"]` qui est résolu par `get_config`
+                                             # pour pointer vers `DATA_PATH / extraction_dest_relative_path`.
+                                             # Donc, cette clé "download_path" ici pourrait devenir redondante si extraction_dest_relative_path est utilisé comme LA destination de téléchargement.
+                                             # Ou, si le téléchargement initial se fait dans un dossier "global" de téléchargement,
+                                             # alors BaseScrapper utilisera le DOWNLOAD_PATH global et déplacera ensuite les fichiers.
+                                             # Pour l'instant, on va supposer que le BaseScrapper est configuré pour télécharger
+                                             # directement dans DATA_PATH/extraction_dest_relative_path.
+                                             # Donc, cette clé "download_path" au niveau du job n'est plus nécessaire si BaseScrapper utilise DATA_PATH/extraction_dest_relative_path.
+                                             # Cependant, BaseScrapper actuel utilise `self.config["download_path"]` pour les préférences Chrome.
+                                             # Nous allons donc le définir pour qu'il pointe vers la destination d'extraction.
+
   ##### extraction config #####
-  start_date:   # defaut is today - 1 day
+  start_date:   # defaut is today - 1 day. Format YYYY-MM-DD si spécifié.
   end_date:
   include_sup: false
   urls:

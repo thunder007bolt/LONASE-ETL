@@ -1,5 +1,6 @@
 base:
   paths:
-    project_absolute_path: "C:/ETL/"
-    data_path: "C:/ETL/DATA_FICHIERS/"
-    download_path: "C:/ETL/Downloads/"
+    # Chemins à définir via les variables d'environnement
+    project_absolute_path: "PROJECT_PATH" # Sera remplacé par la variable d'environnement PROJECT_PATH
+    data_path: "DATA_PATH" # Sera remplacé par la variable d'environnement DATA_PATH
+    download_path: "DOWNLOAD_PATH" # Sera remplacé par la variable d'environnement DOWNLOAD_PATH

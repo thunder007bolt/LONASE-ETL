@@ -1,0 +1,55 @@
+# Pipeline ETL pour Afitech Daily Payment Activity
+
+Ce pipeline est responsable de l'extraction, la transformation et le chargement des rapports "Daily Payment Activity" provenant de la plateforme Afitech.
+
+## Fonctionnement
+
+Similaire au pipeline "Commission History" d'Afitech, ce processus implique une étape de génération de rapport suivie d'un téléchargement depuis un historique.
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Afitech (`https://lonase-prod.afite.ch/`) avec gestion de la MFA via OTP.
+    *   **Génération des Rapports** : Pour chaque jour dans la plage de dates configurée (par défaut, la veille), le script :
+        *   Navigue vers la page de création de rapports.
+        *   Sélectionne le type de rapport "Daily Payment Activity".
+        *   Soumet une demande de génération de rapport pour le jour spécifique.
+        *   Conserve une liste des rapports dont la génération a été demandée.
+    *   **Téléchargement depuis l'Historique** : Après avoir demandé la génération de tous les rapports quotidiens :
+        *   Navigue vers la page d'historique des rapports.
+        *   Recherche les rapports "Daily Payment Activity" générés.
+        *   Si un rapport est "Available", il est téléchargé.
+        *   Les fichiers téléchargés (Excel `.xls*`) sont stockés dans `extracted/` et renommés (`{job_name}_{date}.ext`).
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel bruts depuis `extracted/` (feuille 'Data').
+    *   Applique les transformations :
+        *   Remplace les `NaN` par des chaînes vides.
+        *   Remplace globalement les '.' par des ',' (format numérique européen).
+        *   Correction spécifique pour 'Partner' : remplace ',' par '.'.
+        *   Reformate 'Date' : remplace '-' par '/'.
+        *   Ajoute les colonnes `t_amount_of_partner_deposits` et `t_am_of_partner_withdrawals` avec la valeur '0'.
+        *   Renomme les colonnes selon un schéma cible (ex: "Date" devient "jour").
+        *   Convertit toutes les colonnes en type `str`.
+    *   Sauvegarde les fichiers transformés en CSV (séparateur ';') dans `transformed/`.
+    *   Les fichiers sources traités sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   Se connecte à la base de données temporaire.
+    *   **TRUNCATE la table cible** `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_AFITECH_DAILYPAYMENT]` avant chaque chargement.
+    *   Charge les nouvelles données dans la table.
+    *   Les fichiers chargés sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement extraction, transformation, et chargement.
+
+## Configuration
+
+*   Spécifiques au job : `scripts/afitech_daily_payment_activity/config.yml`.
+*   Identifiants (Afitech, BD) : fichier `.env` à la racine.
+
+## Exécution
+
+```bash
+python scripts/afitech_daily_payment_activity/orchestrator.py
+```
+Les logs sont dans `logs/`. Les données dans `DATA_FICHIERS/afitech_daily_payment_activity/`.

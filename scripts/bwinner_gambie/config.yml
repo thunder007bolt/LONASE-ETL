@@ -1,17 +1,27 @@
 bwinner_gambie:
+  # Chemins relatifs au DATA_PATH global du projet
   extraction_dest_relative_path: "bwinner_gambie/extracted/"
   transformation_dest_relative_path: "bwinner_gambie/transformed/"
   error_dest_relative_path: "bwinner_gambie/error/"
   loaded_dest_relative_path: "bwinner_gambie/loaded/"
   processed_dest_relative_path: "bwinner_gambie/processed/"
-  file_downloaded_name: "Recette paiement Journalier*.xls"
-  download_path: "C:/ETL/DATA_FICHIERS/bwinner_gambie/extracted/"
-  ##### extraction config #####
-  file_pattern: "Recette paiement Journalier*.xls"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
-  include_sup: false
-  wait_time: 30
+
+  # Configuration pour l'extraction (BaseScrapper)
+  download_path: "bwinner_gambie/extracted/" # Sera résolu en chemin absolu. Utilisé par BaseScrapper pour configurer Chrome.
+  # file_downloaded_name: "Recette paiement Journalier*.xls" # Optionnel, file_pattern est généralement suffisant.
+  file_pattern: "Recette paiement Journalier*.xls" # Motif pour identifier le fichier téléchargé.
+  wait_time: 60 # Augmenté pour robustesse (secondes).
+
+  # Dates pour l'extraction. Format YYYY-MM-DD.
+  # Laisser vide pour que BaseScrapper utilise la veille par défaut, ou les variables d'env Jenkins.
+  start_date: # 2025-03-01
+  end_date: # 2025-03-04
+  # include_sup: false # Non utilisé par BaseScrapper refactorisé.
+
+  # Noms des variables d'environnement pour les dates (si fournies par Jenkins, par exemple)
+  # Ces clés permettent à BaseScrapper de chercher ces variables d'environnement.
+  env_start_date_variable: "BWGAMBIE_START_DATE" # Exemple, à adapter aux noms réels utilisés par Jenkins
+  env_end_date_variable: "BWGAMBIE_END_DATE"   # Exemple
   urls:
     login: "http://115.110.148.83/bwinnersmis/Administration/Login.aspx"
     report: "http://115.110.148.83/bwinnersmis/Administration/DatewisePa.aspx"

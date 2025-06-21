@@ -1,137 +1,175 @@
-import os
-import re
-import shutil
 from pathlib import Path
-import numpy as np
+import numpy as np # Pour np.nan
 import pandas as pd
-import win32com.client
-from datetime import datetime
-from base.logger import Logger
-from base.tranformer import  Transformer
-from utils.config_utils import get_config
+import re # Pour la regex d'extraction de date
 
+from base.tranformer import Transformer, TransformationError
+
+JOB_NAME = "gitech_casino"
 
 class GitechCasinoTransformer(Transformer):
+    """
+    Transformateur pour les fichiers "Cumul CA des types de jeux" de Gitech (PMU Online).
+    Source: Excel (.xls), Sortie: CSV.
+    Lit directement les fichiers Excel avec Pandas et extrait la date du contenu.
+    """
     def __init__(self):
-        super().__init__('gitech_casino', 'logs/transformer_gitech_casino.log')
+        super().__init__(job_name=JOB_NAME, log_file_path=f"logs/transform_{JOB_NAME}.log")
+        self.job_config["csv_separator"] = ";"
+        # self.job_config["output_file_encoding"] = "utf8" # Déjà par défaut
 
-    def convert_xls_to_xlsx(self, xls_file: Path) -> Path:
+    def _extract_date_from_excel_content(self, file_path: Path) -> str | None:
         """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
+        Extrait une date du fichier Excel.
+        L'ancien code lisait df.iloc[2] (troisième ligne après lecture complète) pour la date.
         """
-        self.logger.info(f"Conversion du fichier XLS {xls_file.name} en XLSX...")
-        excel = win32com.client.gencache.EnsureDispatch('Excel.Application')
-        wb = excel.Workbooks.Open(str(xls_file.resolve()))
-        xlsx_file = xls_file.with_suffix(".xlsx")
-        if xlsx_file.exists():
-            xlsx_file.unlink()
-        wb.SaveAs(str(xlsx_file.resolve()), FileFormat=51)
-        wb.Close()
-        excel.Application.Quit()
-
-        # Renommage et déplacement du fichier XLS d'origine
-        return xlsx_file
-
-    def extract_date_from_file(self, xlsx_file: Path) -> str:
-        """
-        Extrait la date contenue dans le fichier XLSX. On suppose que la date se trouve dans la
-        deuxième ligne (index 1) et correspond au format 'Du: DD/MM/YYYY'.
-        """
-        self.logger.info(f"Extraction de la date à partir du fichier {xlsx_file.name}")
-        df = pd.read_excel(xlsx_file)
-        cell_value = str(df.iloc[2])
-        match = re.search(r"Du:\s*(\d{2}/\d{2}/\d{4})", cell_value)
-        if match:
-            date_str = match.group(1)
-            return date_str
-        else:
-            raise ValueError("Date non trouvée dans le fichier.")
-
-    def process_numeric_column(self, value):
-        """
-        Nettoie et convertit une valeur lue depuis une colonne numérique.
-        - Suppression des espaces insécables.
-        - Si une virgule est présente, suppression des zéros finaux et de la virgule.
-        - Conversion en entier (les erreurs produisent un 0).
-        """
-        value_str = str(value).replace(u'\xa0', '')
-        if ',' in value_str:
-            value_str = value_str.rstrip('00').replace(',', '')
+        self.logger.info(f"Tentative d'extraction de la date depuis le contenu de {file_path.name}")
         try:
-            numeric_value = pd.to_numeric(value_str, errors='coerce')
-            if pd.isna(numeric_value):
-                return 0
-            return int(numeric_value)
-        except Exception:
+            # Lire les premières lignes pour trouver la date.
+            # La ligne contenant "Du: DD/MM/YYYY" est à l'index 2 (3ème ligne) du DataFrame original.
+            # Si le fichier a X lignes d'en-tête à sauter pour les données tabulaires,
+            # il faut lire ces lignes d'en-tête pour trouver la date.
+            # L'ancien code faisait skiprows=range(0,6) pour les données, ce qui signifie que les lignes 0 à 5 sont des en-têtes.
+            # La date est dans la ligne index 2 de ces lignes d'en-tête.
+            df_preview = pd.read_excel(file_path, engine='xlrd', nrows=3, header=None) # Lire les 3 premières lignes
+
+            if len(df_preview) > 2: # S'assurer que la ligne d'index 2 existe
+                for cell_value in df_preview.iloc[2]: # Itérer sur les cellules de la 3ème ligne (index 2)
+                    if pd.isna(cell_value):
+                        continue
+                    match = re.search(r"Du:\s*(\d{2}/\d{2}/\d{4})", str(cell_value))
+                    if match:
+                        date_str = match.group(1)
+                        self.logger.info(f"Date extraite du contenu du fichier ({file_path.name}): {date_str}")
+                        return date_str
+
+            self.logger.warning(f"Motif de date 'Du: DD/MM/YYYY' non trouvé dans la 3ème ligne de {file_path.name}.")
+            return None
+        except Exception as e:
+            self.logger.error(f"Erreur lors de l'extraction de la date du contenu de {file_path.name}: {e}", exc_info=True)
+            return None
+
+    def _read_source_file_to_dataframe(self, file_path: Path) -> tuple[pd.DataFrame | None, str | None]:
+        """
+        Lit un fichier source Excel (.xls), extrait la date, puis lit les données tabulaires.
+        Retourne un tuple: (DataFrame, date_extraite_str).
+        """
+        self.logger.info(f"Lecture du fichier Excel source: {file_path.name}")
+
+        if file_path.suffix.lower() != ".xls":
+            self.logger.error(f"Type de fichier non géré: {file_path.name}. Attendu .xls.")
+            raise TransformationError(f"Type de fichier non géré: {file_path.suffix}, attendu .xls")
+
+        extracted_date_str = self._extract_date_from_excel_content(file_path)
+        if not extracted_date_str:
+            self.logger.error(f"Date de rapport n'a pas pu être extraite de {file_path.name}.")
+            return None, None
+
+        try:
+            # L'ancien code: skiprows=range(0, 6) -> saute les lignes d'index 0 à 5.
+            # La ligne 6 (index 5 après skip si on commence à 0, ou ligne 7 du fichier) devient l'en-tête.
+            dataframe = pd.read_excel(file_path, engine='xlrd', skiprows=6)
+            self.logger.info(f"Données tabulaires de {file_path.name} lues. {len(dataframe)} lignes trouvées.")
+            return dataframe, extracted_date_str
+        except Exception as e: # FileNotFoundError, EmptyDataError, etc.
+            self.logger.error(f"Erreur lors de la lecture des données tabulaires de {file_path.name}: {e}", exc_info=True)
+            return None, extracted_date_str # Retourner la date si trouvée, mais DataFrame None
+
+    def _process_numeric_column_value(self, value):
+        """Nettoie et convertit une valeur en entier, retournant 0 en cas d'erreur."""
+        # Logique identique à GitechTransformer, pourrait être dans une classe utilitaire ou BaseGitechTransformer.
+        if pd.isna(value): return 0
+        value_str = str(value).replace(u'\xa0', '').strip()
+        cleaned_value_str = value_str.replace(',', '') # Supposé être un séparateur de milliers
+        try:
+            return int(float(cleaned_value_str)) # float d'abord pour gérer ex: "123.0"
+        except ValueError:
+            self.logger.debug(f"Impossible de convertir '{value_str}' en entier. Retourne 0.")
             return 0
 
-    def _transform_file(self, file: Path):
+    def _apply_transformation(self, source_file_path: Path, source_data: tuple) -> pd.DataFrame | None:
         """
-        Traite un fichier correspondant au motif "Etat de la course".
-        Cette méthode effectue les étapes suivantes :
-          - Conversion en XLSX si nécessaire
-          - Lecture et nettoyage des données
-          - Extraction de la date
-          - Transformation des données et création du CSV de sortie
-          - Suppression du fichier XLSX temporaire
+        Applique les transformations. source_data est un tuple (DataFrame, extracted_date_str).
         """
-        self.logger.info(f"Traitement du fichier : {file.name}")
+        source_dataframe, extracted_date_str = source_data
+        if source_dataframe is None or extracted_date_str is None:
+            return None
+
+        self.logger.info(f"Application des transformations sur {source_file_path.name} (Date rapport: {extracted_date_str})...")
+        df = source_dataframe.copy()
 
         try:
-            if file.suffix.lower() == ".xls":
-                xlsx_file = self.convert_xls_to_xlsx(file)
-                self.logger.info(f"Conversion de {file.name} en {xlsx_file.name} réussie.")
-            elif file.suffix.lower() == ".xlsx":
-                xlsx_file = file
+            # 1. Renommer les colonnes
+            expected_original_cols = ['No','IdJeu','NomJeu','Vente','Paiement','PourcentagePaiement']
+            if len(df.columns) < len(expected_original_cols):
+                 self.logger.error(f"Moins de colonnes que prévu ({len(df.columns)} vs {len(expected_original_cols)}) dans {source_file_path.name}.")
+                 raise TransformationError(f"Nombre de colonnes insuffisant pour {source_file_path.name}.")
+            df.columns = expected_original_cols[:len(df.columns)]
+            self.logger.debug("Colonnes renommées.")
+
+            # 2. Filtrer les lignes indésirables dans 'NomJeu'
+            valeurs_a_filtrer = ['Total', 'montant global', 'PMU Online', 'Nom de jeu']
+            if 'NomJeu' in df.columns:
+                df = df[~df['NomJeu'].astype(str).isin(valeurs_a_filtrer)]
+                self.logger.debug(f"Lignes filtrées sur 'NomJeu' pour les valeurs: {valeurs_a_filtrer}.")
             else:
-                raise Exception(f"Type de fichier non géré : {file.name}")
+                raise TransformationError(f"Colonne 'NomJeu' manquante pour le filtrage dans {source_file_path.name}.")
 
+            # 3. Supprimer la colonne 'No'
+            if 'No' in df.columns:
+                df = df.drop('No', axis=1)
+                self.logger.debug("Colonne 'No' supprimée.")
+
+            # 4. Insérer la colonne "Date vente"
+            # Colonnes après drop de 'No': ['IdJeu', 'NomJeu', 'Vente', ...]
+            # Insertion à l'index 2 mettra 'Date vente' entre 'NomJeu' et 'Vente'.
+            df.insert(2, "Date vente", extracted_date_str)
+            self.logger.debug(f"Colonne 'Date vente' insérée avec la valeur '{extracted_date_str}'.")
+
+            # 5. Nettoyer et convertir les colonnes numériques 'Vente', 'Paiement'
+            # La colonne 'PourcentagePaiement' n'était pas traitée numériquement dans l'ancien code.
+            # Elle sera donc convertie en str à la fin avec le reste.
+            numeric_cols_to_process = ['Vente', 'Paiement']
+            for col_name in numeric_cols_to_process:
+                if col_name in df.columns:
+                    df[col_name] = df[col_name].apply(self._process_numeric_column_value)
+                else:
+                    self.logger.warning(f"Colonne numérique attendue '{col_name}' non trouvée. Ignorée.")
+            self.logger.debug(f"Colonnes numériques traitées: {numeric_cols_to_process}")
+
+            # 6. Remplacer les NaN restants et convertir tout en str
+            df = df.replace({np.nan: ''}).astype(str)
+            self.logger.debug("NaN restants remplacés par '' et toutes colonnes converties en str.")
+
+            self.logger.info(f"Transformations appliquées avec succès pour {source_file_path.name}.")
+            return df
+
+        except TransformationError:
+            raise
         except Exception as e:
-            self.logger.error(f"Erreur lors de la conversion de {file.name} : {e}")
-            self.set_error(file.name)
-            # TODO : déplacer le fichier dans un dossier d'erreur
-            return
-
-        try:
-            # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
-            data = pd.read_excel(xlsx_file, skiprows=range(0, 6))
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de la lecture de {xlsx_file.name} : {e}")
-            return
-
-        try:
-            date_str = self.extract_date_from_file(xlsx_file)
-            self.logger.info(f"Date extraite : {date_str}")
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de l'extraction de la date de {xlsx_file.name} : {e}")
-            return
-
-        # Renommage des colonnes
-        data.columns = ['No','IdJeu','NomJeu','Vente','Paiement','PourcentagePaiement']
-        # Suppression des lignes où 'Operateur' vaut 'Total' ou 'montant global'
-        data = data[~data['NomJeu'].isin(['Total', 'montant global', 'PMU Online', 'Nom de jeu'])]
-        # Suppression de la colonne 'No'
-        data.drop('No', axis=1, inplace=True)
-        # Insertion et remplissage de la colonne "Date vente" avec la date extraite
-        data.insert(2, "Date vente", date_str)
-
-        # Nettoyage et conversion des colonnes numériques
-        numeric_cols = ['Vente', 'Paiement']
-        for col in numeric_cols:
-            data[col] = data[col].apply(self.process_numeric_column)
-
-        xlsx_file.unlink()
-
-        self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
+            self.logger.error(f"Erreur inattendue durant _apply_transformation pour {source_file_path.name}: {e}", exc_info=True)
+            return None
 
 
 def run_gitech_casino_transformer():
-    transformer = GitechCasinoTransformer()
-    transformer.process_transformation()
+    """Fonction principale pour lancer le transformateur Gitech Casino."""
+    transformer_job = None
+    try:
+        transformer_job = GitechCasinoTransformer()
+        transformer_job.process_files_transformation()
+    except TransformerConfigurationError as e:
+        print(f"ERREUR CRITIQUE de configuration du Transformer {JOB_NAME}: {e}")
+        if transformer_job and transformer_job.logger:
+             transformer_job.logger.critical(f"Erreur de configuration: {e}", exc_info=True)
+    except Exception as e:
+        log_msg = f"Erreur inattendue et non gérée dans l'exécution du transformateur {JOB_NAME}: {e}"
+        if transformer_job and transformer_job.logger:
+            transformer_job.logger.critical(log_msg, exc_info=True)
+        else:
+            print(log_msg)
+
 
 if __name__ == '__main__':
+    # from load_env import load_env
+    # load_env()
     run_gitech_casino_transformer()

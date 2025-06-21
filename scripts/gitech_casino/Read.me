@@ -1,0 +1,52 @@
+# Pipeline ETL pour Gitech Casino (PMU Online)
+
+Ce pipeline est responsable de l'extraction, la transformation et le chargement des rapports "Cumul CA des types de jeux" provenant de la plateforme Gitech (PMU Online). Il est très similaire au pipeline "gitech" standard mais cible un rapport différent.
+
+## Fonctionnement
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Gitech (`https://www.pmuonline.sn/lonasemis/lonase_administration/`) en utilisant les mêmes identifiants que le pipeline Gitech standard.
+    *   Navigue vers la page de rapport "Gamepayoutsummary.aspx".
+    *   Pour chaque jour de la période configurée (par défaut, la veille) :
+        *   Sélectionne la date du jour dans les listes déroulantes pour "From Date" et "To Date".
+        *   Soumet le formulaire.
+        *   Vérifie la présence d'un message d'erreur "Aucun enregistrement trouv". Si présent, aucune donnée n'est téléchargée pour ce jour.
+        *   Sinon, clique sur le bouton de téléchargement pour obtenir le rapport au format Excel (`.xls`, nom de fichier typique : "Cumul CA des \* types de jeux\*.xls").
+    *   Les fichiers téléchargés sont stockés dans `extracted/` et renommés (`{job_name}_{date}.xls`).
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers Excel (`.xls`) bruts depuis `extracted/` (moteur `xlrd`), en sautant les 6 premières lignes d'en-tête.
+    *   **Extrait la date du rapport** du contenu du fichier Excel (recherche du motif "Du: DD/MM/YYYY" dans la 3ème ligne lue des en-têtes).
+    *   Applique les transformations :
+        *   Renomme les colonnes (`['No','IdJeu','NomJeu','Vente','Paiement','PourcentagePaiement']`).
+        *   Filtre les lignes où 'NomJeu' est 'Total', 'montant global', 'PMU Online', ou 'Nom de jeu'.
+        *   Supprime la colonne 'No'.
+        *   Insère une colonne "Date vente" avec la date extraite.
+        *   Nettoie et convertit les colonnes 'Vente' et 'Paiement' en entiers.
+        *   Convertit toutes les colonnes en type `str`.
+    *   Sauvegarde les fichiers transformés en format CSV (séparateur ';', encodage UTF-8) dans `transformed/`.
+    *   Les fichiers sources Excel traités sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   **Renomme les colonnes** du CSV pour correspondre au schéma de la table cible en BD (ex: 'IdJeu' -> 'idjeu', 'Date vente' -> 'datevente').
+    *   Se connecte à la base de données temporaire.
+    *   **TRUNCATE la table cible** `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_CASINO_GITECH]` avant chaque chargement.
+    *   Charge les nouvelles données dans la table.
+    *   Les fichiers chargés sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, transformation, et chargement.
+
+## Configuration
+
+*   Spécifiques au job : `scripts/gitech_casino/config.yml`.
+*   Identifiants (Gitech, BD) : fichier `.env` (utilise les mêmes que pour `gitech`).
+*   Variables d'environnement pour dates (optionnel) : `GITECH_CASINO_START_DATE`, `GITECH_CASINO_END_DATE`.
+
+## Exécution
+
+```bash
+python scripts/gitech_casino/orchestrator.py
+```
+Logs dans `logs/`. Données dans `DATA_FICHIERS/gitech_casino/`.

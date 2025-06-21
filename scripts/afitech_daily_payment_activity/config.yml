@@ -1,16 +1,24 @@
 afitech_daily_payment_activity:
+  # Chemins relatifs au DATA_PATH global du projet
   extraction_dest_relative_path: "afitech_daily_payment_activity/extracted/"
   transformation_dest_relative_path: "afitech_daily_payment_activity/transformed/"
   error_dest_relative_path: "afitech_daily_payment_activity/error/"
   loaded_dest_relative_path: "afitech_daily_payment_activity/loaded/"
   processed_dest_relative_path: "afitech_daily_payment_activity/processed/"
-  download_path: "C:/ETL/DATA_FICHIERS/afitech_daily_payment_activity/extracted/"
-  file_downloaded_name: "*DailyPaymentActivity*xls*"
-  ##### extraction config #####
-  file_pattern: "*DailyPaymentActivity*xls*"
-  wait_time: 300
-  start_date: 2025-03-01
-  end_date: 2025-03-31
+
+  # Configuration pour l'extraction (BaseScrapper)
+  download_path: "afitech_daily_payment_activity/extracted/" # Utilisé par BaseScrapper pour configurer Chrome.
+                                                            # Doit correspondre à DATA_PATH / extraction_dest_relative_path.
+                                                            # Résolu en chemin absolu par config_utils.
+  # file_downloaded_name: "*DailyPaymentActivity*xls*" # Optionnel, file_pattern est généralement suffisant.
+  file_pattern: "*DailyPaymentActivity*.xls*" # Motif pour identifier le fichier téléchargé (couvre .xls et .xlsx).
+  wait_time: 300 # Temps d'attente max pour le téléchargement (secondes).
+
+  # Dates pour l'extraction. Format YYYY-MM-DD.
+  # Si null/vide, BaseScrapper utilise la veille par défaut.
+  # Les dates fixes ici sont pour exemple ou tests spécifiques. En production, elles sont souvent nulles.
+  start_date: # 2025-03-01 # Laisser vide pour la date d'hier par défaut
+  end_date: # 2025-03-31   # Laisser vide pour la date d'hier par défaut
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

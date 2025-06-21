@@ -1,16 +1,26 @@
 afitech_commission_history:
-  extraction_dest_relative_path: "afitech_commission_history/extracted/"
-  transformation_dest_relative_path: "afitech_commission_history/transformed/"
-  error_dest_relative_path: "afitech_commission_history/error/"
-  loaded_dest_relative_path: "afitech_commission_history/loaded/"
-  processed_dest_relative_path: "afitech_commission_history/processed/"
-  file_downloaded_name: "*CommissionHistory*xls*"
-  download_path: "C:/ETL/DATA_FICHIERS/afitech_commission_history/extracted/"
-  ##### extraction config #####
-  file_pattern: "*CommissionHistory*xls*"
-  wait_time: 300
-  start_date: 2025-03-01
-  end_date: 2025-03-31
+  extraction_dest_relative_path: "afitech_commission_history/extracted/" # Les fichiers bruts téléchargés iront ici (par rapport à DATA_PATH)
+  transformation_dest_relative_path: "afitech_commission_history/transformed/" # Les fichiers transformés iront ici
+  error_dest_relative_path: "afitech_commission_history/error/" # Les fichiers en erreur (extraction, transfo, load)
+  loaded_dest_relative_path: "afitech_commission_history/loaded/" # Les fichiers transformés et chargés avec succès
+  processed_dest_relative_path: "afitech_commission_history/processed/" # Les fichiers sources bruts traités avec succès (après transformation)
+
+  # Configuration spécifique à l'extraction (utilisée par le Scraper)
+  # file_downloaded_name n'est pas toujours utile si file_pattern est bien défini.
+  # file_downloaded_name: "*CommissionHistory*xls*" # Nom ou motif du fichier tel qu'il est téléchargé par le navigateur.
+                                                 # BaseScrapper utilise `file_pattern` pour la vérification.
+  download_path: "afitech_commission_history/extracted/" # Ce chemin est utilisé par BaseScrapper pour configurer les préférences de téléchargement de Chrome.
+                                                       # Il doit correspondre à DATA_PATH / extraction_dest_relative_path
+                                                       # La classe BaseScrapper s'attend à ce que ce soit un chemin absolu au final,
+                                                       # qui sera résolu par config_utils.get_config() en utilisant DATA_PATH.
+
+  file_pattern: "*CommissionHistory*.xls*" # Motif pour identifier le fichier téléchargé dans le dossier de téléchargement.
+                                          # Le ".xls*" est pour couvrir .xls et .xlsx.
+  wait_time: 300 # Temps d'attente max pour le téléchargement d'un fichier (en secondes).
+
+  # Dates pour l'extraction. Format YYYY-MM-DD. Si null/vide, utilise la veille par défaut.
+  start_date: # 2025-03-01 # Exemple de date fixe, commenter pour utiliser la date dynamique.
+  end_date: # 2025-03-31   # Exemple de date fixe
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

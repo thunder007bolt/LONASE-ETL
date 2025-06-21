@@ -1,129 +1,168 @@
-### system ###
-import glob
-### base ###
-from base.logger import Logger
-from base.web_scrapper import BaseScrapper
-### selenium ###
-from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-### utils ###
-from utils.config_utils import get_config, get_secret
-from utils.date_utils import get_yesterday_date, sleep
-from utils.other_utils import move_file, loading
-from utils.file_manipulation import rename_file
-from datetime import timedelta
+from datetime import date, timedelta # Pour le typage et timedelta
+import time # Pour sleep
 
+from base.web_scrapper import BaseScrapper, ElementInteractionError
+# Imports Selenium spécifiques (By, Keys, WebDriverWait, EC, Select) et utils non nécessaires directement ici
 
+JOB_NAME = "gitech"
 
 class ExtractGitech(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('gitech', env_variables_list, 'logs/extract_gitech.log')
-        self.file_path = None
+    """
+    Scraper pour extraire les rapports "Etat de la course" de la plateforme Gitech (PMU Online).
+    """
+    def __init__(self, env_vars_mapping: dict):
+        # Pas d'options Chrome spécifiques pour ce scraper a priori.
+        super().__init__(
+            name=JOB_NAME,
+            env_variables_list=env_vars_mapping,
+            log_file_path=f"logs/extract_{JOB_NAME}.log"
+        )
 
     def _connection_to_platform(self):
-        self.logger.info("Connexion au site...")
-        browser = self.browser
-        login_url = self.config['urls']['login']
-        browser.get(login_url)
+        """Gère la connexion à la plateforme Gitech."""
+        self.logger.info(f"Connexion à la plateforme {self.name}...")
+        login_url = self.config.get('urls', {}).get('login')
+        if not login_url:
+            raise ValueError(f"URL de login pour {self.name} manquante.")
+        self.browser.get(login_url)
 
-        html_elements = self.config['html_elements']
-        secret_config = self.secret_config
-        usernameId = html_elements["username_element_id"]
-        passwordId = html_elements["password_element_id"]
-        submit_buttonId = html_elements["login_submit_button_element_id"]
-        username = secret_config["GITECH_LOGIN_USERNAME"]
-        password = secret_config["GITECH_LOGIN_PASSWORD"]
+        html_elements = self.config.get('html_elements', {})
+        username = self.secret_config.get("GITECH_LOGIN_USERNAME")
+        password = self.secret_config.get("GITECH_LOGIN_PASSWORD")
 
-        self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, usernameId))).send_keys(username)
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, passwordId))).send_keys(password)
+        if not (username and password):
+            raise ValueError(f"Identifiants (username/password) pour {self.name} manquants.")
 
-        self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, submit_buttonId))).click()
+        username_id = html_elements.get("username_element_id")
+        password_id = html_elements.get("password_element_id")
+        submit_id = html_elements.get("login_submit_button_element_id")
+        verification_xpath = html_elements.get("verification_xpath")
 
-        self.logger.info("Vérification de la connexion...")
+        if not (username_id and password_id and submit_id and verification_xpath):
+            raise ValueError(f"Configuration des éléments HTML de login incomplète pour {self.name}.")
+
         try:
-            verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
-            self.logger.info("Connexion à la plateforme réussie.")
+            self.logger.info("Saisie des identifiants...")
+            # Les WebDriverWait directs sont remplacés par les méthodes de BaseScrapper.
+            # Les timeouts excessifs sont réduits.
+            self._wait_and_send_keys(username_id, locator_type='id', keys_to_send=username, timeout=30)
+            self._wait_and_send_keys(password_id, locator_type='id', keys_to_send=password, timeout=30)
 
-        except:
-            self.logger.error("Connexion à la plateforme n'a pas pu être établie.")
-            browser.quit()
+            self.logger.info("Soumission du formulaire de connexion...")
+            self._wait_and_click(submit_id, locator_type='id', timeout=30)
 
-        sleep(10)
-        pass
+            self.logger.info("Vérification de la connexion...")
+            self._wait_for_element_presence(verification_xpath, locator_type='xpath', timeout=60)
+            self.logger.info(f"Connexion à la plateforme {self.name} réussie.")
+
+        except ElementInteractionError as e:
+            self.logger.error(f"Échec de l'interaction Selenium lors de la connexion à {self.name}: {e}", exc_info=True)
+            raise
+        except Exception as e:
+            self.logger.error(f"Erreur inattendue lors de la connexion à {self.name}: {e}", exc_info=True)
+            raise
+
+        # L'ancien sleep(10) est long, réduit et rendu configurable si besoin.
+        time.sleep(self.job_config.get("delay_after_login_sec", 5))
+
 
     def _download_files(self):
-        browser = self.browser
+        """Navigue vers la page de rapport et lance le processus de téléchargement jour par jour."""
+        self.logger.info(f"Navigation vers la page des rapports pour {self.name}...")
+        reports_url = self.config.get('urls', {}).get('report')
+        if not reports_url:
+            raise ValueError(f"URL des rapports pour {self.name} manquante.")
+        self.browser.get(reports_url)
+        time.sleep(self.job_config.get("delay_after_page_load_sec", 2))
 
-        self.logger.info("Chargement de la page des rapports...")
-        reports_url = self.config['urls']['report']
-        browser.get(reports_url)
+        self.logger.info(f"Lancement du téléchargement des rapports pour la plage de dates ({self.name}).")
+        self._process_multiple_files_by_date(rename_downloaded_file=True)
 
-        self.logger.info("Remplissage des champs de date...")
-        html_elements = self.config['html_elements']
-        # start_date
-        start_date_day_element_id = html_elements["start_date_day_element_id"]
-        start_date_month_element_id = html_elements["start_date_month_element_id"]
-        start_date_year_element_id = html_elements["start_date_year_element_id"]
-        # end_date
-        end_date_day_element_id = html_elements["end_date_day_element_id"]
-        end_date_month_element_id = html_elements["end_date_month_element_id"]
-        end_date_year_element_id = html_elements["end_date_year_element_id"]
-        error_message_element_xpath = html_elements["error_message_element_xpath"]
 
-        start_date = self.start_date
-        # todo: +1 if include_sup equals true
-        end_date = self.start_date
-        delta = timedelta(days=1)
-        sleep(2)
-        while end_date <= self.end_date:
-            year, month, day = start_date.strftime("%Y-%m-%d").split("-")
-            sleep(2)
-            self.fill_select(start_date_day_element_id, value=day)
-            self.fill_select(start_date_month_element_id, value=month)
-            self.fill_select(start_date_year_element_id, value=year)
+    def _process_download_for_date_range(self, start_date_to_process: date, end_date_to_process: date):
+        """
+        Remplit les listes déroulantes de date, soumet et télécharge pour un jour donné.
+        start_date_to_process et end_date_to_process seront identiques.
+        """
+        date_obj = start_date_to_process
+        day_str = date_obj.strftime("%d").lstrip('0')
+        month_str = date_obj.strftime("%m").lstrip('0')
+        year_str = date_obj.strftime("%Y")
 
-            self.fill_select(end_date_day_element_id, value=day)
-            self.fill_select(end_date_month_element_id, value=month)
-            self.fill_select(end_date_year_element_id, value=year)
+        self.logger.info(f"Préparation du téléchargement pour la date: {date_obj.strftime('%Y-%m-%d')} ({self.name}).")
 
-            self.logger.info("Soumission du formulaire...")
-            submit_button_element_id = html_elements["submit_button_element_id"]
-            self.wait_and_click(submit_button_element_id, locator_type='id', timeout=15)
+        html_elements = self.config.get('html_elements', {})
+        start_day_id = html_elements.get("start_date_day_element_id")
+        start_month_id = html_elements.get("start_date_month_element_id")
+        start_year_id = html_elements.get("start_date_year_element_id")
+        end_day_id = html_elements.get("end_date_day_element_id")
+        end_month_id = html_elements.get("end_date_month_element_id")
+        end_year_id = html_elements.get("end_date_year_element_id")
+        submit_button_id = html_elements.get("submit_button_element_id")
+        download_button_id = html_elements.get("download_button_element_id")
+        error_message_xpath = html_elements.get("error_message_element_xpath")
 
-            self.logger.info("Vérification du resultat...")
-            try:
-                self.wait_for_presence(error_message_element_xpath, locator_type='xpath', timeout=5, raise_error=True)
-                self.logger.error(f"Le fichier du {year}-{month}-{day} n'existe pas")
-                self._quit()
-            except:
-                pass
+        if not all([start_day_id, start_month_id, start_year_id, end_day_id, end_month_id, end_year_id,
+                    submit_button_id, download_button_id, error_message_xpath]):
+            raise ValueError(f"Configuration HTML incomplète pour le formulaire de date/téléchargement ({self.name}).")
 
-            self.logger.info("Télechargement du fichier")
-            download_button_element_id = html_elements["download_button_element_id"]
-            self.wait_and_click(download_button_element_id, locator_type='id', timeout=15)
+        try:
+            time.sleep(self.job_config.get("delay_before_date_fill_sec", 2)) # Pause avant de remplir
 
-            try:
-                self.start_date = start_date
-                self._verify_download()
-            except:
-                self.logger.error(f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
-                continue
+            self.logger.info(f"Sélection de la date de début: {day_str}/{month_str}/{year_str}")
+            self._fill_select_by_visible_text(start_day_id, text_to_select=day_str, locator_type='id')
+            self._fill_select_by_visible_text(start_month_id, text_to_select=month_str, locator_type='id')
+            self._fill_select_by_visible_text(start_year_id, text_to_select=year_str, locator_type='id')
 
-            self.logger.info("Déplacement du fichier...")
-            name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}"
-            file_pattern = self.config['file_pattern']
-            rename_file(file_pattern, self.config["download_path"], name, self.logger)
-            start_date += delta
-            end_date += delta
+            self.logger.info(f"Sélection de la date de fin: {day_str}/{month_str}/{year_str}")
+            self._fill_select_by_visible_text(end_day_id, text_to_select=day_str, locator_type='id')
+            self._fill_select_by_visible_text(end_month_id, text_to_select=month_str, locator_type='id')
+            self._fill_select_by_visible_text(end_year_id, text_to_select=year_str, locator_type='id')
+            time.sleep(1)
 
-def run_gitech():
-    env_variables_list = ["GITECH_LOGIN_USERNAME", "GITECH_LOGIN_PASSWORD"]
-    job = ExtractGitech(env_variables_list)
-    job.process_extraction()
+            self.logger.info("Soumission du formulaire de date...")
+            self._wait_and_click(submit_button_id, locator_type='id', timeout=15)
+
+            time.sleep(self.job_config.get("delay_after_submit_sec", 5)) # Laisser le temps au message d'erreur/résultat de s'afficher
+            error_element = self._wait_for_element_presence(error_message_xpath, locator_type='xpath', timeout=5, raise_error=False)
+
+            if error_element and error_element.is_displayed():
+                self.logger.warning(f"Aucun enregistrement trouvé pour la date {date_obj.strftime('%Y-%m-%d')} sur {self.name}. Fichier non téléchargé.")
+                # L'ancien code appelait self._quit(). Ici, on retourne pour que _process_multiple_files_by_date continue.
+                # Si c'est une erreur fatale pour tout le processus, il faudrait lever une exception.
+                return
+
+            self.logger.info(f"Clic sur le bouton de téléchargement pour la date {date_obj.strftime('%Y-%m-%d')}...")
+            self._wait_and_click(download_button_id, locator_type='id', timeout=30)
+
+        except ElementInteractionError as e:
+            self.logger.error(f"Échec interaction Selenium pour {date_obj.strftime('%Y-%m-%d')} ({self.name}): {e}", exc_info=True)
+            raise
+        except Exception as e:
+            self.logger.error(f"Erreur inattendue pour {date_obj.strftime('%Y-%m-%d')} ({self.name}): {e}", exc_info=True)
+            raise
+
+
+def run_gitech_extraction(): # Nom de fonction mis à jour
+    """Fonction principale pour lancer l'extraction Gitech."""
+    env_mapping = {
+        "GITECH_LOGIN_USERNAME": "GITECH_LOGIN_USERNAME",
+        "GITECH_LOGIN_PASSWORD": "GITECH_LOGIN_PASSWORD"
+    }
+    scraper_job = None
+    try:
+        scraper_job = ExtractGitech(env_vars_mapping=env_mapping)
+        scraper_job.process_extraction()
+    except (ValueError, ElementInteractionError, ConnectionError) as e:
+        log_msg = f"Échec critique du job d'extraction {JOB_NAME}: {e}"
+        if scraper_job and scraper_job.logger: scraper_job.logger.critical(log_msg, exc_info=True)
+        else: print(f"ERREUR CRITIQUE (logger non dispo) pour {JOB_NAME}: {log_msg}")
+    except Exception as e:
+        log_msg = f"Erreur inattendue et non gérée dans le job {JOB_NAME}: {e}"
+        if scraper_job and scraper_job.logger: scraper_job.logger.critical(log_msg, exc_info=True)
+        else: print(f"ERREUR INATTENDUE CRITIQUE (logger non dispo) pour {JOB_NAME}: {log_msg}")
 
 if __name__ == "__main__":
-    run_gitech()
+    from load_env import load_env
+    load_env()
+    run_gitech_extraction() # Nom de fonction mis à jour

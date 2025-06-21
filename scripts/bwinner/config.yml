@@ -1,17 +1,24 @@
 bwinner:
+  # Chemins relatifs au DATA_PATH global du projet
   extraction_dest_relative_path: "bwinner/extracted/"
   transformation_dest_relative_path: "bwinner/transformed/"
   error_dest_relative_path: "bwinner/error/"
   loaded_dest_relative_path: "bwinner/loaded/"
   processed_dest_relative_path: "bwinner/processed/"
-  file_downloaded_name: "Total Tax Report*.xlsx"
-  download_path: "C:/ETL/DATA_FICHIERS/bwinner/extracted/"
-  ##### extraction config #####
-  file_pattern: "Total Tax Report*.xlsx"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
-  include_sup: false
-  wait_time: 15
+
+  # Configuration pour l'extraction (BaseScrapper)
+  download_path: "bwinner/extracted/" # Utilisé par BaseScrapper pour configurer Chrome.
+                                      # Résolu en chemin absolu via DATA_PATH / extraction_dest_relative_path.
+  # file_downloaded_name: "Total Tax Report*.xlsx" # Optionnel, file_pattern est généralement suffisant.
+  file_pattern: "Total Tax Report*.xlsx" # Motif pour identifier le fichier téléchargé.
+  wait_time: 60 # Augmenté pour plus de robustesse (secondes).
+
+  # Dates pour l'extraction. Format YYYY-MM-DD.
+  # Laisser vide pour utiliser la veille par défaut (géré par BaseScrapper).
+  start_date: # 2025-03-01
+  end_date: # 2025-03-04
+  # include_sup: false # Cet attribut n'est pas utilisé par la BaseScrapper refactorisée.
+                       # La logique de date (inclure ou non end_date) est gérée par la boucle standard.
   urls:
     login: "https://a.bwinners.sn/oldbo/"
     report: "https://a.bwinners.sn/oldbo/Reports/TotalTaxReport"

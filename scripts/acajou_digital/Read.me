@@ -1,0 +1,49 @@
+# Pipeline ETL pour Acajou Digital
+
+Ce pipeline est responsable de l'extraction, la transformation et le chargement des données provenant de la plateforme Acajou Digital.
+
+## Fonctionnement
+
+1.  **Extraction (`extract.py`)** :
+    *   Se connecte à la plateforme Acajou Digital en utilisant les identifiants configurés.
+    *   Navigue vers la section des rapports comptables ("Accounting Report").
+    *   Télécharge les fichiers de rapport (généralement `Accounting.csv`) pour la période configurée (par défaut, la veille).
+    *   Les fichiers téléchargés sont stockés dans le sous-dossier `extracted/`.
+
+2.  **Transformation (`transform.py`)** :
+    *   Lit les fichiers CSV bruts depuis `extracted/`.
+    *   Applique les transformations nécessaires :
+        *   Reformate la colonne 'Date Created'.
+        *   Ajoute une colonne 'Produit' avec la valeur "Pari Sportif".
+        *   Sélectionne et réordonne les colonnes pour correspondre au schéma cible.
+        *   Convertit toutes les données en chaînes de caractères et remplace les valeurs manquantes par des chaînes vides.
+    *   Sauvegarde les fichiers transformés (en CSV avec séparateur ';') dans le sous-dossier `transformed/`.
+    *   Les fichiers sources traités avec succès sont déplacés dans `processed/`.
+
+3.  **Chargement (`load.py`)** :
+    *   Lit les fichiers CSV transformés depuis `transformed/`.
+    *   Se connecte à la base de données temporaire configurée.
+    *   Supprime les enregistrements existants pour le produit "Pari Sportif" (spécifique à Acajou Digital) de la table cible `[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_ACACIA]`.
+    *   Charge les nouvelles données transformées dans la table cible.
+    *   Les fichiers transformés chargés avec succès sont déplacés dans `loaded/`.
+
+4.  **Orchestration (`orchestrator.py`)** :
+    *   Exécute séquentiellement les étapes d'extraction, de transformation et de chargement.
+    *   Utilise les classes de base (`BaseScrapper`, `Transformer`, `Loader`, `Orchestrator`) pour gérer la logique commune et la journalisation.
+
+## Configuration
+
+*   Les configurations spécifiques à ce pipeline (URLs, sélecteurs HTML, noms de fichiers, colonnes, etc.) se trouvent dans `scripts/acajou_digital/config.yml`.
+*   Les identifiants de connexion à la plateforme Acajou Digital et à la base de données doivent être définis dans le fichier `.env` à la racine du projet (voir `ACAJOU_DIGITAL_LOGIN_USERNAME`, `ACAJOU_DIGITAL_LOGIN_PASSWORD`, et les variables de connexion SQL Server).
+
+## Exécution
+
+Pour exécuter le pipeline complet pour Acajou Digital, lancez le script `orchestrator.py` situé dans ce dossier :
+
+```bash
+python scripts/acajou_digital/orchestrator.py
+```
+
+Assurez-vous que l'environnement Python est correctement configuré avec toutes les dépendances listées dans `requirements.txt` et que le fichier `.env` est présent et correctement rempli.
+Les logs pour chaque étape (extraction, transformation, chargement, orchestration) sont générés dans le dossier `logs/`.
+Les fichiers de données intermédiaires et finaux sont gérés dans les sous-dossiers de `DATA_FICHIERS/acajou_digital/` (configuré via la variable d'environnement `DATA_PATH`).
