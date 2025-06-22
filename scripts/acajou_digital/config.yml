@@ -9,7 +9,7 @@ acajou_digital:
   wait_time: 300
   download_path: "K:/ETL/DATA_FICHIERS/acajou_digital/extracted/"
   ##### extraction config #####
-  start_date:  #2025-06-02 # defaut is today - 1 day
+  start_date:  #2025-06-02 #
   end_date: #2025-06-02
   include_sup: false
   urls:

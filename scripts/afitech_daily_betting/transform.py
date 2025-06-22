@@ -21,7 +21,6 @@ class AfitechDailyBettingTransformer(Transformer):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:
-            # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
             data = pd.read_excel(file, sheet_name='Data')
 
         except Exception as e:

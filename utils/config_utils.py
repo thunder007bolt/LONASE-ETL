@@ -104,7 +104,7 @@ def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_
         files_pattern
     )
 
-def get_database_extractor_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST , config_path=None):
+def get_database_extractor_configurations(name, log_file, env_variables_list={} , config_path=None):
     configs = get_config(job_name=name, config_path=config_path)
     secret_config = get_secret_v2(env_variables_list)
     logger = Logger(log_file=log_file).get_logger()

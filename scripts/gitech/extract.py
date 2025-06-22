@@ -1,16 +1,10 @@
-### system ###
-import glob
-### base ###
-from base.logger import Logger
 from base.web_scrapper import BaseScrapper
 ### selenium ###
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 ### utils ###
-from utils.config_utils import get_config, get_secret
-from utils.date_utils import get_yesterday_date, sleep
-from utils.other_utils import move_file, loading
+from utils.date_utils import sleep
 from utils.file_manipulation import rename_file
 from datetime import timedelta
 
@@ -36,16 +30,16 @@ class ExtractGitech(BaseScrapper):
         password = secret_config["GITECH_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, usernameId))).send_keys(username)
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, passwordId))).send_keys(password)
+        self.wait_and_send_keys(element=usernameId, locator_type="id", keys=username, raise_error=True)
+        self.wait_and_send_keys(element=passwordId, locator_type="id", keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, submit_buttonId))).click()
+        self.wait_and_click(element=submit_buttonId)
 
         self.logger.info("Vérification de la connexion...")
         try:
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, raise_error=True)
             self.logger.info("Connexion à la plateforme réussie.")
 
         except:

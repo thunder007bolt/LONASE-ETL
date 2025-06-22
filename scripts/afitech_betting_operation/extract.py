@@ -137,7 +137,6 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                 logger.info("Remplissage des champs de date...")
                 start_date_formated = f"{start_date.strftime('%d/%m/%Y')} 00:00"
                 end_date_formated = f"{start_date.strftime('%d/%m/%Y')} 23:59"
-                #end_date_formated = end_date.strftime('%d/%m/%Y')
 
                 start_calendar_input_xpath = html_elements["start_calendar_input_xpath"]
                 end_calendar_input_xpath = html_elements["end_calendar_input_xpath"]
@@ -145,14 +144,18 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                 self.wait_for_presence(start_calendar_input_xpath, raise_error=True)
                 start_calendar_input = browser.find_element(by=By.XPATH, value=start_calendar_input_xpath)
                 start_calendar_input.send_keys(start_date_formated + Keys.ENTER)
+
                 self.wait_for_presence(end_calendar_input_xpath, raise_error=True)
                 end_calendar_input = browser.find_element(by=By.XPATH, value=end_calendar_input_xpath)
                 end_calendar_input.send_keys(end_date_formated + Keys.ENTER)
+
                 self.wait_and_click("/html/body", locator_type="xpath")
+
                 logger.info("Soumission du formulaire...")
                 report_submit_button_xpath = html_elements["report_submit_button_xpath"]
                 browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
                 self.wait_and_click(report_submit_button_xpath, locator_type="xpath", raise_error=True)
+
             except Exception as e:
                 if self.retry == 3 :
                     raise e
@@ -168,20 +171,17 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                 self.wait_for_presence(pattern, timeout=15, raise_error=True)
                 self.files.append({"start_date": start_date, "end_date": end_date})
                 self.wait_for_invisibility(pattern)
-                logger.info(
-                    f"Le fichier BettingOperation de la plateforme AFITECH  du {start_date} a bien ete genere")
+                logger.info(f"Le fichier BettingOperation de la plateforme AFITECH  du {start_date} a bien ete genere")
 
             except Exception as error:
-                logger.error(
-                    f"Le fichier BettingOperation de la plateforme AFITECH  du {start_date} au {end_date} n'a pas pu ete genere {error}")
+                logger.error( f"Le fichier BettingOperation de la plateforme AFITECH  du {start_date} au {end_date} n'a pas pu ete genere {error}")
                 sleep(60*5)
                 continue
-                #self.files_with_error.append({"start_date": start_date, "end_date": end_date})
+
             start_date += delta
             end_date += delta
 
     def _check_and_clean_download_directory(self):
-        """Vérifie si des fichiers résiduels existent et les supprime."""
         files = list(self.extraction_dest_path.glob("*BettingOperation*xlsx"))
         if files:
             self.logger.warning(
@@ -193,32 +193,29 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                     self.logger.info(f"Fichier résiduel {file.name} supprimé.")
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la suppression de {file.name}: {e}")
-                    raise  # Propager l'erreur pour arrêter le processus si la suppression échoue
+                    raise
         else:
             self.logger.info(f"Aucun fichier résiduel trouvé dans {self.extraction_dest_path}.")
 
-    def _download2(self):
+    def _download_files(self):
         browser = self.browser
         html_elements = self.config['html_elements']
         logger = self.logger
         url = self.config['urls']['report_history']
         table_xpath = html_elements['table_xpath']
         table_row_xpath = html_elements['table_row_xpath']
-        download_button_xpath = html_elements['download_button_xpath']
 
         while self.files:
             logger.info("Chargement de la page historique des rapports...")
-            browser.get(url)  # Reload the page to get fresh elements
+            browser.get(url)
 
-            # Wait for the table and other elements to load
             self.wait_for_presence(table_xpath, timeout=40)
-            btn_xpath = "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button"
+            btn_xpath = html_elements["btn_xpath"]
             self.wait_for_presence( btn_xpath, timeout=40)
             page_number = self.config["page_number"]
             for i in range(0, page_number):
                 self.wait_and_click(btn_xpath, locator_type="xpath")
 
-            # Process rows with fresh elements each iteration
             rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
 
             for row in rows:
@@ -231,7 +228,6 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                     date2 = columns[3].text
                     status = columns[4].text
 
-                    # Check if the row matches a file in self.files
                     founded = False
                     idx = None
                     formated_start_date = ""
@@ -248,21 +244,9 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                     if founded_file_name and "Available" in status:
                         logger.info("Téléchargement du fichier...")
                         try:
-                            '''
-                            logger.info("Recherche du bouton de téléchargement...")
-                            # Find the button within the row context
-                            download_button = row.find_element(By.XPATH, download_button_xpath)
 
-                            logger.info("Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
-                            # Optional: Wait for visibility/presence first, though JS click might not strictly need it
-                            WebDriverWait(browser, 10).until(EC.visibility_of(download_button))
-
-                            self.wait_and_click(download_button)
-                            logger.info("Tentative de clic via JavaScript...")
-                            '''
                             self._check_and_clean_download_directory()
                             download_button = row.find_element(By.XPATH, "./td[6]//span[@class='icon pointer']")
-                            # Vérifier si le bouton est cliquable
                             WebDriverWait(browser, 30).until(
                                 EC.element_to_be_clickable(download_button)
                             )
@@ -274,19 +258,13 @@ class ExtractAfitechBettingOperation(BaseScrapper):
                         except Exception as e:
                             self.logger.info(f"Erreur lors du clic normal on réésaie avec le js {e}")
                             raise e
-                            try:
-                                logger.info("Clic via JavaScript exécuté (vérifiez si le téléchargement a démarré).")
-                                browser.execute_script("arguments[0].click();", download_button)
-                            except Exception as e:
-                                logger.error(f"Échec du clic sur le bouton de téléchargement: {e}")
-                                raise e
-                            #raise e
+
                         try:
                             founded_file = self._verify_download_v2()
                             sleep(2)
                             name = f"{self.name}_{formated_start_date.replace('/', '-')}_{formated_end_date.replace('/', '-')}"
                             rename_file2(founded_file, self.config["download_path"], name, logger)
-                            del self.files[idx]  # Remove downloaded file from list
+                            del self.files[idx]
                         except Exception as e:
                             logger.error(f"Le fichier du {date1} n'a pas pu être téléchargé: {str(e)}")
 
@@ -298,8 +276,6 @@ class ExtractAfitechBettingOperation(BaseScrapper):
         self.logger.info("Operation terminé")
         return True
 
-    def _download_files(self):
-      pass
 
     def process_extraction(self):
         self._set_date()
@@ -314,7 +290,7 @@ class ExtractAfitechBettingOperation(BaseScrapper):
 
         self.files = generate_date_range(self.start_date, self.end_date)
         #"""
-        self._download2()
+        self._download_files()
 
 
 def run_afitech_betting_operation_activity():

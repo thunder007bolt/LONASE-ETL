@@ -42,6 +42,7 @@ afitech_betting_operation:
     table_xpath: "//table/tbody"
     table_row_xpath: "//table/tbody/tr"
     download_button_xpath: ".//span/span/i"
+    btn_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button"
 
   #### transform config ####
   files_to_transform_pattern: "*.xls*"

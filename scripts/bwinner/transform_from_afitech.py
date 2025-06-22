@@ -14,8 +14,7 @@ class BwinnerTransformer(Transformer):
     def __init__(self):
         super().__init__('bwinner', 'logs/transformer_bwinner.log')
         _, _, _, date = get_yesterday_date()
-        # self.file_pattern = '*'+date.strftime('%d-%m-%Y')+'*'
-        # self.file_pattern = '*01-02-2025*'
+
 
     def _transform_file(self, file: Path, start_date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
@@ -49,6 +48,7 @@ class BwinnerTransformer(Transformer):
         import numpy as np
         df['Total Stakes'] = df['Total Stakes'].round(0).astype(np.int64)
         df['Total Paid Win'] = df['Total Paid Win'].round(0).astype(np.int64)
+
         filesInitialDirectory = r"K:\DATA_FICHIERS\BWINNERS\\"
         df.to_csv(filesInitialDirectory + "Bwinner_" + str(start_date) + "_" + str(start_date) + ".csv", index=False,
                      sep=';', columns=['Report Date', 'Name', 'Total Stakes', 'Total Paid Win'])
@@ -62,7 +62,6 @@ class BwinnerTransformer(Transformer):
         self.start_date =  date_string_to_date(os.getenv("transformed_start_date")) or self.config.get("transformed_start_date") or yesterday_date
         self.end_date = date_string_to_date(os.getenv("transformed_end_date")) or self.config.get("transformed_end_date") or yesterday_date
         start_date = self.start_date
-        # todo: +1 if include_sup equals true
         end_date = self.start_date
         delta = timedelta(days=1)
         while end_date <= self.end_date:

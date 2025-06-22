@@ -1,6 +1,5 @@
 import logging
 from logging.handlers import RotatingFileHandler
-import os
 
 
 class Logger:

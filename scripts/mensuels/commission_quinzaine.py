@@ -15,8 +15,10 @@ class ExtractCommissionQuinzaine(DatabaseExtractor):
         
     def _set_date(self):
         """Calculates the specific date (jour, mois, annee) for the commission period."""
+        """  Calcul de la p"""
         today = datetime.date.today()
         current_day = today.day
+
 
         if 1 <= current_day <= 15:
             # Second half of the previous month (16th to end of previous month)

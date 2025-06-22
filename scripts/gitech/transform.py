@@ -22,16 +22,11 @@ class GitechTransformer(Transformer):
                 shutil.rmtree(TEMP_DIR)
             except OSError as o:
                 print(f"Erreur : {o.strerror}")
-        """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
-        """
+
         clear_temp()
 
         self.logger.info(f"Conversion du fichier XLS {xls_file.name} en XLSX...")
         import xlwings as xw
-        # Lancement d'Excel (en arrière-plan)
         app = xw.App(visible=False)
 
         try:
@@ -46,14 +41,10 @@ class GitechTransformer(Transformer):
         finally:
             app.quit()
 
-        # Renommage et déplacement du fichier XLS d'origine
         return xlsx_file
 
     def extract_date_from_file(self, xlsx_file: Path) -> str:
-        """
-        Extrait la date contenue dans le fichier XLSX. On suppose que la date se trouve dans la
-        deuxième ligne (index 1) et correspond au format 'Du: DD/MM/YYYY'.
-        """
+
         self.logger.info(f"Extraction de la date à partir du fichier {xlsx_file.name}")
         df = pd.read_excel(xlsx_file)
         cell_value = str(df.iloc[1])
@@ -65,12 +56,6 @@ class GitechTransformer(Transformer):
             raise ValueError("Date non trouvée dans le fichier.")
 
     def process_numeric_column(self, value):
-        """
-        Nettoie et convertit une valeur lue depuis une colonne numérique.
-        - Suppression des espaces insécables.
-        - Si une virgule est présente, suppression des zéros finaux et de la virgule.
-        - Conversion en entier (les erreurs produisent un 0).
-        """
         value_str = str(value).replace(u'\xa0', '')
         if ',' in value_str:
             value_str = value_str.rstrip('00').replace(',', '')
@@ -82,18 +67,8 @@ class GitechTransformer(Transformer):
         except Exception:
             return 0
 
-    def _transform_file(self, file: Path, date):
-        """
-        Traite un fichier correspondant au motif "Etat de la course".
-        Cette méthode effectue les étapes suivantes :
-          - Conversion en XLSX si nécessaire
-          - Lecture et nettoyage des données
-          - Extraction de la date
-          - Transformation des données et création du CSV de sortie
-          - Suppression du fichier XLSX temporaire
-        """
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
-
         try:
             if file.suffix.lower() == ".xls":
                 xlsx_file = self.convert_xls_to_xlsx(file)
@@ -110,7 +85,6 @@ class GitechTransformer(Transformer):
             return
 
         try:
-            # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
             data = pd.read_excel(xlsx_file, skiprows=range(1, 6))
         except Exception as e:
             self.set_error(file.name)
@@ -126,19 +100,13 @@ class GitechTransformer(Transformer):
             self.logger.error(f"Erreur lors de l'extraction de la date de {xlsx_file.name} : {e}")
             return
 
-        # Renommage des colonnes
         data.columns = ['No', 'Agences', 'Operateur', 'Vente', 'Annulation',
                         'Remboursement', 'Paiement', 'Resultat']
-        # Suppression des lignes où 'Operateur' vaut 'Total' ou 'montant global'
         data = data[~data['Operateur'].isin(['Total', 'montant global'])]
-        # Suppression de la colonne 'No'
         if 'No' in data.columns:
             data.drop('No', axis=1, inplace=True)
-        # Insertion et remplissage de la colonne "Date vente" avec la date extraite
         data.insert(2, "Date vente", date_str)
-        # Remplissage des valeurs manquantes dans la colonne "Agences" par propagation (forward fill)
         data['Agences'] = data['Agences'].ffill()
-        # Nettoyage et conversion des colonnes numériques
         numeric_cols = ['Vente', 'Annulation', 'Remboursement', 'Paiement', 'Resultat']
         for col in numeric_cols:
             data[col] = data[col].apply(self.process_numeric_column)

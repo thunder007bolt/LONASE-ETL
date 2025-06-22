@@ -65,18 +65,15 @@ class ExtractBwinnerGambie(BaseScrapper):
 
         self.logger.info("Remplissage des champs de date...")
         html_elements = self.config['html_elements']
-        # start_date
         start_date_day_element_id = html_elements["start_date_day_element_id"]
         start_date_month_element_id = html_elements["start_date_month_element_id"]
         start_date_year_element_id = html_elements["start_date_year_element_id"]
-        # end_date
         end_date_day_element_id = html_elements["end_date_day_element_id"]
         end_date_month_element_id = html_elements["end_date_month_element_id"]
         end_date_year_element_id = html_elements["end_date_year_element_id"]
         error_message_element_xpath = html_elements["error_message_element_xpath"]
 
         start_date = self.start_date
-        # todo: +1 if include_sup equals true
         end_date = self.start_date
         delta = timedelta(days=1)
         sleep(2)

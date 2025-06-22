@@ -49,7 +49,6 @@ class BaseScrapper(ABC):
         self.chrome_options_arguments = chrome_options_arguments
         self.secret_config = get_secret(env_variables_list)
         self.browser = None
-        # logger
         logger = Logger(log_file=log_file).get_logger()
         self.logger = logger
         self.logger.info("Initialisation...")
@@ -116,7 +115,6 @@ class BaseScrapper(ABC):
     def _connection_to_platform(self):
         pass
 
-    @abstractmethod
     def _download_files(self):
         pass
 

@@ -14,7 +14,7 @@ class BwinnerTransformer(Transformer):
     def __init__(self):
         super().__init__('bwinner', 'logs/transformer_bwinner.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         if file.suffix.lower() != ".xlsx":

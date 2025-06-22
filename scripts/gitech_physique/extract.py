@@ -42,25 +42,22 @@ class ExtractGitechPhysique(BaseScrapper):
         self.logger.info("Envoi du formulaire...")
         self.wait_and_click(submit_buttonId, locator_type="id")
 
-
         self.logger.info("Vérification de la connexion...")
         try:
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, raise_error=True, timeout=10*9)
             self.logger.info("Connexion à la plateforme réussie.")
-
         except:
             self.logger.error("Connexion à la plateforme n'a pas pu être établie.")
             browser.quit()
 
+        sleep(10)
         pass
 
     def _download_files(self):
-
         start_date = self.start_date
         year = start_date.strftime("%Y")
         self.wait_and_click(f"*//td/a[contains(text(), '{year}')]", locator_type="xpath")
-        # todo: +1 if include_sup equals true
         end_date = self.start_date
         delta = timedelta(days=1)
         sleep(2)
@@ -74,7 +71,6 @@ class ExtractGitechPhysique(BaseScrapper):
                 self.start_date = start_date
                 files_patterns = self.config['files_patterns']
                 files_patterns_m = files_patterns.copy()
-                # verifications des fichiers
                 for file_pattern in files_patterns:
                     formatted_pattern = file_pattern.replace("*",f"{day}_")
                     try:

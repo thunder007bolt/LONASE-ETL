@@ -7,6 +7,9 @@ from extract import run_minishop
 from load import run_minishop_loader
 
 def run_minishop_orchestrator():
+    """
+        Fonction principale de l'orchestrateur
+    """
     orchestrator = Orchestrator(
         name="minishop",
         extractor=run_minishop,

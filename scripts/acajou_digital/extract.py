@@ -1,19 +1,9 @@
-### system ###
-### base ###
-from datetime import timedelta
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-### selenium ###
 from selenium.webdriver.support.ui import WebDriverWait
-
 from base.web_scrapper import BaseScrapper
-### utils ###
-from utils.date_utils import get_yesterday_date, sleep
-from pathlib import  Path
 
-from utils.file_manipulation import rename_file
 
 
 class ExtractAcajouDigital(BaseScrapper):
@@ -69,7 +59,7 @@ class ExtractAcajouDigital(BaseScrapper):
 
         self._process_multiple_files()
 
-    def _process_download(self, start_date, end_date):
+    def _process_download(self, start_date=None, end_date=None):
         html_elements = self.config['html_elements']
         date_element_name = html_elements["date_element_name"]
         step_x1_element_id = html_elements["step_x1_element_id"]

@@ -195,7 +195,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
             end_date += delta
 
     def _check_and_clean_download_directory(self):
-        """Vérifie si des fichiers résiduels existent et les supprime."""
+
         files = list(self.extraction_dest_path.glob("*DailyBetting*xlsx"))
         if files:
             self.logger.warning(
@@ -207,7 +207,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                     self.logger.info(f"Fichier résiduel {file.name} supprimé.")
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la suppression de {file.name}: {e}")
-                    raise  # Propager l'erreur pour arrêter le processus si la suppression échoue
+                    raise
         else:
             self.logger.info(f"Aucun fichier résiduel trouvé dans {self.extraction_dest_path}.")
 
@@ -218,21 +218,18 @@ class ExtractAfitechDailyBetting(BaseScrapper):
         url = self.config['urls']['report_history']
         table_xpath = html_elements['table_xpath']
         table_row_xpath = html_elements['table_row_xpath']
-        download_button_xpath = html_elements['download_button_xpath']
+        more_button_xpath = html_elements['more_button_xpath']
 
         while self.files:
             logger.info("Chargement de la page historique des rapports...")
-            browser.get(url)  # Reload the page to get fresh elements
+            browser.get(url)
 
-            # Wait for the table and other elements to load
             self.wait_for_presence(table_xpath, timeout=40)
-            btn_xpath = "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button"
-            self.wait_for_presence( btn_xpath, timeout=40)
+            self.wait_for_presence( more_button_xpath, timeout=40)
             page_number = self.config["page_number"]
             for i in range(0, page_number):
-                self.wait_and_click(btn_xpath, locator_type="xpath")
+                self.wait_and_click(more_button_xpath, locator_type="xpath")
 
-            # Process rows with fresh elements each iteration
             rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
 
             for row in rows:
@@ -245,7 +242,6 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                     date2 = columns[3].text
                     status = columns[4].text
 
-                    # Check if the row matches a file in self.files
                     founded = False
                     idx = None
                     formated_start_date = ""

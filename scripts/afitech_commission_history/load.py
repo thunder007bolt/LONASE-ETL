@@ -1,4 +1,4 @@
-import pandas as pd, numpy as np
+import pandas as pd
 from base.loader import Loader
 from utils.other_utils import load_env
 

@@ -17,12 +17,9 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
         super().__init__('afitech_daily_payment_activity', 'logs/transformer_afitech_daily_payment_activity.log')
 
     def _transform_file(self, file: Path, date=None):
-        """
-        """
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:
-            # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
             data = pd.read_excel(file, sheet_name='Data')
 
         except Exception as e:

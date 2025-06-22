@@ -35,17 +35,16 @@ class ExtractGitechCasino(BaseScrapper):
         password = secret_config["GITECH_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        #todo: format
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, usernameId))).send_keys(username)
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, passwordId))).send_keys(password)
+        self.wait_and_send_keys(element=usernameId, locator_type="id", keys=username, raise_error=True)
+        self.wait_and_send_keys(element=passwordId, locator_type="id", keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, submit_buttonId))).click()
+        self.wait_and_click(element=submit_buttonId)
 
         self.logger.info("Vérification de la connexion...")
         try:
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, raise_error=True)
             self.logger.info("Connexion à la plateforme réussie.")
 
         except:

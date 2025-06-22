@@ -16,11 +16,6 @@ class BwinnerGambieTransformer(Transformer):
         super().__init__('bwinner_gambie', 'logs/transformer_bwinner_gambie.log')
 
     def convert_xls_to_xlsx(self, xls_file: Path) -> Path:
-        """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
-        """
         self.logger.info(f"Conversion du fichier XLS {xls_file.name} en XLSX...")
         excel = win32com.client.gencache.EnsureDispatch('Excel.Application')
         wb = excel.Workbooks.Open(str(xls_file.resolve()))
@@ -30,9 +25,6 @@ class BwinnerGambieTransformer(Transformer):
         wb.SaveAs(str(xlsx_file.resolve()), FileFormat=51)
         wb.Close()
         excel.Application.Quit()
-
-
-        # Renommage et déplacement du fichier XLS d'origine
         return xlsx_file
 
     def process_numeric_column(self, value):

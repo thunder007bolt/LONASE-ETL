@@ -1,16 +1,7 @@
-import os
-import re
-import shutil
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import win32com.client
-from datetime import datetime
-from base.logger import Logger
 from base.tranformer import  Transformer
-from utils.config_utils import get_config
-from utils.file_manipulation import move_file
-
 
 class AfitechCommissionHistoryTransformer(Transformer):
     def __init__(self):
@@ -33,12 +24,12 @@ class AfitechCommissionHistoryTransformer(Transformer):
 
         start_date = data['Début de la période'][0].date()
         end_date = data['Fin de la période'][0].date()
+
         filesInitialDirectory = r"K:\DATA_FICHIERS\AFITECH\CommissionHistory\\"
         data = data.astype(str)
         data.to_csv(filesInitialDirectory + "AFITECH_CommissionHistory "+ start_date.strftime('%Y-%m-%d')+"_"+end_date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';')
 
         data = data.applymap(lambda x: str(x).replace('.', ','))
-
         data['Début de la période'] = data['Début de la période'].str.replace('-', '/', regex=False)  # Fin de la période
         data['Fin de la période'] = data['Fin de la période'].str.replace('-', '/', regex=False)
         self._save_file(file, data, type="csv", is_multiple=True, reverse=True, index=False, sep=';', encoding='utf8')

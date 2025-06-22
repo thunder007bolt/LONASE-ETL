@@ -11,6 +11,7 @@ afitech_commission_history:
   wait_time: 300
   start_date: #2025-05-21
   end_date: #2025-04-21
+  page_number: 5 #120
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"
@@ -40,6 +41,7 @@ afitech_commission_history:
     table_xpath: "//table/tbody"
     table_row_xpath: "//table/tbody/tr"
     download_button_xpath: ".//span/span/i"
+    more_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button"
 
   #### transform config ####
   files_to_transform_pattern: "*"

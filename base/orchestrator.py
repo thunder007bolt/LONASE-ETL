@@ -2,14 +2,40 @@ from base.logger import Logger
 
 
 class Orchestrator:
-    def __init__(self, name, extractor=None, transformer=None, loader=None, extractors=None, transformers=None,
-                 loaders=None, config_paths=None):
+    """
+        Classe d'orchestrateur
+    """
+    def __init__(
+            self,
+            name,
+            extractor=None,
+            transformer=None,
+            loader=None,
+            extractors=None,
+            transformers=None,
+            loaders=None,
+            config_paths=None
+    ):
+        """
+            Initialisation de l'objet
+
+            Args:
+                name (str): Nom de l'orchestrateur
+                extractor (function): Fonction d'extraction
+                transformer (function): Fonction de transformation
+                loader (function): Fonction de chargement
+                extractors (list): Liste des fonctions d'extraction
+                transformers (list): Liste des fonctions de transformation
+                loaders (list): Liste des fonctions de chargement
+                config_paths (list): Liste des chemins des fichiers de configuration
+        """
         self.logger = Logger(f"logs/orchestrator_{name}.log").get_logger()
         self.extractor = extractor
-        self.extractors = extractors
         self.transformer = transformer
-        self.transformers = transformers
         self.loader = loader
+
+        self.extractors = extractors
+        self.transformers = transformers
         self.loaders = loaders
         self.config_paths = config_paths
 
@@ -22,11 +48,8 @@ class Orchestrator:
             if self.loader: self.loader()
 
             if self.extractors:
-                try:
-                    for idx, extractor in enumerate(self.extractors):
-                        extractor(self.config_paths[idx])
-                except Exception as e:
-                    raise e
+                for idx, extractor in enumerate(self.extractors):
+                    extractor(self.config_paths[idx])
 
             if self.transformers:
                 for idx, transformer in enumerate(self.transformers):

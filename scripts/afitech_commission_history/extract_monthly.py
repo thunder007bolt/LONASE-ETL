@@ -1,5 +1,3 @@
-### system ###
-
 from extract import ExtractAfitechCommissionHistory
 from utils.date_utils import get_previous_month_date_range
 

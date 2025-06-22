@@ -33,7 +33,9 @@ gitech_tirage:
     download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
     error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
 
-
+    table_xpath: "/html/body/form/div[3]/table[2]/tbody/tr[6]/td/div/table[2]/tbody/tr/td/div/table"
+    mini_table_xpath: "/html/body/form/div[3]/table[2]/tbody/tr[7]/td/div[1]/table[2]/tbody/tr[2]/td/div/table"
+    button_xpath: "html/body/form/div[3]/table[2]/tbody/tr[7]/td/div[1]/table[1]/tbody/tr/td/input"
   #### transform config ####
   files_to_transform_pattern: "*.csv"
 

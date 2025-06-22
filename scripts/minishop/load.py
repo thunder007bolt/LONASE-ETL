@@ -19,7 +19,9 @@ class MinishopLoad(Loader):
             "montant a payer"
         ]
         table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_MINI_SHOP]"
+
         super().__init__(name, log_file, columns, table_name)
+
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False, dtype=str)

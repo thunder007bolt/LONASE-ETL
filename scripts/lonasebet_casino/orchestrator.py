@@ -1,23 +1,20 @@
 import sys
 sys.path.append("C:\ETL")
 
-from base.logger import Logger
-from extract import run_lonasebet_casino as extract
-from transform import run_lonasebet_casino_transformer as transform
-from load import run_lonasebet_casino_loader as load
+from base.orchestrator import Orchestrator
+from transform import run_lonasebet_casino_transformer
+from extract import run_lonasebet_casino
+from load import run_lonasebet_casino_loader
 
-def orchestrator():
-    logger = Logger(log_file="logs/orchestrator.log").get_logger()
-    try:
-        logger.info("Lancement de l'orchestrateur...")
-        extract()
-        transform()
-        load()
-        logger.info("Orchestrateur terminé avec succès.")
+def run_lonasebet_casino_orchestrator():
+    orchestrator = Orchestrator(
+        name="lonasebet_casino",
+        extractor=run_lonasebet_casino,
+        transformer=run_lonasebet_casino_transformer,
+        loader=run_lonasebet_casino_loader
 
-    except Exception as e:
-        logger.error(f"Erreur lors de l'exécution de l'orchestrateur : {e}")
-        raise e
+    )
+    orchestrator.run()
 
 if __name__ == "__main__":
-  orchestrator()
+    run_lonasebet_casino_orchestrator()

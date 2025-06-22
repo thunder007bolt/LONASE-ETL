@@ -1,23 +1,19 @@
 import sys
 sys.path.append("C:\ETL")
 
-from base.logger import Logger
-from extract import run_afitech_payment_daily_activity as extract
-from transform import run_afitech_daily_payment_activity_transformer as transform
-from load import run_afitech_daily_payment_activity_loader as load
+from extract import run_afitech_payment_daily_activity
+from transform import run_afitech_daily_payment_activity_transformer
+from load import run_afitech_daily_payment_activity_loader
+from base.orchestrator import Orchestrator
 
-def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_afitech_daily_payment_activity.log").get_logger()
-    try:
-        logger.info("Lancement de l'orchestrateur...")
-        extract()
-        transform()
-        load()
-        logger.info("Orchestrateur terminé avec succès.")
-
-    except Exception as e:
-        logger.error(f"Erreur lors de l'exécution de l'orchestrateur : {e}")
-        raise e
+def run_afitech_daily_payment_activity_orchestrator():
+  orchestrator = Orchestrator(
+      name="afitech_daily_payment_activity",
+      extractor=run_afitech_payment_daily_activity,
+      transformer=run_afitech_daily_payment_activity_transformer,
+      loader=run_afitech_daily_payment_activity_loader
+  )
+  orchestrator.run()
 
 if __name__ == "__main__":
-  orchestrator()
+  run_afitech_daily_payment_activity_orchestrator()

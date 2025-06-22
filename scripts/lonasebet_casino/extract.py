@@ -39,20 +39,17 @@ class ExtractLonsasebetCasino(BaseScrapper):
         password = secret_config["LONASEBET_CASINO_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, username_xpath))).send_keys(
-            username)
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, password_xpath))).send_keys(
-            password)
+        self.wait_and_send_keys(username_xpath, locator_type='xpath', timeout=10*9, keys=username, raise_error=True)
+        self.wait_and_send_keys(password_xpath, locator_type='xpath', timeout=10*9, keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser, timeout=10 * 9).until(
-            EC.element_to_be_clickable((By.XPATH, submit_button_xpath))).click()
+        self.wait_and_click(submit_button_xpath, locator_type='xpath', timeout=10*9)
         sleep(2)
 
         try:
             self.logger.info("Vérification de la connexion...")
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser, timeout=10).until(EC.presence_of_element_located((By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, raise_error=True, timeout=10*9)
             sleep(1)
             self.logger.info("Connexion à la plateforme réussie.")
         except Exception as error:
@@ -80,13 +77,11 @@ class ExtractLonsasebetCasino(BaseScrapper):
             calendar_start_button_xpath = html_elements["calendar_start_button_xpath"]
             calendar_start_month_year_xpath = html_elements["calendar_start_month_year_xpath"]
             calendar_start_day_xpath = html_elements["calendar_start_day_xpath"]
+            ngb_accordion_button_xpath = html_elements["ngb_accordion_button_xpath"]
+            ngb_create_report_button_xpath = html_elements["ngb_create_report_button_xpath"]
 
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div[2]/div/hg-create-report-button[2]/button",
-                locator_type="xpath")
+            self.wait_and_click(ngb_accordion_button_xpath, locator_type="xpath")
+            self.wait_and_click(ngb_create_report_button_xpath, locator_type="xpath")
             sleep(1)
 
             browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
@@ -118,16 +113,15 @@ class ExtractLonsasebetCasino(BaseScrapper):
             calendar_end_xpath = html_elements["calendar_end_xpath"]
             calendar_end_month_year_xpath = html_elements["calendar_end_month_year_xpath"]
             calendar_end_day_xpath = html_elements["calendar_end_day_xpath"]
+            calendar_button_1_xpath = html_elements["calendar_button_1_xpath"]
+            calendar_button_2_xpath = html_elements["calendar_button_2_xpath"]
+            calendar_button_3_xpath = html_elements["calendar_button_3_xpath"]
+
             self.wait_and_click(calendar_end_xpath, locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[1]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]",
-                locator_type="xpath")
+            self.wait_and_click(calendar_button_1_xpath, locator_type="xpath")
+            self.wait_and_click(calendar_button_2_xpath, locator_type="xpath")
+            self.wait_and_click(calendar_button_3_xpath, locator_type="xpath")
+
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
                 if end_date.strftime('%Y') in i.text:
                     i.click()

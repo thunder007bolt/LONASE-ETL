@@ -23,6 +23,7 @@ class LonasebetCasinoTransformer(Transformer):
         data["ANNEE"] = str(date.strftime("%Y"))
         data["MOIS"] = str(date.strftime("%m"))
 
+        # todo: to be removed
         filesInitialDirectory = r"K:\DATA_FICHIERS\LONASEBET\CASINO\\"
         data.to_csv(filesInitialDirectory + "casinoLonasebet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
 

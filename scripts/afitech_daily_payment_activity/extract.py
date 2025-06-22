@@ -161,27 +161,13 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
 
         while self.files:
             logger.info("Chargement de la page historique des rapports...")
-            browser.get(url)  # Reload the page to get fresh elements
+            browser.get(url)
 
-            # Wait for the table and other elements to load
             self.wait_for_presence(table_xpath, timeout=40)
-            self.wait_for_presence(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-                timeout=40
-            )
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
-                locator_type="xpath")
-            # Process rows with fresh elements each iteration
+            page_number = self.config["page_number"]
+            more_button_xpath = html_elements['more_button_xpath']
+            for i in range(0, page_number):
+                self.wait_and_click(more_button_xpath, locator_type="xpath")
             rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
 
             for row in rows:
@@ -194,7 +180,6 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                     date2 = columns[3].text
                     status = columns[4].text
 
-                    # Check if the row matches a file in self.files
                     founded = False
                     idx = None
                     formated_start_date = ""
@@ -212,11 +197,9 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                         logger.info("Téléchargement du fichier...")
                         try:
                             logger.info("Recherche du bouton de téléchargement...")
-                            # Find the button within the row context
                             download_button = row.find_element(By.XPATH, download_button_xpath)
 
                             logger.info("Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
-                            # Optional: Wait for visibility/presence first, though JS click might not strictly need it
                             WebDriverWait(browser, 10).until(EC.visibility_of(download_button))
 
                             logger.info("Tentative de clic via JavaScript...")
@@ -232,7 +215,7 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                             name = f"{self.name}_{formated_start_date.replace('/', '-')}_{formated_end_date.replace('/', '-')}"
                             file_pattern = self.config['file_pattern']
                             rename_file(file_pattern, self.config["download_path"], name, logger)
-                            del self.files[idx]  # Remove downloaded file from list
+                            del self.files[idx]
                         except Exception as e:
                             logger.error(f"Le fichier du {date1} n'a pas pu être téléchargé: {str(e)}")
 
@@ -281,7 +264,6 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                 logger.info("Téléchargement du fichier...")
                 self.wait_for_presence(download_button_xpath)
                 download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
-                # self.wait_and_click(download_button, locator_type="xpath")
                 WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
                 logger.info("Téléchargement lancé avec succès.")
                 try:
@@ -318,7 +300,6 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
         self._open_browser()
         self._connection_to_platform()
         self._generate_files()
-        # self._download_files()
         """
         def generate_date_range(start_date, end_date):
            return [{"start_date": start_date + timedelta(days=i),

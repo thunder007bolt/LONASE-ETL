@@ -1,6 +1,8 @@
 ### system ###
 import glob
 import pandas as pd
+from lxml.html.defs import table_tags
+
 ### base ###
 from base.logger import Logger
 from base.web_scrapper import BaseScrapper
@@ -35,16 +37,16 @@ class ExtractGitechTirage(BaseScrapper):
         password = secret_config["GITECH_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, usernameId))).send_keys(username)
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, passwordId))).send_keys(password)
+        self.wait_and_send_keys(element=usernameId, keys=username, raise_error=True)
+        self.wait_and_send_keys(element=passwordId, keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser,timeout=10*9).until( EC.element_to_be_clickable(( By.ID, submit_buttonId))).click()
+        self.wait_and_click(element=submit_buttonId)
 
         self.logger.info("Vérification de la connexion...")
         try:
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, raise_error=True)
             self.logger.info("Connexion à la plateforme réussie.")
 
         except:
@@ -102,22 +104,21 @@ class ExtractGitechTirage(BaseScrapper):
             except:
                 pass
 
-            
-            xpath="/html/body/form/div[3]/table[2]/tbody/tr[6]/td/div/table[2]/tbody/tr/td/div/table"
-            table = self.wait_for_click(xpath)
+            table_xpath = html_elements['table_xpath']
+            mini_table_xpath = html_elements['mini_table_xpath']
+            button_xpath = html_elements['button_xpath']
+            table = self.wait_for_click(table_xpath)
             df_combined = pd.DataFrame()
             dfs = pd.read_html(table.get_attribute('outerHTML'), encoding='ISO-8859-1', thousands='.') 
             df = dfs[0].dropna(axis=0, thresh=4)
 
             
             for i in  range(0,len(table.find_elements(by=By.TAG_NAME, value='a'))):
-                xpath = "/html/body/form/div[3]/table[2]/tbody/tr[6]/td/div/table[2]/tbody/tr/td/div/table"
-                table = self.wait_for_click(xpath)
+                table = self.wait_for_click(table_xpath)
                 a = table.find_elements(by=By.TAG_NAME, value="a")[i]
                 a.click()
                 
-                xpath = "/html/body/form/div[3]/table[2]/tbody/tr[7]/td/div[1]/table[2]/tbody/tr[2]/td/div/table"
-                mini_table = self.wait_for_click(xpath)
+                mini_table = self.wait_for_click(mini_table_xpath)
                 
                 mini_dfs = pd.read_html(mini_table.get_attribute('outerHTML'), encoding='ISO-8859-1',thousands='.')
 
@@ -132,8 +133,7 @@ class ExtractGitechTirage(BaseScrapper):
 
                 df_combined = pd.concat([df_combined, mini_df], ignore_index=True)
 
-                xpath = "html/body/form/div[3]/table[2]/tbody/tr[7]/td/div[1]/table[1]/tbody/tr/td/input"
-                self.wait_and_click(xpath, locator_type="xpath")
+                self.wait_and_click(button_xpath, locator_type="xpath")
 
             self.logger.info("Déplacement du fichier...")
             name = f"{self.name}_{start_date.strftime('%Y-%m-%d')}.csv"

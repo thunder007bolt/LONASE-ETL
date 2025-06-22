@@ -31,7 +31,6 @@ class BaseFTP(ABC):
         self.file_pattern = config["file_pattern"]
         self.filename = f"{config["file_prefix"]}{self.date.strftime("%Y%m%d")}"
 
-        # wait time
         self.wait_time = config["wait_time"]
 
         logger = Logger(log_file=log_file).get_logger()
@@ -40,6 +39,7 @@ class BaseFTP(ABC):
 
 
     def _login(self):
+        """Connexion FTP"""
         try:
             self.logger.info(f"Connexion FTP...")
             host = self.secret_config["FTP_HOST"]
@@ -56,6 +56,7 @@ class BaseFTP(ABC):
             raise e
 
     def _download_files(self):
+        """Téléchargement des fichiers"""
         try:
             self.ftp.cwd(self.source_path)
             files = self.ftp.nlst()
@@ -70,7 +71,8 @@ class BaseFTP(ABC):
 
     def _delete_old_files(self):
         self.logger.info("Suppression des fichiers existant...")
-        delete_file(self.config["download_path"], self.config["file_pattern"])
+        #delete_file(self.config["download_path"], self.config["file_pattern"])
+        #todo: terminer cette fonctionalité
 
     def _verify_download(self):
         def wait_for_download(pattern, timeout=120, poll_interval=2):
@@ -91,10 +93,12 @@ class BaseFTP(ABC):
             self.logger.info(f"Le fichier du {self.date} a bien ete telecharge")
 
     def rename_file(self):
+        """Renommage du fichier"""
         name = f"{self.name}_{self.date.strftime('%Y-%m-%d')}"
         rename_file(self.file_pattern, self.extraction_dest_relative_path, name, self.logger)
 
     def _close_ftp_connection(self):
+        """Fermeture de la connexion FTP"""
         try:
             self.ftp.close()
         except Exception as e:
