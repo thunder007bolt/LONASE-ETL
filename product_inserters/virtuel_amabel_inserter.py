@@ -22,50 +22,40 @@ class VirtuelAmabelInserter(ProductInserter):
             params_dates = {'date_debut': self.date_debut, 'date_fin': self.date_fin}
 
             if data is not None and not data.empty:
-                # 1. Truncate/delete from table temporaire (SRC_PRD_SUNUBET)
                 if 'truncate_temp' in queries:
                     self._execute_query('truncate_temp')
 
-                # 2. Insert into table temporaire
                 self.insert_dataframe_to_temp(data)
 
-                # 2.1 Insert into dim_terminal (basé sur la table temp)
-                if 'insert_dim_terminal' in queries:
+                if 'insert_dim_terminal' in queries: # Basé sur la table temp
                     self._execute_query('insert_dim_terminal')
 
-                # 2.2 Update annulations in temp table
-                if 'update_temp_annulations' in queries:
+                if 'update_temp_annulations' in queries: # Dans la table temp
                     self._execute_query('update_temp_annulations')
             else:
                 if self.logger:
                     self.logger.info(f"DataFrame vide pour {self.__class__.__name__}, les étapes liées à la table temporaire sont sautées.")
 
-
-            # 3. Delete from table principale (FAIT_VENTE et FAIT_LOTS)
             if 'delete_main_fait_vente' in queries:
                 self._execute_query('delete_main_fait_vente', params=params_dates)
             if 'delete_main_fait_lots' in queries:
                 self._execute_query('delete_main_fait_lots', params=params_dates)
 
-            # 4. Insert into table principale from table temporaire (FAIT_VENTE et FAIT_LOTS)
-            if 'insert_main_fait_vente' in queries:
-                self._execute_query('insert_main_fait_vente') # Ces requêtes se basent sur la table temp et DIM_TEMPS
+            if 'insert_main_fait_vente' in queries: # Ces requêtes se basent sur la table temp et DIM_TEMPS
+                self._execute_query('insert_main_fait_vente')
             if 'insert_main_fait_lots' in queries:
                 self._execute_query('insert_main_fait_lots')
 
-            # 5. Opération de MERGE pour dtm_ca_daily
             if 'merge_dtm_ca_daily' in queries:
                  self._execute_query('merge_dtm_ca_daily', params=params_dates)
 
-            # 6. Archiver et nettoyer la table temporaire
             if data is not None and not data.empty:
-                if 'delete_ar_sunubet_prd' in queries: # Supprime les enregistrements du jour de l'archive
-                    self._execute_query('delete_ar_sunubet_prd') # Cette requête n'utilise pas de params, elle se base sur le contenu de la temp
+                if 'delete_ar_sunubet_prd' in queries: # Supprime les enregistrements du jour de l'archive, se base sur le contenu de la temp
+                    self._execute_query('delete_ar_sunubet_prd')
                 if 'insert_ar_sunubet_prd' in queries: # Insère le contenu actuel de la temp dans l'archive
                     self._execute_query('insert_ar_sunubet_prd')
                 if 'truncate_temp' in queries: # Vide la table temporaire
                     self._execute_query('truncate_temp')
-
 
             if self.logger:
                 self.logger.info(f"Processus load_data complété pour {self.__class__.__name__}.")

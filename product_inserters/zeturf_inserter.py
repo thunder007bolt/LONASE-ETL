@@ -26,7 +26,7 @@ class ZeturfInserter(ProductInserter):
                     self._execute_query('truncate_temp')
 
                 # 2. Insert into table temporaire
-                self.insert_dataframe_to_temp(data) # S'assure que la requête 'insert_temp' est définie
+                self.insert_dataframe_to_temp(data)
             else:
                  if self.logger:
                     self.logger.info(f"DataFrame vide pour {self.__class__.__name__}, les étapes truncate_temp et insert_temp sont sautées.")

@@ -28,8 +28,7 @@ class BwinnerInserter(ProductInserter):
                     self._execute_query('truncate_temp')
 
                 # 2. Insert into table temporaire
-                # La méthode `insert_dataframe_to_temp` utilisera la requête 'insert_temp'
-                self.insert_dataframe_to_temp(data) # S'assure que la requête 'insert_temp' est définie
+                self.insert_dataframe_to_temp(data)
 
                 # 2.1 Mise à jour spécifique du statut pour Bwinner
                 if 'update_status_temp' in queries:
