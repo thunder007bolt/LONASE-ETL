@@ -10,7 +10,6 @@ from selenium import webdriver
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.select import Select
-from soupsieve import select
 
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
@@ -63,7 +62,6 @@ from selenium import webdriver
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.select import Select
-from soupsieve import select
 
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
@@ -582,7 +580,7 @@ start_date = end_date - delta
 
 delta = timedelta(days=1)
 
-#start_date = date(2025, 4, 23)
+start_date = date(2025, 6, 15)
 
 #end_date = start_date+delta
 

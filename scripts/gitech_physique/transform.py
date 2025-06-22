@@ -16,7 +16,7 @@ class GitechPhysiqueTransformer(Transformer):
         self.unused_files_path = self.source_path.parent / "unused_files"
         self.others_files_path = self.source_path.parent / "others"
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         categorie = file.name.split("_")[-1].replace('.csv', '')
         data = pd.read_csv(file, encoding='latin-1', skiprows=1, index_col=False, sep=',')
         data['categorie'] = str(categorie)

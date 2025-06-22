@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 
 def move_file(file_path: Path, destination_folder: Path) -> Path:
     """
@@ -122,3 +123,51 @@ def delete_file(path: Path, file_pattern: str):
 
 def files_list(path, pattern="*"):
     return list(Path(path).glob(pattern))
+
+
+def copy_files(pattern, source_folder, destination_folder, logger):
+    """
+    Copie un fichier ou un ensemble de fichiers correspondant à un motif
+    depuis un dossier source vers un dossier de destination.
+
+    Args:
+        pattern (str): Motif pour identifier les fichiers à copier (par exemple, "*.txt").
+        source_folder (str): Chemin du dossier source contenant les fichiers.
+        destination_folder (str): Chemin du dossier de destination où copier les fichiers.
+        logger: Logger pour enregistrer les événements et les erreurs.
+    """
+    # Convertir les dossiers en objets Path
+    source_path = Path(source_folder)
+    destination_path = Path(destination_folder)
+
+    # Vérifier si le dossier de destination existe, sinon le créer
+    if not destination_path.exists():
+        try:
+            destination_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Dossier de destination créé : {destination_path}")
+        except Exception as e:
+            logger.error(f"Erreur lors de la création du dossier de destination : {e}")
+            return
+
+    # Rechercher les fichiers correspondant au motif
+    files = list(source_path.glob(pattern))
+    if not files:
+        logger.info(f"Aucun fichier trouvé avec le pattern : {pattern} dans {source_folder}")
+        return
+
+    # Copier chaque fichier vers le dossier de destination
+    for file in files:
+        try:
+            # Construire le chemin de destination
+            destination_file = destination_path / file.name
+
+            # Vérifier si le fichier existe déjà dans le dossier de destination
+            if destination_file.exists():
+                logger.warning(f"Le fichier {file.name} existe déjà dans {destination_folder}")
+                continue
+
+            # Copier le fichier
+            shutil.copy2(file, destination_file)  # copy2 préserve les métadonnées
+            logger.info(f"Fichier copié : {file} -> {destination_file}")
+        except Exception as e:
+            logger.error(f"Erreur lors de la copie de {file}: {e}")
