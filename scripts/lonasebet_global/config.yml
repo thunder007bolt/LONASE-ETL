@@ -8,7 +8,7 @@ lonasebet_global:
   file_pattern: "globalLonasebet*.csv"
   download_path: "K:/DATA_FICHIERS/LONASEBET/GLOBAL/"
   wait_time: 200
-  start_date: #YYYY-MM-DD
+  start_date: 2025-06-18
   end_date: #YYYY-MM-DD
 
   urls:
@@ -21,13 +21,17 @@ lonasebet_global:
     login_submit_button_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[3]/button"
     verification_xpath: "/html/body/hg-root/hg-layout/div/div/hg-header/div/div/hg-topbar-infos/div/div[2]/div[2]/button/div/span"
 
-    date_picker_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/button"
+    date_picker_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/input"
     year_picker_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
     year_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
     month_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
     day_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
-
     category_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select/div/div/div[2]"
+    category_dropdown_ng_select_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select"
+    canal_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select/div/div/div[2]"
+    canal_dropdown_ng_select_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select"
+
+    #category_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select/div/div/div[2]"
     category_options_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div"
     masse_commune_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[1]/div"
     masse_separee_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[2]/div"

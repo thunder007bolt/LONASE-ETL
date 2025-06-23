@@ -8,6 +8,8 @@ from base.web_scrapper import BaseScrapper
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from utils.date_utils import sleep
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 class ExtractLonasebetGlobal(BaseScrapper):
     def __init__(self, env_variables_list):
@@ -33,7 +35,7 @@ class ExtractLonasebetGlobal(BaseScrapper):
 
         self.logger.info("Saisie des identifiants...")
         self.wait_and_send_keys(username_xpath, locator_type='xpath', timeout=90, keys=username, raise_error=True)
-        self.wait_and_send_keys(password_xpath, locator_type='xpath', timeout=10, keys=password, raise_error=True)
+        self.wait_and_send_keys(password_xpath, locator_type='xpath', timeout=90, keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
         self.wait_and_click(submit_button_xpath, locator_type='xpath', timeout=10)
@@ -56,9 +58,68 @@ class ExtractLonasebetGlobal(BaseScrapper):
         self.logger.info("Page d'analyse chargée.")
         sleep(5)
 
+    def manage_dropdown_state(self, desired_state: str, dpd_type):
+        """
+        Ouvre ou ferme le dropdown ng-select de manière fiable et uniquement si nécessaire,
+        en utilisant un clic JavaScript pour une meilleure robustesse.
+
+        Args:
+            desired_state (str): L'état souhaité pour le dropdown. Accepte 'open' ou 'close'.
+        """
+        category_dropdown_ng_select_xpath = self.config['html_elements']['category_dropdown_ng_select_xpath']
+        category_dropdown_xpath = self.config['html_elements']['category_dropdown_xpath']
+        canal_dropdown_ng_select_xpath = self.config['html_elements']['canal_dropdown_ng_select_xpath']
+        canal_dropdown_xpath = self.config['html_elements']['canal_dropdown_xpath']
+
+        if dpd_type == "category":
+            dropdown_xpath = category_dropdown_xpath
+            dropdown_ng_select_xpath = category_dropdown_ng_select_xpath
+        else:
+            dropdown_xpath = canal_dropdown_xpath
+            dropdown_ng_select_xpath = canal_dropdown_ng_select_xpath
+        try:
+            wait = WebDriverWait(self.browser, 10)  # Augmentation du timeout à 10s par sécurité
+
+            # Attendre que l'élément existe dans le DOM
+            dropdown_element = wait.until(
+                EC.presence_of_element_located((By.XPATH, dropdown_ng_select_xpath)))
+
+            current_classes = dropdown_element.get_attribute('class')
+            is_currently_open = 'ng-select-opened' in current_classes
+
+            action_needed = (desired_state == 'open' and not is_currently_open) or \
+                            (desired_state == 'close' and is_currently_open)
+
+            if action_needed:
+                self.wait_and_click_v2(dropdown_ng_select_xpath, locator_type="xpath")
+
+                # Attendre la confirmation du changement d'état
+                if desired_state == 'open':
+                    wait.until(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                              dropdown_ng_select_xpath).get_attribute(
+                        'class'))
+                else:
+                    wait.until_not(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                                  dropdown_ng_select_xpath).get_attribute(
+                        'class'))
+            else:
+                pass
+                # self.logger.info("Le dropdown est déjà dans l'état souhaité, aucune action n'est nécessaire.")
+
+        except TimeoutException:
+            # Si le timeout se produit, on log l'état final des classes pour le débogage
+            final_classes = self.browser.find_element(By.XPATH, dropdown_ng_select_xpath).get_attribute(
+                'class')
+            self.logger.error(
+                f"Timeout: L'état du dropdown n'a pas changé comme attendu. Classes finales: '{final_classes}'")
+            raise
+        except Exception as e:
+            self.logger.error(f"Une erreur imprévue est survenue lors de la gestion du dropdown: {e}")
+            raise
+
     def _click_categorie_type(self, category_method_name):
         self.logger.debug(f"Ouverture du dropdown catégorie.")
-        self.wait_and_click(self.config['html_elements']['category_dropdown_xpath'], locator_type='xpath')
+        self.manage_dropdown_state('open', dpd_type='category')
         sleep(0.5)
 
         category_methods = {
@@ -72,47 +133,42 @@ class ExtractLonasebetGlobal(BaseScrapper):
             category_methods[category_method_name]()
         else:
             self.logger.error(f"Méthode de catégorie inconnue: {category_method_name}")
-            self._close_category_dropdown()
+            self.manage_dropdown_state('close', dpd_type="category")
             raise ValueError(f"Méthode de catégorie inconnue: {category_method_name}")
 
     def _select_masse_commune(self):
         self.categorie_jeux = 'Hippique masse commune internationale'
         self.logger.info(f"Sélection de la catégorie: {self.categorie_jeux}")
         self.wait_and_click(self.config['html_elements']['masse_commune_option_xpath'], locator_type='xpath')
-        self._close_category_dropdown()
+        self.manage_dropdown_state('close',  dpd_type="category")
 
     def _select_masse_separee(self):
         self.categorie_jeux = 'Hippique masse séparée'
         self.logger.info(f"Sélection de la catégorie: {self.categorie_jeux}")
         self.wait_and_click(self.config['html_elements']['masse_separee_option_xpath'], locator_type='xpath')
-        self._close_category_dropdown()
+        self.manage_dropdown_state('close', dpd_type="category")
 
     def _select_sport(self):
         self.categorie_jeux = 'Sports'
         self.logger.info(f"Sélection de la catégorie: {self.categorie_jeux}")
         self.wait_and_click(self.config['html_elements']['sports_option_xpath'], locator_type='xpath')
-        self._close_category_dropdown()
+        self.manage_dropdown_state('close',  dpd_type="category")
 
     def _select_virtuel(self):
         self.categorie_jeux = 'Virtuel'
         self.logger.info(f"Sélection de la catégorie: {self.categorie_jeux}")
         self.wait_and_click(self.config['html_elements']['virtuel_option_xpath'], locator_type='xpath')
-        self._close_category_dropdown()
+        self.manage_dropdown_state('close',  dpd_type="category")
 
     def _select_casino(self):
         self.categorie_jeux = 'Jeux instantanés'
         self.logger.info(f"Sélection de la catégorie: {self.categorie_jeux}")
         self.wait_and_click(self.config['html_elements']['casino_option_xpath'], locator_type='xpath')
-        self._close_category_dropdown()
-
-    def _close_category_dropdown(self):
-        self.logger.debug(f"Fermeture du dropdown catégorie.")
-        self.wait_and_click(self.config['html_elements']['close_category_dropdown_xpath'], locator_type='xpath')
-        sleep(0.5)
+        self.manage_dropdown_state('close',  dpd_type="category")
 
     def _click_canal_type(self, canal_method_name):
         self.logger.debug(f"Ouverture du dropdown canal.")
-        self.wait_and_click(self.config['html_elements']['channel_dropdown_xpath'], locator_type='xpath')
+        self.manage_dropdown_state('open',  dpd_type="canal")
         sleep(0.5)
 
         canal_methods = {
@@ -123,7 +179,7 @@ class ExtractLonasebetGlobal(BaseScrapper):
             canal_methods[canal_method_name]()
         else:
             self.logger.error(f"Méthode de canal inconnue: {canal_method_name}")
-            self._close_canal_dropdown()
+            self.manage_dropdown_state('open', dpd_type="canal")
             raise ValueError(f"Méthode de canal inconnue: {canal_method_name}")
 
     def _select_canal_online(self):
@@ -145,36 +201,48 @@ class ExtractLonasebetGlobal(BaseScrapper):
 
     def _pick_date_on_calendar(self, current_date):
         self.logger.info(f"Sélection de la date: {current_date.strftime('%Y-%m-%d')}")
+        browser = self.browser
         html_elements = self.config['html_elements']
+        calendar_year_xpath = html_elements['year_list_xpath']
+        calendar_month_xpath = html_elements['month_list_xpath']
+        calendar_day_xpath = html_elements['day_list_xpath']
 
-        self.wait_and_click(html_elements['date_picker_button_xpath'], locator_type='xpath')
+        self.wait_and_click_v2(html_elements['date_picker_button_xpath'], locator_type='xpath')
+        self.wait_and_click_v2(html_elements['year_picker_button_xpath'], locator_type='xpath')
+        sleep(0.5)
+        # Sélection de la date de début
+        for i in browser.find_elements(By.XPATH, calendar_year_xpath):
+            if current_date.strftime('%Y') in i.text:
+                i.click()
+                break
+        sleep(0.5)
+        for i in browser.find_elements(By.XPATH, calendar_month_xpath):
+            if current_date.strftime('%b').lower() in i.text.lower():
+                i.click()
+                break
+        sleep(0.5)
+        for i in browser.find_elements(By.XPATH, calendar_day_xpath):
+            if i.text.strip() == current_date.strftime('%d').lstrip('0'):
+                i.click()
+                break
         sleep(0.5)
 
-        self.wait_and_click(html_elements['year_picker_button_xpath'], locator_type='xpath')
+        # Sélection de la date de fin
+        for i in browser.find_elements(By.XPATH, calendar_year_xpath):
+            if current_date.strftime('%Y') in i.text:
+                i.click()
+                break
         sleep(0.5)
-        year_elements = self.browser.find_elements(by=By.XPATH, value=html_elements['year_list_xpath'])
-        for el in year_elements:
-            if current_date.strftime('%Y') in el.text:
-                el.click()
-                sleep(0.5)
+        for i in browser.find_elements(By.XPATH, calendar_month_xpath):
+            if current_date.strftime('%b').lower() in i.text.lower():
+                i.click()
                 break
-
-        month_elements = self.browser.find_elements(by=By.XPATH, value=html_elements['month_list_xpath'])
-        for el in month_elements:
-            if current_date.strftime('%b').lower() in el.text.lower():
-                el.click()
-                sleep(0.5)
+        sleep(0.5)
+        for i in browser.find_elements(By.XPATH, calendar_day_xpath):
+            if i.text.strip() == current_date.strftime('%d').lstrip('0'):
+                i.click()
                 break
-
-        day_elements = self.browser.find_elements(by=By.XPATH, value=html_elements['day_list_xpath'])
-        day_str = current_date.strftime('%d')
-        for el in day_elements:
-            if el.text.strip() == day_str.lstrip('0'):
-                el.click()
-                sleep(0.5)
-                el.click()
-                sleep(0.5)
-                break
+        sleep(0.5)
 
         self.logger.info(f"Date {current_date.strftime('%Y-%m-%d')} sélectionnée.")
 

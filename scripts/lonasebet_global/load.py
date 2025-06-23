@@ -1,16 +1,30 @@
 import pandas as pd
 import numpy as np
-from adodbapi.examples.db_table_names import table
 
 from base.loader import Loader
-from utils.config_utils import get_config
-from utils.file_manipulation import move_file # For moving files in the overridden process_loading
+from utils.file_manipulation import move_file  # For moving files in the overridden process_loading
+
 
 class LonasebetGlobalLoad(Loader):
     def __init__(self):
         name = 'lonasebet_global'
         log_file = 'logs/loader_lonasebet_global.log'
-        columns = []
+        columns = [
+            "Nombre_de_paris", "Nombre_de_tickets",
+            "Mises"
+            , "Produit_brut_des_jeux"
+            , "Rentabilite"
+            , "Mises_en_cours"
+            , "Gains_Joueurs"
+            , "Montant_total_a_payer"
+            , "Montant_total_paye"
+            , "Montant_a_payer_expire"
+            , "Produit_bruts_des_jeux_Cashed_Out"
+            , "JOUR"
+            , "ANNEE"
+            , "MOIS"
+            , "CANAL"
+            , "CATEGORIE"]
         table_name = '[DWHPR_TEMP].[OPTIWARETEMP].[src_prd_globalLonasebet]'
         super().__init__(name, log_file, columns, table_name)
         self.db_archive_table_name = '[DWHPR_TEMP].[OPTIWARETEMP].[ar_globalLonasebet]'
@@ -18,7 +32,7 @@ class LonasebetGlobalLoad(Loader):
     def _convert_file_to_dataframe(self, file_path):
         self.logger.info(f"Lecture du fichier transformé : {file_path}")
         try:
-            df = pd.read_csv(file_path, sep=';', dtype=str, encoding='utf8')
+            df = pd.read_csv(file_path, sep=';', dtype=str, encoding='latin1')
 
             df.replace(np.nan, '', inplace=True)
             df = df.astype(str)
@@ -40,7 +54,8 @@ class LonasebetGlobalLoad(Loader):
                     SELECT DISTINCT CAST(jour AS DATE) FROM {self.table_name}
                 )
             """
-            self.logger.info(f"Suppression des données existantes dans {self.db_archive_table_name} pour les jours concernés...")
+            self.logger.info(
+                f"Suppression des données existantes dans {self.db_archive_table_name} pour les jours concernés...")
             self.cursor.execute(delete_query)
             self.connexion.commit()
             self.logger.info("Données existantes supprimées avec succès de la table d'archive.")
@@ -108,9 +123,11 @@ class LonasebetGlobalLoad(Loader):
                 self.connexion.close()
             self.logger.info("Connexion à la base de données fermée.")
 
+
 def run_lonasebet_global_loader():
     loader = LonasebetGlobalLoad()
     loader.process_loading()
+
 
 if __name__ == "__main__":
     run_lonasebet_global_loader()
