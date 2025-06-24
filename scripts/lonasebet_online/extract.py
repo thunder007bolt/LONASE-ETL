@@ -40,61 +40,21 @@ class ExtractLonsasebetOnline(BaseScrapper):
         password = secret_config["LONASEBET_ONLINE_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, username_xpath))).send_keys(
-            username)
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, password_xpath))).send_keys(
-            password)
+        self.wait_and_send_keys(username_xpath, locator_type='xpath', timeout=90, keys=username, raise_error=True)
+        self.wait_and_send_keys(password_xpath, locator_type='xpath', timeout=90, keys=password, raise_error=True)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser, timeout=10 * 9).until(
-            EC.element_to_be_clickable((By.XPATH, submit_button_xpath))).click()
-        sleep(2)
+        self.wait_and_click(submit_button_xpath, locator_type='xpath', timeout=10)
 
         try:
             self.logger.info("Vérification de la connexion...")
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser, timeout=10).until(EC.presence_of_element_located((By.XPATH, verification_xpath)))
-            sleep(1)
+            self.wait_for_presence(verification_xpath, raise_error=True, timeout=90)
             self.logger.info("Connexion à la plateforme réussie.")
+
         except Exception as error:
             self.logger.info("Connexion à la plateforme n'a pas pu être établie.")
             self._quit(error)
-
-        # try:
-        #     self.logger.info("Authentification...")
-        #     dropdown_element_xpath = html_elements["dropdown_element_xpath"]
-        #     google_authentication_element_xpath = html_elements["google_authentication_element_xpath"]
-        #     code_input_element_xpath = html_elements["code_input_element_xpath"]
-        #     opt_url = self.secret_config["LONASEBET_ONLINE_GET_OTP_URL"]
-        #
-        #     self.logger.info("Choix de la méthode d'authentification...")
-        #     WebDriverWait(browser, timeout=3).until(
-        #         EC.element_to_be_clickable((By.XPATH, dropdown_element_xpath))).click()
-        #     WebDriverWait(browser, timeout=3).until(
-        #         EC.element_to_be_clickable((By.XPATH, google_authentication_element_xpath))).click()
-        #     sleep(2)
-        #
-        #     self.logger.info("Récupération du code...")
-        #     code = pyotp.parse_uri(opt_url).now()
-        #
-        #     self.logger.info("Saisie du code de confirmation...")
-        #     WebDriverWait(browser, timeout=3).until(
-        #         EC.element_to_be_clickable((By.XPATH, code_input_element_xpath))).send_keys(code)
-        #
-        # except Exception as error:
-        #     self.logger.error("Authentification n'a pas pu être effectuée.")
-        #     self._quit(error)
-        #
-        # try:
-        #     self.logger.info("Verification du la page de rapports...")
-        #     report_verification_xpath = html_elements["report_verification_xpath"]
-        #     WebDriverWait(browser, timeout=10 * 9).until(
-        #         EC.presence_of_element_located((By.XPATH, report_verification_xpath)))
-        #     self.logger.info("Connexion à la plateforme réussie.")
-        #
-        # except Exception as error:
-        #     self.logger.error("La page de rapports n'a pas pu être chargée.")
-        #     self._quit(error)
 
     def _generate_files(self):
         browser = self.browser
@@ -111,19 +71,23 @@ class ExtractLonsasebetOnline(BaseScrapper):
         while end_date <= (self.end_date + delta):
             browser.get(reports_url)
             logger.info("Remplissage des champs de date...")
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[1]/div[2]/div/hg-create-report-button[2]/button",
-                locator_type="xpath")
+            step_1_xpath = self.config['html_elements']['step_1_xpath']
+            step_2_xpath = self.config['html_elements']['step_2_xpath']
+            step_3_xpath = self.config['html_elements']['step_3_xpath']
+
+            self.wait_and_click(step_1_xpath, locator_type="xpath")
             sleep(0.5)
+
             browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-            self.wait_and_click("/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[1]/button",
-                                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[1]/div/button[2]",
-                locator_type="xpath")
+
+            self.wait_and_click(step_2_xpath, locator_type="xpath")
+            self.wait_and_click(step_3_xpath, locator_type="xpath")
+
             sleep(1)
+
             browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
             sleep(1)
+
             logger.info("Date début")
             calendar_start_xpath = html_elements["calendar_start_xpath"]
             calendar_start_button_xpath = html_elements["calendar_start_button_xpath"]
@@ -158,15 +122,14 @@ class ExtractLonsasebetOnline(BaseScrapper):
             calendar_end_month_year_xpath = html_elements["calendar_end_month_year_xpath"]
             calendar_end_day_xpath = html_elements["calendar_end_day_xpath"]
             self.wait_and_click(calendar_end_xpath, locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[2]/div[1]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]",
-                locator_type="xpath")
+
+            step_4_xpath = self.config['html_elements']['step_4_xpath']
+            step_5_xpath = self.config['html_elements']['step_5_xpath']
+            step_6_xpath = self.config['html_elements']['step_6_xpath']
+            self.wait_and_click(step_4_xpath, locator_type="xpath")
+            self.wait_and_click(step_5_xpath, locator_type="xpath")
+            self.wait_and_click(step_6_xpath, locator_type="xpath")
+
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
                 if end_date.strftime('%Y') in i.text:
                     i.click()

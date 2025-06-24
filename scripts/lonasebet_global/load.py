@@ -60,7 +60,6 @@ class LonasebetGlobalLoad(Loader):
             self.connexion.commit()
             self.logger.info("Données existantes supprimées avec succès de la table d'archive.")
 
-            # Insert data from temp table to archive table
             insert_archive_query = f"""
                 INSERT INTO {self.db_archive_table_name} ({', '.join([f'[{col}]' for col in self.columns])})
                 SELECT {', '.join([f'[{col}]' for col in self.columns])} FROM {self.table_name}

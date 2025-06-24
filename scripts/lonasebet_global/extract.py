@@ -59,28 +59,16 @@ class ExtractLonasebetGlobal(BaseScrapper):
         sleep(5)
 
     def manage_dropdown_state(self, desired_state: str, dpd_type):
-        """
-        Ouvre ou ferme le dropdown ng-select de manière fiable et uniquement si nécessaire,
-        en utilisant un clic JavaScript pour une meilleure robustesse.
-
-        Args:
-            desired_state (str): L'état souhaité pour le dropdown. Accepte 'open' ou 'close'.
-        """
         category_dropdown_ng_select_xpath = self.config['html_elements']['category_dropdown_ng_select_xpath']
-        category_dropdown_xpath = self.config['html_elements']['category_dropdown_xpath']
         canal_dropdown_ng_select_xpath = self.config['html_elements']['canal_dropdown_ng_select_xpath']
-        canal_dropdown_xpath = self.config['html_elements']['canal_dropdown_xpath']
 
         if dpd_type == "category":
-            dropdown_xpath = category_dropdown_xpath
             dropdown_ng_select_xpath = category_dropdown_ng_select_xpath
         else:
-            dropdown_xpath = canal_dropdown_xpath
             dropdown_ng_select_xpath = canal_dropdown_ng_select_xpath
         try:
-            wait = WebDriverWait(self.browser, 10)  # Augmentation du timeout à 10s par sécurité
+            wait = WebDriverWait(self.browser, 10)
 
-            # Attendre que l'élément existe dans le DOM
             dropdown_element = wait.until(
                 EC.presence_of_element_located((By.XPATH, dropdown_ng_select_xpath)))
 
@@ -93,7 +81,6 @@ class ExtractLonasebetGlobal(BaseScrapper):
             if action_needed:
                 self.wait_and_click_v2(dropdown_ng_select_xpath, locator_type="xpath")
 
-                # Attendre la confirmation du changement d'état
                 if desired_state == 'open':
                     wait.until(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
                                                                               dropdown_ng_select_xpath).get_attribute(
@@ -104,10 +91,8 @@ class ExtractLonasebetGlobal(BaseScrapper):
                         'class'))
             else:
                 pass
-                # self.logger.info("Le dropdown est déjà dans l'état souhaité, aucune action n'est nécessaire.")
 
         except TimeoutException:
-            # Si le timeout se produit, on log l'état final des classes pour le débogage
             final_classes = self.browser.find_element(By.XPATH, dropdown_ng_select_xpath).get_attribute(
                 'class')
             self.logger.error(

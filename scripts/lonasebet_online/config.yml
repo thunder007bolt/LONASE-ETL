@@ -41,6 +41,12 @@ lonasebet_online:
     calendar_end_month_year_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[2]/span"
     calendar_end_day_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
 
+    step_1_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[1]/div[2]/div/hg-create-report-button[2]/button"
+    step_2_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[1]/button"
+    step_3_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[1]/div/button[2]"
+    step_4_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]"
+    step_5_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[2]/div[1]/button[1]"
+    step_6_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[5]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
 
     report_submit_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/button"
 

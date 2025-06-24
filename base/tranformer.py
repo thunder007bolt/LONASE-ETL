@@ -53,6 +53,7 @@ class Transformer(ABC):
                 date = self._get_file_date(file)
             except :
                 date = None
+                
             self._transform_file(file, date=date)
         pass
 
