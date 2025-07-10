@@ -126,8 +126,9 @@ class Loader(ABC):
     def process_loading(self):
 
         # Connect to Sql server
-        self._connect_sql_server_target()
-        self._delete_sql_server_data()
+        if self.sql_server_table_name:
+            self._connect_sql_server_target()
+            self._delete_sql_server_data()
 
         # Connect to Oracle and truncate if enabled
         if  self.oracle_table_name:
@@ -140,7 +141,8 @@ class Loader(ABC):
                 tuples_data = self._dataframe_to_tuples(df)
 
                 # Load to Sql server
-                self._load_sql_server_data(tuples_data)
+                if self.sql_server_table_name:
+                    self._load_sql_server_data(tuples_data)
 
                 # Load to Oracle if enabled
                 if self.oracle_table_name:

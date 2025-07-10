@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+import os
 
 def move_file(file_path: Path, destination_folder: Path) -> Path:
     """
@@ -124,7 +125,23 @@ def delete_file(path: Path, file_pattern: str):
 def files_list(path, pattern="*"):
     return list(Path(path).glob(pattern))
 
+def check_file_not_empty(path):
+    """
+    Vérifie si le fichier existe ET qu'il n'est pas vide.
+    Retourne True si tout est OK, sinon False.
+    Affiche aussi un message explicite.
+    """
+    if not os.path.isfile(path):
+        print(f"Le fichier n'existe pas : {path}")
+        return False
 
+    size = os.path.getsize(path)
+
+    if size == 0:
+        print(f"Le fichier est vide : {path}")
+        return False
+
+    return True
 def copy_files(pattern, source_folder, destination_folder, logger):
     """
     Copie un fichier ou un ensemble de fichiers correspondant à un motif

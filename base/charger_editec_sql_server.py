@@ -82,6 +82,7 @@ for file in glob.glob(filesInitialDirectory + '*["parifoot","loto","5_90","590",
 '''
 
 ######################### CSV ###################
+'''
 for file in glob.glob(filesInitialDirectory + '*RECAP*csv'):
     # print(file)
     data = pd.read_csv(file, sep=';', index_col=False)
@@ -109,70 +110,70 @@ for file in glob.glob(filesInitialDirectory + '*RECAP*csv'):
     shutil.move(file, dest + namefile)
     print(dest + namefile)
 
+#'''
 ######################### EXECL #######################3
-#'''
-for file in glob.glob(filesInitialDirectory + "*RECAP*.xlsx"):
-    data1 = pd.read_excel(file, index_col=False, sheet_name=0)
-    data2 = pd.read_excel(file, index_col=False, sheet_name=1)
-    data3 = pd.read_excel(file, index_col=False, sheet_name=2)
+file = r"K:\DATA_FICHIERS\EDITEC\RECAP MARS.xlsx"
+data1 = pd.read_excel(file, index_col=False, sheet_name=0)
+data2 = pd.read_excel(file, index_col=False, sheet_name=1)
+data3 = pd.read_excel(file, index_col=False, sheet_name=2)
 
-    data1 = pd.DataFrame(data1, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
-                                         'TICKET_ANNULE', 'Paid', 'PRODUIT'])
-    data2 = pd.DataFrame(data2, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
-                                         'TICKET_ANNULE', 'Paid', 'PRODUIT'])
-    data3 = pd.DataFrame(data3, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
-                                         'TICKET_ANNULE', 'Paid', 'PRODUIT'])
+data1 = pd.DataFrame(data1, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
+                                     'TICKET_ANNULE', 'PAYABLE', 'PRODUIT'])
+data2 = pd.DataFrame(data2, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
+                                     'TICKET_ANNULE', 'PAYABLE', 'PRODUIT'])
+data3 = pd.DataFrame(data3, columns=['RETAILER', 'DATE', 'TERMINAL', 'VENTES', 'ANNULATIONS', 'TICKET_EMIS',
+                                     'TICKET_ANNULE', 'PAYABLE', 'PRODUIT'])
 
-    # print(file)
-    # data = pd.read_csv(file,sep=';',index_col=False)
-    namefile = file.split("\\")[-1]
-    # print(data.columns)
+# print(file)
+# data = pd.read_csv(file,sep=';',index_col=False)
+namefile = file.split("\\")[-1]
+# print(data.columns)
 
-    data1 = data1.replace(np.nan, '')
-    data1 = data1.astype(str)
-    data1 = list(data1.to_records(index=False))
+data1 = data1.replace(np.nan, '')
+data1 = data1.astype(str)
+data1 = list(data1.to_records(index=False))
+# print(data)
 
-    # print(data)
+data1 = [tuple(i) for i in data1]
+print(len(data1))
 
-    data1 = [tuple(i) for i in data1]
+data2 = data2.replace(np.nan, '')
+data2 = data2.astype(str)
+data2 = list(data2.to_records(index=False))
 
-    data2 = data2.replace(np.nan, '')
-    data2 = data2.astype(str)
-    data2 = list(data2.to_records(index=False))
+# print(data)
 
-    # print(data)
+data2 = [tuple(i) for i in data2]
+print(len(data2))
 
-    data2 = [tuple(i) for i in data2]
+data3 = data3.replace(np.nan, '')
+data3 = data3.astype(str)
+data3 = list(data3.to_records(index=False))
 
-    data3 = data3.replace(np.nan, '')
-    data3 = data3.astype(str)
-    data3 = list(data3.to_records(index=False))
+# print(data)
 
-    # print(data)
+data3 = [tuple(i) for i in data3]
+print(len(data3))
 
-    data3 = [tuple(i) for i in data3]
+# cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data1)
+# cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data2)
+# cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data3)
 
-    # cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data1)
-    # cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data2)
-    # cursor.executemany("""INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[src_prd_temp_editec]("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?,?,?)""", data3)
+cursor.executemany(
+    """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
+    data1)
+cursor.executemany(
+    """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
+    data2)
+cursor.executemany(
+    """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
+    data3)
 
-    cursor.executemany(
-        """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
-        data1)
-    cursor.executemany(
-        """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
-        data2)
-    cursor.executemany(
-        """INSERT INTO [DWHPR_TEMP].[OPTIWARETEMP].[TEMP_EDITEC]("RETAILER_SALE","T_DATE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAIEMENTS","PRODUIT") VALUES(?,?,?,?,?,?,?,?,?)""",
-        data3)
+conn.commit()
+print("le fichier a ete insere au niveau de la table temporaire")
 
-    conn.commit()
-    print("le fichier a ete insere au niveau de la table temporaire")
+# namefile = file.split("\\")[-1]
 
-    # namefile = file.split("\\")[-1]
-    shutil.move(file, dest + namefile)
-    print(dest + namefile)
-#'''
 cursor.close()
 conn.close()
 

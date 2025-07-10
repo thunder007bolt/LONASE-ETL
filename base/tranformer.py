@@ -2,7 +2,7 @@ from base.logger import Logger
 from utils.config_utils import get_config, get_transformation_configurations
 from pathlib import Path
 from abc import ABC, abstractmethod
-from utils.file_manipulation import move_file
+from utils.file_manipulation import move_file, check_file_not_empty
 import re
 import datetime
 
@@ -43,6 +43,7 @@ class Transformer(ABC):
                 date = self._get_file_date(file)
             except :
                 date = None
+            if not check_file_not_empty(file): continue
             self._transform_file(file, date=date)
         pass
 

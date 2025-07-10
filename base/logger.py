@@ -17,7 +17,7 @@ class Logger:
 
         if not self.logger.hasHandlers():
             # Créer un gestionnaire de fichiers avec rotation
-            handler = RotatingFileHandler(log_file, maxBytes=max_size, backupCount=backup_count, encoding='utf-8')
+            handler = RotatingFileHandler(log_file, maxBytes=max_size, backupCount=backup_count, encoding='latin-1')
             handler.setLevel(log_level)
             # Format des messages de log
             formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(lineno)d - %(message)s")

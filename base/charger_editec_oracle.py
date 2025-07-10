@@ -31,7 +31,7 @@ except:
 conn = cx_Oracle.connect(username,password,dsn)
 cur = conn.cursor() #creates a cursor object
 
-file = r"K:\DATA_FICHIERS\EDITEC\RECAP MARS.xlsx"
+file = r"K:\DATA_FICHIERS\EDITEC\RECAP EDITEC MAI 25.xlsx"
 
 #PARIFOOT
 df1 = pd.read_excel(file,index_col=False, sheet_name=0)
@@ -46,9 +46,11 @@ conn.commit()
 
 #'''
 #PARIFOOT
+
 data = df1.replace(np.nan, '')
 data=data.astype(str)
 data = list(data.to_records(index=False))
+print(len(data))
 cur.executemany("""INSERT INTO optiwaretemp.src_prd_temp_editec("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)""", data)
 conn.commit()
 print('Données PARIFOOT insérées')
@@ -57,6 +59,8 @@ print('Données PARIFOOT insérées')
 data = df2.replace(np.nan, '')
 data=data.astype(str)
 data = list(data.to_records(index=False))
+print(len(data))
+
 cur.executemany("""INSERT INTO optiwaretemp.src_prd_temp_editec("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)""", data)
 conn.commit()
 print('Données LOTO insérées')
@@ -65,6 +69,8 @@ print('Données LOTO insérées')
 data = df3.replace(np.nan, '')
 data=data.astype(str)
 data = list(data.to_records(index=False))
+print(len(data))
+
 cur.executemany("""INSERT INTO optiwaretemp.src_prd_temp_editec("RETAILER","DATE_VENTE", "TERMINAL", "VENTES", "ANNULATIONS","TICKET_EMIS","TICKET_ANNULE" ,"PAYABLE","DATE_PAIEMENT" ,"PAID","PRODUIT") VALUES(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)""", data)
 conn.commit()
 print('Données YAAKAAR insérées')

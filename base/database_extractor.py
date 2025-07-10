@@ -5,8 +5,9 @@ from pathlib import Path
 from utils.config_utils import get_database_extractor_configurations
 from utils.db_utils import get_db_connection, get_oracle_connection
 from utils.file_manipulation import move_file
-from utils.date_utils import get_yesterday_date
+from utils.date_utils import get_yesterday_date, date_string_to_date
 from datetime import timedelta
+import os
 
 delta = timedelta(days=1)
 
@@ -76,8 +77,8 @@ class DatabaseExtractor(ABC):
 
     def _set_date(self):
         _, _, _, yesterday_date = get_yesterday_date()
-        self.start_date = self.config.get("start_date") or yesterday_date
-        self.end_date =  self.config.get("end_date") or yesterday_date
+        self.start_date = date_string_to_date(os.getenv("start_date")) or self.config.get("start_date") or yesterday_date
+        self.end_date = date_string_to_date(os.getenv("end_date")) or self.config.get("end_date") or yesterday_date
 
     def _process_download(self, start_date, end_date=None):
         pass

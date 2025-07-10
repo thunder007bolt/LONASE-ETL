@@ -1,0 +1,62 @@
+editec_loto:
+  extraction_dest_relative_path: "editec_loto/extracted/"
+  transformation_dest_relative_path: "editec_loto/transformed/"
+  error_dest_relative_path: "editec_loto/error/"
+  loaded_dest_relative_path: "editec_loto/loaded/"
+  processed_dest_relative_path: "editec_loto/processed/"
+  file_downloaded_name: "*TicketHistory*csv"
+  download_path: "K:/ETL/DATA_FICHIERS/editec_loto/extracted/"
+  ##### extraction config #####
+  file_pattern: "*TicketHistory*csv"
+  wait_time: 200
+  start_date: #2025-06-02
+  end_date: #2025-06-02
+  urls:
+
+    login: "https://new-admin-lonase.sporty-tech.net/"
+    report: "https://new-admin-lonase.sporty-tech.net/reports/create"
+    report_history: "https://new-admin-lonase.sporty-tech.net/reports/history"
+
+  html_elements:
+    ### login page ###
+    username_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[1]/input"
+    password_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[2]/input"
+    login_submit_button_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[3]/button"
+
+    ### home ###
+    verification_xpath: "/html/body/hg-root/hg-layout/div/div/hg-header/div/div/hg-topbar-infos/div/div[2]/div[2]"
+
+    ### report generation page ###
+    # dropdown_element_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button"
+    report_verification_xpath: "/html/body/hg-root/hg-layout/div/hg-topbar/header/div/div[2]/div[5]/hg-profile-avatar/p-avatar/div/span"
+    report_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button"
+    report_type_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div[2]/div/hg-create-report-button[2]/button"
+    # start
+
+
+    calendar_start_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar"
+    calendar_start_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
+    calendar_start_month_year_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/span"
+    calendar_start_day_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
+    # end
+    calendar_end_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar"
+    calendar_end_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]"
+    calendar_end_month_year_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[2]/span"
+    calendar_end_day_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
+
+    category_dropdown_ng_select_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select"
+    category_options_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select/ng-dropdown-panel/div[2]/div[2]/div"
+
+    report_submit_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/button"
+
+    ### report history page ###
+    table_xpath: "//table/tbody"
+    table_row_xpath: "//table/tbody/tr"
+    download_button_xpath: "*/div/div/i"
+
+  #### transform config ####
+  files_to_transform_pattern: "editec_loto*csv"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

@@ -104,8 +104,8 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
 
         start_date = self.start_date
         delta = timedelta(days=1)
-        end_date = self.start_date
-        while end_date <= (self.end_date):
+        end_date = self.start_date + delta
+        while end_date <= (self.end_date + delta):
 
             browser.get(reports_url)
 
@@ -207,7 +207,7 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                             idx = index
                             break
 
-                    founded_file_name = "DailyPaymentActivity" in report_name and founded
+                    founded_file_name = "PaymentActivity" in report_name and founded
                     if founded_file_name and "Available" in status:
                         logger.info("Téléchargement du fichier...")
                         try:
@@ -273,7 +273,7 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
             date1 = columns[2].text
             date2 = columns[3].text
             status = columns[4].text
-            founded_file_name = "DailyPaymentActivity" in report_name and \
+            founded_file_name = "PaymentActivity" in report_name and \
                                 start_date_formated in date1 and \
                                 end_date_formated in date2
 

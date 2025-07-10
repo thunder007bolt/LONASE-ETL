@@ -29,6 +29,7 @@ class ExtractMojabetUSSD(BaseScrapper):
         self.logger.info("Connexion au site...")
         browser = self.browser
         login_url = self.config['urls']['login']
+        browser.set_page_load_timeout(600)
         browser.get(login_url)
 
         html_elements = self.config['html_elements']
@@ -63,6 +64,7 @@ class ExtractMojabetUSSD(BaseScrapper):
 
         self.logger.info("Chargement de la page des rapports...")
         reports_url = self.config['urls']['report']
+        browser.set_page_load_timeout(600)
         browser.get(reports_url)
 
         xpath_1 = '//*[@id="searchFilters"]/div/div[1]/div[4]/span/span[1]/span/ul/li/input'
@@ -96,7 +98,7 @@ class ExtractMojabetUSSD(BaseScrapper):
 
                 self.wait_and_click("search-button")
 
-                WebDriverWait(self.browser, timeout=15).until(
+                WebDriverWait(self.browser, timeout=60).until(
                     EC.text_to_be_present_in_element_attribute((By.ID, "results-jackpot_processing"), "style", "none"))
 
                 sleep(1)
@@ -143,6 +145,12 @@ class ExtractMojabetUSSD(BaseScrapper):
                 if timer < 0:
                     print("le fichier n'a pas pu etre telecharge")
                     continue
+
+            if len(newlist)== 0:
+                print(f"les données Mojabet du {start_date} sont vides")
+                start_date += delta
+                end_date += delta
+                continue
 
             newlist = pd.concat(newlist, ignore_index=True)
             newlist = newlist.astype(str)

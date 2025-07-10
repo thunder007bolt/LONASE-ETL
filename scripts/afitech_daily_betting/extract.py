@@ -126,9 +126,9 @@ class ExtractAfitechDailyBetting(BaseScrapper):
 
         start_date = self.start_date
         delta = timedelta(days=1)
-        end_date = self.start_date
+        end_date = self.start_date + delta
         browser.get(reports_url)
-        while end_date <= (self.end_date):
+        while end_date <= (self.end_date + delta):
             for index, file in enumerate(self.files):
                 formated_start_date = file["start_date"]
                 formated_end_date = file["end_date"]
@@ -146,7 +146,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                 self.wait_and_click(report_type_xpath, locator_type="xpath", raise_error=True)
                 logger.info("Remplissage des champs de date...")
                 start_date_formated = f"{start_date.strftime('%d/%m/%Y')}"
-                end_date_formated = f"{start_date.strftime('%d/%m/%Y')}"
+                end_date_formated = f"{end_date.strftime('%d/%m/%Y')}"
 
                 start_calendar_input_xpath = html_elements["start_calendar_input_xpath"]
                 end_calendar_input_xpath = html_elements["end_calendar_input_xpath"]
@@ -196,7 +196,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
 
     def _check_and_clean_download_directory(self):
         """Vérifie si des fichiers résiduels existent et les supprime."""
-        files = list(self.extraction_dest_path.glob("*DailyBetting*xlsx"))
+        files = list(self.extraction_dest_path.glob("*Betting*xlsx"))
         if files:
             self.logger.warning(
                 f"Fichiers résiduels trouvés dans {self.extraction_dest_path}: {[f.name for f in files]}")
@@ -258,7 +258,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                             idx = index
                             break
 
-                    founded_file_name = "DailyBetting" in report_name and founded
+                    founded_file_name = "Betting" in report_name and founded
                     if founded_file_name and "Available" in status:
                         logger.info("Téléchargement du fichier...")
                         try:

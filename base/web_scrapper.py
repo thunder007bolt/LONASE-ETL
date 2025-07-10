@@ -89,6 +89,7 @@ class BaseScrapper(ABC):
                     for argument in self.chrome_options_arguments:
                         chrome_options.add_argument(argument)
                 browser = webdriver.Chrome(options=chrome_options)
+                #browser.implicitly_wait(600)
                 self.browser = browser
                 break
 
@@ -116,7 +117,6 @@ class BaseScrapper(ABC):
     def _connection_to_platform(self):
         pass
 
-    @abstractmethod
     def _download_files(self):
         pass
 

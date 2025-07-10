@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from base.tranformer import  Transformer
-from utils.file_manipulation import move_file
+from utils.file_manipulation import move_file, check_file_not_empty
 import zipfile
 
 
@@ -53,6 +53,7 @@ class GitechPhysiqueTransformer(Transformer):
         self.logger.info(f"Transformation des fichiers de {self.source_path} en {self.file_pattern}")
         for file in self.source_path.glob(self.file_pattern):
             self.logger.info(f"Transformation du fichier {file}")
+            if not check_file_not_empty(file): continue
             self._transform_file(file)
         pass
 

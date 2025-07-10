@@ -10,24 +10,18 @@ from base.logger import Logger
 from base.tranformer import  Transformer
 from utils.config_utils import get_config
 
-class PmuOnlineTransformer(Transformer):
+
+class GitechLottoTransformer(Transformer):
     def __init__(self):
-        super().__init__('pmu_online', 'logs/transformer_pmu_online.log')
+        super().__init__('gitech_lotto', 'logs/transformer_gitech_lotto.log')
 
     def convert_xls_to_xlsx(self, xls_file: Path) -> Path:
-        """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
-        """
         TEMP_DIR = r"C:\Users\optiware2\AppData\Local\Temp\gen_py\3.7"
-
         def clear_temp():
             try:
                 shutil.rmtree(TEMP_DIR)
             except OSError as o:
                 print(f"Erreur : {o.strerror}")
-
         """
         Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
         Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
@@ -62,7 +56,7 @@ class PmuOnlineTransformer(Transformer):
         """
         self.logger.info(f"Extraction de la date à partir du fichier {xlsx_file.name}")
         df = pd.read_excel(xlsx_file)
-        cell_value = str(df.iloc[2])
+        cell_value = str(df.iloc[1])
         match = re.search(r"Du:\s*(\d{2}/\d{2}/\d{4})", cell_value)
         if match:
             date_str = match.group(1)
@@ -88,7 +82,7 @@ class PmuOnlineTransformer(Transformer):
         except Exception:
             return 0
 
-    def _transform_file(self, file: Path, date=None):
+    def _transform_file(self, file: Path, date):
         """
         Traite un fichier correspondant au motif "Etat de la course".
         Cette méthode effectue les étapes suivantes :
@@ -117,52 +111,48 @@ class PmuOnlineTransformer(Transformer):
 
         try:
             # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
-            data = pd.read_excel(xlsx_file, skiprows=range(1, 6), dtype=str)
+            data = pd.read_excel(xlsx_file, skiprows=range(1, 6))
         except Exception as e:
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de la lecture de {xlsx_file.name} : {e}")
             return
 
+        try:
+            date_str = self.extract_date_from_file(xlsx_file)
+            self.logger.info(f"Date extraite : {date_str}")
+
+        except Exception as e:
+            self.set_error(file.name)
+            self.logger.error(f"Erreur lors de l'extraction de la date de {xlsx_file.name} : {e}")
+            return
+
         # Renommage des colonnes
-            # Lire le fichier .xlsx avec pandas
-        data.columns = ['No', 'Date', 'Nomjeu', 'Ventestotales', 'Gains', 'PourcentagePaiement', 'MontantNet']
-        # Sppression des lignes contenant 'Total'
-        data = data[~data['Nomjeu'].isin(['TOTAL'])]
+        data.columns = ['No', 'Agences', 'Operateur', 'Vente', 'Annulation',
+                        'Remboursement', 'Paiement', 'Resultat']
+        # Suppression des lignes où 'Operateur' vaut 'Total' ou 'montant global'
+        data = data[~data['Operateur'].isin(['Total', 'montant global'])]
         # Suppression de la colonne 'No'
-        #data = data.drop('No', axis=1)
+        if 'No' in data.columns:
+            data.drop('No', axis=1, inplace=True)
+        # Insertion et remplissage de la colonne "Date vente" avec la date extraite
+        data.insert(2, "Date vente", date_str)
+        # Remplissage des valeurs manquantes dans la colonne "Agences" par propagation (forward fill)
+        data['Agences'] = data['Agences'].ffill()
+        # Nettoyage et conversion des colonnes numériques
+        numeric_cols = ['Vente', 'Annulation', 'Remboursement', 'Paiement', 'Resultat']
+        for col in numeric_cols:
+            data[col] = data[col].apply(self.process_numeric_column)
 
-        # Fonction de nettoyage
-        def nettoyer_montant(valeur):
-            if isinstance(valeur, str):
-                # Supprimer tous les caractères non numériques sauf la virgule
-                return valeur.replace('Â', '').replace(' ', '').replace(',', '.')
-            return valeur
-
-        # Appliquer le nettoyage sur les colonnes de montant
-        for col in ["Ventestotales", "Gains", "PourcentagePaiement", "MontantNet"]:
-            data[col] = data[col].apply(nettoyer_montant)
-
-        # Convert cleaned strings to numeric types
-        data["Ventestotales"] = pd.to_numeric(data["Ventestotales"], errors='coerce')
-        data["Gains"] = pd.to_numeric(data["Gains"], errors='coerce')
-        data["PourcentagePaiement"] = pd.to_numeric(data["PourcentagePaiement"], errors='coerce')
-        data["MontantNet"] = pd.to_numeric(data["MontantNet"], errors='coerce')
-
-        data['Date'] = pd.to_datetime(data['Date'])
-
-        # Reformatage en chaîne "JJ/MM/AAAA"
-        data['Date'] = data['Date'].dt.strftime('%d/%m/%Y')
         xlsx_file.unlink()
 
-        filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\PMU_ONLINE\\"
-        data.to_csv(filesInitialDirectory + "PmuOnline_"+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
+        # filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\ALR\\"
+        # data.to_csv(filesInitialDirectory + "GITECH "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
 
-        self._save_file(file=file, data=data, type="csv", sep=';', encoding='latin-1', index=False)
+        self._save_file(file=file, data=data, type="csv", sep=';',encoding='utf8', index=False)
 
-
-def run_pmu_online_transformer():
-    transformer = PmuOnlineTransformer()
+def run_gitech_lotto_transformer():
+    transformer = GitechLottoTransformer()
     transformer.process_transformation()
 
 if __name__ == '__main__':
-    run_pmu_online_transformer()
+    run_gitech_lotto_transformer()

@@ -7,7 +7,7 @@ afitech_daily_betting:
   download_path: "K:/ETL/DATA_FICHIERS/afitech_daily_betting/extracted/"
   file_downloaded_name: "*DailyPaymentActivity*xls*"
   ##### extraction config #####
-  file_pattern: "*DailyBetting*xls*"
+  file_pattern: "*Betting*xls*"
   wait_time: 300
   start_date: #2025-06-02
   end_date: #2025-06-02
@@ -39,11 +39,12 @@ afitech_daily_betting:
     report_type_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[1]/li"
     start_calendar_input_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[1]/p-calendar/span/input"
     end_calendar_input_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[2]/p-calendar/span/input"
-    report_submit_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[5]/hg-button/button"
+    report_submit_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[6]/hg-button/button"
 
     ### report history page ###
-    table_xpath: "//table/tbody"
-    table_row_xpath: "//table/tbody/tr"
+    table_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/p-table/div/div/table/tbody"
+
+    table_row_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/p-table/div/div/table/tbody/tr"
     download_button_xpath: ".//span/span/i"
 
   #### transform config ####

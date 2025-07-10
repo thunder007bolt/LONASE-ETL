@@ -1,12 +1,12 @@
 #############
-dir_path = "K:\DATA_FICHIERS\AFITECH\DailyPaymentActivity"
+dir_path = "K:\ETL\DATA_FICHIERS\minishop\extracted"
 import os
 from datetime import  datetime
 
 
 # Lister les fichiers dans le dossier
 for filename in os.listdir(dir_path):
-    if filename.startswith("afitech_daily"):
+    if filename.startswith(""):
         try:
             # Enlever l'extension pour extraire la date proprement
             filename_without_ext = os.path.splitext(filename)[0]
@@ -18,7 +18,7 @@ for filename in os.listdir(dir_path):
             _, ext = os.path.splitext(filename)
 
             # Nouveau nom
-            new_filename = f"AFITECH_DailyPaymentActivity {formatted_date}_{formatted_date}{ext}"
+            new_filename = f"minishop_{formatted_date}{ext}"
 
             # Chemins complets
             old_path = os.path.join(dir_path, filename)

@@ -2,6 +2,8 @@
 from base.database_extractor import DatabaseExtractor
 import pandas as pd
 import datetime
+from utils.date_utils import date_string_to_date
+import os
 
 class ExtractMinishop(DatabaseExtractor):
     def __init__(self, env_variables_list):
@@ -10,10 +12,10 @@ class ExtractMinishop(DatabaseExtractor):
 
     def _load_data_from_db(self, start_date, end_date=None):
         self.logger.info("Récupération des données...")
-        day = start_date.strftime("%d/%m/%Y")
+        day = start_date.strftime("%Y-%m-%d")
         query_gac = f"""
             SELECT 
-                CONVERT(date, DateSituation) AS DATE,
+                CAST(DateSituation as Date) as DATE,
                 E.Caption AS ETABLISSEMENT,
                 J.Caption AS JEU,
                 T.CodeTerminalVirtuel AS TERMINAL,
@@ -31,12 +33,12 @@ class ExtractMinishop(DatabaseExtractor):
                 AND H.oidJeu = J.oid 
                 AND J.Caption NOT LIKE 'SOLIDICON'
                 AND V.CodeVendeur IN ('VD3692','VD3693','VD3694','VD3695','VD3696')
-                AND CONVERT(date, DateSituation) = '{day}'
+                 AND CAST(DateSituation as Date) = CAST('{day}' AS DATE)
             
             UNION ALL
             
             SELECT 
-                CONVERT(date, DateSituation) AS DATE,
+                CAST(DateSituation as Date)  AS DATE,
                 E.Caption AS ETABLISSEMENT,
                 J.Caption AS JEU,
                 T.CodeTerminalVirtuel AS TERMINAL,
@@ -53,8 +55,9 @@ class ExtractMinishop(DatabaseExtractor):
                 AND T.oidVendeur = V.oid 
                 AND H.oidJeu = J.oid 
                 AND J.Caption LIKE 'SOLIDICON'
-                AND CONVERT(date, DateSituation) = '{day}'
+                AND CAST(DateSituation as Date) = CAST('{day}' AS DATE)
             """
+
         data = pd.read_sql_query(query_gac, self.connexion)
         if len(data) == 0:
             self.logger.info("Aucune donnée")
@@ -64,16 +67,10 @@ class ExtractMinishop(DatabaseExtractor):
 
     def _set_date(self):
         date = datetime.date.today() - datetime.timedelta(days=2)
-        
-        if self.config["start_date"] is not None:
-            self.start_date = self.config["start_date"]
-        else:
-            self.start_date = date
+        self.start_date = date_string_to_date(os.getenv("start_date")) or self.config.get("start_date") or date
+        self.end_date = date_string_to_date(os.getenv("end_date")) or self.config.get("end_date") or date
 
-        if self.config["end_date"] is not None:
-            self.end_date = self.config["end_date"]
-        else:
-            self.end_date = date
+
 def run_minishop():
     env_variables_list = {
         "SERVER": "LONASE_DEF_SERVER",

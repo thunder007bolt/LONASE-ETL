@@ -18,10 +18,10 @@ from utils.other_utils import move_file, loading, retry_operation
 from utils.file_manipulation import rename_file
 
 
-class ExtractLonsasebetCasino(BaseScrapper):
+class ExtractEditecLoto(BaseScrapper):
     def __init__(self, env_variables_list):
-        super().__init__('lonasebet_casino', env_variables_list,
-                         'logs/extract_lonasebet_casino.log')
+        super().__init__('editec_loto', env_variables_list,
+                         'logs/extract_editec_loto.log')
         self.file_path = None
 
     def _connection_to_platform(self):
@@ -35,8 +35,8 @@ class ExtractLonsasebetCasino(BaseScrapper):
         username_xpath = html_elements["username_element_xpath"]
         password_xpath = html_elements["password_element_xpath"]
         submit_button_xpath = html_elements["login_submit_button_element_xpath"]
-        username = secret_config["LONASEBET_CASINO_LOGIN_USERNAME"]
-        password = secret_config["LONASEBET_CASINO_LOGIN_PASSWORD"]
+        username = secret_config["EDITEC_LOTO_LOGIN_USERNAME"]
+        password = secret_config["EDITEC_LOTO_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
         WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, username_xpath))).send_keys(
@@ -55,9 +55,43 @@ class ExtractLonsasebetCasino(BaseScrapper):
             WebDriverWait(browser, timeout=10).until(EC.presence_of_element_located((By.XPATH, verification_xpath)))
             sleep(1)
             self.logger.info("Connexion à la plateforme réussie.")
+
         except Exception as error:
             self.logger.info("Connexion à la plateforme n'a pas pu être établie.")
             self._quit(error)
+    def _manage_dropdown_state(self, desired_state: str):
+        dropdown_ng_select_xpath = self.config['html_elements']['category_dropdown_ng_select_xpath']
+
+
+        try:
+            wait = WebDriverWait(self.browser, 10)
+
+            dropdown_element = wait.until(
+                EC.presence_of_element_located((By.XPATH, dropdown_ng_select_xpath)))
+
+            current_classes = dropdown_element.get_attribute('class')
+            is_currently_open = 'ng-select-opened' in current_classes
+
+            action_needed = (desired_state == 'open' and not is_currently_open) or \
+                            (desired_state == 'close' and is_currently_open)
+
+            if action_needed:
+                self.wait_and_click_v2(dropdown_ng_select_xpath, locator_type="xpath")
+
+                if desired_state == 'open':
+                    wait.until(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                              dropdown_ng_select_xpath).get_attribute(
+                        'class'))
+                else:
+                    wait.until_not(lambda d: 'ng-select-opened' in d.find_element(By.XPATH,
+                                                                                  dropdown_ng_select_xpath).get_attribute(
+                        'class'))
+            else:
+                pass
+
+        except Exception as e:
+            self.logger.error(f"Une erreur imprévue est survenue lors de la gestion du dropdown: {e}")
+            raise
 
     def _generate_files(self):
         browser = self.browser
@@ -82,12 +116,9 @@ class ExtractLonsasebetCasino(BaseScrapper):
             calendar_start_day_xpath = html_elements["calendar_start_day_xpath"]
 
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[3]/div/button",
+                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[1]/div[2]/div/hg-create-report-button/button",
                 locator_type="xpath")
 
-            self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[3]/div[2]/div/hg-create-report-button[2]/button",
-                locator_type="xpath")
 
             sleep(1)
 
@@ -121,33 +152,43 @@ class ExtractLonsasebetCasino(BaseScrapper):
             calendar_end_month_year_xpath = html_elements["calendar_end_month_year_xpath"]
             calendar_end_day_xpath = html_elements["calendar_end_day_xpath"]
             self.wait_and_click(calendar_end_xpath, locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[1]/button[1]",
-                locator_type="xpath")
-            self.wait_and_click(
-                "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]",
-                locator_type="xpath")
+            # self.wait_and_click(
+            #     "html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]",
+            #     locator_type="xpath")
+            # self.wait_and_click(
+            #     "html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[2]/div[1]/button[1]",
+            #     locator_type="xpath")
+            # self.wait_and_click(
+            #     "html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]",
+            #     locator_type="xpath")
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
-                if end_date.strftime('%Y') in i.text:
+                if start_date.strftime('%Y') in i.text:
                     i.click()
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
-                if end_date.strftime('%b') in i.text:
+                if start_date.strftime('%b') in i.text:
                     i.click()
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_day_xpath):
-                if (str(0) + i.text.strip())[-2:] in end_date.strftime('%d'):
+                if (str(0) + i.text.strip())[-2:] in start_date.strftime('%d'):
                     i.click()
                     break
             sleep(1)
 
             browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
             sleep(1)
+            self._manage_dropdown_state('open')
+
+            category_option_xpath = html_elements["category_options_xpath"]
+            current_elements_in_dropdown = browser.find_elements(By.XPATH, category_option_xpath)
+            for el_sel in current_elements_in_dropdown:
+                if el_sel.text.strip() == 'Loterie':
+                    el_sel.click()
+                    break
+
+            self._manage_dropdown_state('close')
 
             logger.info("Soumission du formulaire...")
             submit_button_xpath = html_elements["report_submit_button_xpath"]
@@ -177,7 +218,7 @@ class ExtractLonsasebetCasino(BaseScrapper):
         end_date = self.start_date + delta
         for row in rows:
             start_date_formated = start_date.strftime('%d/%m/%Y')
-            end_date_formated = (start_date + delta).strftime('%d/%m/%Y')
+            end_date_formated = start_date.strftime('%d/%m/%Y')
             columns = row.find_elements(by=By.TAG_NAME, value="td")
             if len(columns) < 5:
                 continue
@@ -187,7 +228,7 @@ class ExtractLonsasebetCasino(BaseScrapper):
             date1 = columns[4].text
             date2 = columns[5].text
             status = columns[6].text
-            founded_file_name = "InstantGamesTransactionsHistory" in report_name and \
+            founded_file_name = "TicketHistory" in report_name and \
                                 type == 'CSV' and \
                                 date1 == start_date_formated and \
                                 date2 == end_date_formated
@@ -233,11 +274,11 @@ class ExtractLonsasebetCasino(BaseScrapper):
         self._generate_files()
         self._download_files()
 
-def run_lonasebet_casino():
-    env_variables_list = ["LONASEBET_CASINO_LOGIN_USERNAME", "LONASEBET_CASINO_LOGIN_PASSWORD"]
-    job = ExtractLonsasebetCasino(env_variables_list)
+def run_editec_loto():
+    env_variables_list = ["EDITEC_LOTO_LOGIN_USERNAME", "EDITEC_LOTO_LOGIN_PASSWORD"]
+    job = ExtractEditecLoto(env_variables_list)
     job.process_extraction()
 
 
 if __name__ == "__main__":
-    run_lonasebet_casino()
+    run_editec_loto()
