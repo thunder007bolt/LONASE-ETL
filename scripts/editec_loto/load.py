@@ -23,10 +23,10 @@ class EditecLotoLoad(Loader):
         super().__init__(name, log_file, columns, table_name)
 
     def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False,dtype=str)
+        df = pd.read_csv(file, sep=';', index_col=False)
         df = df.replace(np.nan, 0)
         df = df.applymap(lambda x: str(x).replace(',', '.') if isinstance(x, str) else x)
-        df['JOUR'] = pd.to_datetime(df['JOUR'], format='%d/%m/%Y')
+       # df['JOUR'] = pd.to_datetime(df['JOUR'], format='%d/%m/%Y')
         return df
 
 def run_editec_loto_loader():
