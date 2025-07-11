@@ -14,7 +14,8 @@ from utils.date_utils import sleep
 from datetime import timedelta
 from pathlib import Path
 import numpy as np
-from utils.file_manipulation import delete_file
+from utils.file_manipulation import delete_file, check_file_not_empty
+
 
 class ExtractUSSDIRV(BaseScrapper):
     def __init__(self, env_variables_list):
@@ -161,6 +162,11 @@ class ExtractUSSDIRV(BaseScrapper):
             df['DUREE APPEL'] = df['DUREE APPEL'].apply(secondes_to_hhmmss)
             df["Total Appels"] = ""
             df["Total CA"] = ""
+
+            print(df.size, len(df), "taille")
+            if df.size == 0:
+                self.logger.info(f'Le fichier du {date.strftime("%Y-%m-%d")} est vide')
+                continue
 
             df.iloc[0, df.columns.get_loc("Total Appels")] = infos_dict.get("Total Appels")
             df.iloc[0, df.columns.get_loc("Total CA")] = infos_dict.get("Total CA")
