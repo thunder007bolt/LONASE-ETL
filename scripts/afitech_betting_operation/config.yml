@@ -26,7 +26,7 @@ afitech_betting_operation:
     ### MFA page ###
     verification_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[1]/span"
     dropdown_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/p-dropdown/div/span"
-    google_authentication_element_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[3]/li"
+    google_authentication_element_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[4]/li"
     code_input_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/div/hg-code/div/input[1]"
 
 

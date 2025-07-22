@@ -160,6 +160,7 @@ REPLACE(TO_CHAR(Te.JOUR),'/','') JOUR
              case when UPPER(trim(JEU)) like 'SOLIDICON' THEN '470' ELSE '469' end IDJEUX     
                 FROM OPTIWARETEMP.SRC_PRD_MINI_SHOP	
 				where NOT (JEU = 'ALR HONORE GAMING' AND TERMINAL = '10961')
+				and UPPER(trim(JEU)) like 'SOLIDICON'
                 --group by DATE, TERMINAL
 			          
          ) F, USER_DWHPR.DIM_TERMINAL T, USER_DWHPR.DIM_TEMPS Te
@@ -192,6 +193,7 @@ SELECT  7181 IDVENDEUR, T.IDTERMINAL, Te.IDTEMPS,
                 case when UPPER(trim(JEU)) like 'SOLIDICON' THEN '470' ELSE '469' end IDJEUX
                 FROM OPTIWARETEMP.SRC_PRD_MINI_SHOP
 				where NOT (JEU = 'ALR HONORE GAMING' AND TERMINAL = '10961')
+				and UPPER(trim(JEU)) like 'SOLIDICON'
                -- group by DATE, TERMINAL
                               
          ) F, USER_DWHPR.DIM_TERMINAL T, USER_DWHPR.DIM_TEMPS Te
@@ -230,24 +232,7 @@ WHERE  upper(trim(T.OPERATEUR)) = upper(trim(F.OPERATEUR ))
     conn.commit()
     
     
-    cur.execute(f"""
-        MERGE INTO DTM_CA_DAILY R0 USING 
-( 
-select Te.ANNEEC,Te.MOISC,Te.JOUR, SUM(COALESCE(F.MONTANT,0)) - SUM(COALESCE(F.MONTANT_ANNULE,0)) as CA_MINI_SHOP
-FROM FAIT_VENTE F, DIM_JEUX J , DIM_TEMPS Te
 
-WHERE F.IDJEUX=J.IDJEUX 
-  AND F.IDTEMPS=Te.IDTEMPS 
-  AND F.IDJEUX=469
-  AND Te.JOUR between '{str(debut.strftime('%d/%m/%Y'))}' and '{str(fin.strftime('%d/%m/%Y'))}'
-group by Te.ANNEEC,Te.MOISC,Te.JOUR
-) R1
-ON ( R0.ANNEE = R1.ANNEEC and R0.MOIS=R1.MOISC AND R0.JOUR=R1.JOUR)
-WHEN MATCHED THEN UPDATE SET R0.CA_MINI_SHOP=R1.CA_MINI_SHOP
-
-""")
-    conn.commit()
-    
     
     cur.execute(f"""
         MERGE INTO DTM_CA_DAILY R0 USING 
@@ -267,8 +252,8 @@ WHEN MATCHED THEN UPDATE SET R0.CA_VIRTUEL_SHOP=R1.CA_VIRTUEL_SHOP
 """)
     conn.commit()
     
-    '''
 
+    '''
     cur.execute(f"""
         MERGE INTO user_dwhpr.dtm_ca t
 USING (
@@ -287,8 +272,9 @@ ON (t.annee = g.annee and t.mois=g.mois)
     WHEN MATCHED THEN UPDATE SET t.CA_MINI_SHOP= g.CA_MINI_SHOP
 """)
     conn.commit()
-    
-    
+
+    '''
+
     cur.execute(f"""
         MERGE INTO user_dwhpr.dtm_ca t
 USING (
@@ -307,10 +293,9 @@ ON (t.annee = g.annee and t.mois=g.mois)
     WHEN MATCHED THEN UPDATE SET t.CA_VIRTUEL_SHOP= g.CA_VIRTUEL_SHOP
 """)
     conn.commit()
-    
-    '''
-    
-    
+
+
+
     
     
     
@@ -374,10 +359,10 @@ while start_date<end_date:
     #print(f"virtuelAmabel{str(start_date)}.csv")
     file = glob.glob(directory+f"**\\minishop_{str(start_date)}.csv",recursive=True)
 
-    print( len( file ) )
+    print( len( file ), "xtrait 33" )
 
     if len( file ) == 0:
-        print(f"Le fichier Minishop du {start_date} n'a pas ete extrait ")
+        print(f"Le fichier Minishop du {start_date} n'a pas ete extrait 33")
     else:
         file = file[0]
 

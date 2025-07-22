@@ -12,8 +12,8 @@ class LonasebetGlobalLoad(Loader):
         columns = [
             "Nombre_de_paris", "Nombre_de_tickets",
             "Mises"
-            , "Produit_brut_des_jeux"
-            , "Rentabilite"
+            # , "Produit_brut_des_jeux"
+            # , "Rentabilite"
             , "Mises_en_cours"
             , "Gains_Joueurs"
             , "Montant_total_a_payer"
@@ -33,7 +33,8 @@ class LonasebetGlobalLoad(Loader):
         self.logger.info(f"Lecture du fichier transformé : {file_path}")
         try:
             df = pd.read_csv(file_path, sep=';', dtype=str, encoding='latin1')
-
+            if len(df.columns) < 16:
+                self.logger.info(file_path)
             df.replace(np.nan, '', inplace=True)
             df = df.astype(str)
             return df
@@ -113,7 +114,7 @@ class LonasebetGlobalLoad(Loader):
             self.check_error()
 
         except Exception as e:
-            self.logger.error(f"Erreur majeure lors du processus de chargement pour {self.name}: {e}")
+            self.logger.error(f"Erreur majeure lors du processus de chargement pour {e}")
             raise
         finally:
             if self.cursor:

@@ -19,8 +19,8 @@ gitech_physique:
   download_path: "K:/ETL/DATA_FICHIERS/gitech_physique/extracted/"
   ##### extraction config #####
   file_pattern: "Cumul CA des * types de jeux*xls"
-  start_date: #2025-06-02 # defaut is today - 1 day
-  end_date: #2025-06-02
+  start_date: #2025-07-16 # defaut is today - 1 day
+  end_date: #2025-07-16
   include_sup: false
   wait_time: 120
   urls:

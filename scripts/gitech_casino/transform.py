@@ -77,16 +77,19 @@ class GitechCasinoTransformer(Transformer):
         - Si une virgule est présente, suppression des zéros finaux et de la virgule.
         - Conversion en entier (les erreurs produisent un 0).
         """
+        # Étape 1 : Convertir la valeur en chaîne et supprimer les espaces insécables
         value_str = str(value).replace(u'\xa0', '')
+
         if ',' in value_str:
-            value_str = value_str.rstrip('00').replace(',', '')
-        try:
-            numeric_value = pd.to_numeric(value_str, errors='coerce')
-            if pd.isna(numeric_value):
-                return 0
-            return int(numeric_value)
-        except Exception:
+            value_str = value_str.replace(',', '.')
+
+        numeric_value = pd.to_numeric(value_str, errors='coerce')
+
+        if pd.isna(numeric_value):
             return 0
+
+        return numeric_value
+
 
     def _transform_file(self, file: Path, date):
         """

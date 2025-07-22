@@ -9,7 +9,7 @@ sunubet_paiement:
   ##### extraction config #####
   file_pattern: "*InstantGamesTransactionsHistory*csv"
   wait_time: 7000
-  start_date: #2025-06-10
+  start_date: #2025-01-01
   end_date: #2025-02-17
   urls:
     login: "https://new-admin-sunubet.sporty-tech.net/"

@@ -8,8 +8,8 @@ gitech_parifoot:
   download_path: "K:/ETL/DATA_FICHIERS/gitech_parifoot/extracted/"
   ##### extraction config #####
   file_pattern: "Etat de la Parifoot*.xls"
-  start_date: 2025-07-01 # defaut is today - 1 day
-  end_date: 2025-07-01
+  start_date: #2025-07-10 # defaut is today - 1 day
+  end_date: #2025-07-01
   include_sup: false
   wait_time: 120
   urls:

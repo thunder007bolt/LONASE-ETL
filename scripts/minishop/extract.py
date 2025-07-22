@@ -12,7 +12,7 @@ class ExtractMinishop(DatabaseExtractor):
 
     def _load_data_from_db(self, start_date, end_date=None):
         self.logger.info("Récupération des données...")
-        day = start_date.strftime("%Y-%m-%d")
+        day = (start_date).strftime("%Y-%m-%d")
         query_gac = f"""
             SELECT 
                 CAST(DateSituation as Date) as DATE,
@@ -57,7 +57,37 @@ class ExtractMinishop(DatabaseExtractor):
                 AND J.Caption LIKE 'SOLIDICON'
                 AND CAST(DateSituation as Date) = CAST('{day}' AS DATE)
             """
-
+        query_gac = f"""
+        select convert (date,DateSituation) DATE, E.Caption ETABLISSEMENT, /*.UpdDate*/ J.Caption JEU, T.CodeTerminalVirtuel TERMINAL, V.CodeVendeur VENDEUR, H.MontantAVerser 'MONTANT A VERSER' ,H.MontantARembourser 'MONTANT A PAYER'
+        from THPCCHISTORIQUESITUATION H, TETABLISSEMENT E, THPCPTERMINAL_VIRTUEL T, THPCPVENDEUR V, THPCPJEUX J 
+       where  H.oidEtablissement = E.oid
+        and H.oidTerminal = T.oid and T.oidVendeur = V.oid and H.oidJeu = J.oid 
+        and CONVERT(date,DateSituation) = CONVERT(date,'{day}')
+        and( V.PrenomVendeur like '%MINISHOP%' or  V.PrenomVendeur like '%MINI SHOP%')
+        and J.Caption not LIKE 'SOLIDICON'
+    
+        UNION ALL
+        
+         SELECT 
+                CAST(DateSituation as Date)  AS DATE,
+                E.Caption AS ETABLISSEMENT,
+                J.Caption AS JEU,
+                T.CodeTerminalVirtuel AS TERMINAL,
+                V.CodeVendeur AS VENDEUR,
+                H.MontantAVerser AS 'MONTANT A VERSER',
+                H.MontantARembourser AS 'MONTANT A PAYER'
+            FROM THPCCHISTORIQUESITUATION H, 
+                TETABLISSEMENT E, 
+                THPCPTERMINAL_VIRTUEL T, 
+                THPCPVENDEUR V, 
+                THPCPJEUX J 
+            WHERE H.oidEtablissement = E.oid
+                AND H.oidTerminal = T.oid 
+                AND T.oidVendeur = V.oid 
+                AND H.oidJeu = J.oid 
+                AND J.Caption LIKE 'SOLIDICON'
+               and CONVERT(date,DateSituation) = CONVERT(date,'{day}')
+        """
         data = pd.read_sql_query(query_gac, self.connexion)
         if len(data) == 0:
             self.logger.info("Aucune donnée")

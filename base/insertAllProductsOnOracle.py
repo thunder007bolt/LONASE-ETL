@@ -2064,8 +2064,8 @@ AND idtemps IN (select idtemps from user_dwhpr.dim_temps where jour between '{st
             to_number(te.idterminal) IDTERMINAL,
             to_number(m.idtemps) IDTEMPS,
             316 IDJEUX, 
-            case when to_number(trim(w.vente)) is null then 0
-                else to_number(trim(w.vente))
+            case when to_number(trim(replace(w.vente,'.', ','))) is null then 0
+                else to_number(trim(replace(w.vente,'.', ',')))
             end as MONTANT,
             0 MONTANT_ANNULE,
             0 TICKET_EMIS,
@@ -2093,12 +2093,12 @@ AND idtemps IN (select idtemps from user_dwhpr.dim_temps where jour between '{st
             to_number(te.idterminal) IDTERMINAL,
             to_number(m.idtemps) IDTEMPS,
             316 IDJEUX, 
-            case when to_number(trim(w.vente)) is null then 0
-                else to_number(trim(w.vente))
+            case when to_number(trim(replace(w.vente,'.', ','))) is null then 0
+                else to_number(trim(replace(w.vente,'.', ',')))
             end as MONTANT,
             0 MONTANT_ANNULE,
-            case when to_number(trim(w.PAIEMENT)) is null then 0
-                else to_number(trim(w.PAIEMENT))
+            case when to_number(trim(replace(w.PAIEMENT,'.', ','))) is null then 0
+                else to_number(trim(replace(w.PAIEMENT,'.', ',')))
             end as PAIEMENTS,
             to_char(m.jour,'YYYY') ANNEE,
             to_char(m.jour,'MM') MOIS,
