@@ -4,17 +4,17 @@ gitech_parifoot:
   error_dest_relative_path: "gitech_parifoot/error/"
   loaded_dest_relative_path: "gitech_parifoot/loaded/"
   processed_dest_relative_path: "gitech_parifoot/processed/"
-  file_downloaded_name: "Etat de la Parifoot*.xls"
+  file_downloaded_name: "Recette paiement Journalier*.xls"
   download_path: "K:/ETL/DATA_FICHIERS/gitech_parifoot/extracted/"
   ##### extraction config #####
-  file_pattern: "Etat de la Parifoot*.xls"
-  start_date: #2025-07-10 # defaut is today - 1 day
+  file_pattern: "Recette paiement Journalier*.xls"
+  start_date: #2025-09-21 # defaut is today - 1 day
   end_date: #2025-07-01
   include_sup: false
-  wait_time: 120
+  wait_time: 400
   urls:
     login: "https://www.pmuonline.sn/lonasemis/lonase_administration/Login.aspx"
-    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/PariFootsaledtls.aspx"
+    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/DatewisePa.aspx"
 
   html_elements:
     ### login page ###
@@ -34,6 +34,9 @@ gitech_parifoot:
     download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
     download_button_element_xpath: "/html/body/form/div[3]/table[8]/tbody/tr/td/div/table[1]/tbody/tr/td/input[2]"
     error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+    # product input #
+    product_select_element_id: "OpsValidator_ContentPlaceHolder1_DDlGameType"
+    product_item_element_value: "10"
 
 
   #### transform config ####

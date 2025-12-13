@@ -405,7 +405,10 @@ def pick_year():
 def pick_month():
     for i in browser.find_elements(by=By.XPATH, value="/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"):
         #print(i.text)
-        if start_date.strftime('%b') in i.text:
+        t = start_date.strftime('%b')
+        if t == 'Dec':
+            t = 'Déc'
+        if t in i.text:
             i.click()
             break
 

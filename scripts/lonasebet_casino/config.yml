@@ -9,8 +9,8 @@ lonasebet_casino:
   ##### extraction config #####
   file_pattern: "*InstantGamesTransactionsHistory*csv"
   wait_time: 200
-  start_date: #2025-06-02
-  end_date: #2025-06-02
+  start_date: #2025-12-01
+  end_date: #2025-12-01
   urls:
     login: "https://new-admin-lonase.sporty-tech.net/"
     report: "https://new-admin-lonase.sporty-tech.net/reports/create"

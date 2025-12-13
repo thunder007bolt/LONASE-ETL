@@ -11,7 +11,7 @@ class LonasebetCasinoTransformer(Transformer):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:
-            data = pd.read_csv(file, sep=';', index_col=False)
+            data = pd.read_csv(file, sep=';', index_col=False, encoding='utf-8')
 
         except Exception as e:
             self.set_error(file.name)

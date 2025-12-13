@@ -4,17 +4,17 @@ gitech_lotto:
   error_dest_relative_path: "gitech_lotto/error/"
   loaded_dest_relative_path: "gitech_lotto/loaded/"
   processed_dest_relative_path: "gitech_lotto/processed/"
-  file_downloaded_name: "Etat de la Loto*.xls"
+  file_downloaded_name: "Recette paiement Journalier*.xls"
   download_path: "K:/ETL/DATA_FICHIERS/gitech_lotto/extracted/"
   ##### extraction config #####
-  file_pattern: "Etat de la Loto*.xls"
+  file_pattern: "Recette paiement Journalier*.xls"
   start_date: #2025-07-01 # defaut is today - 1 day
-  end_date: #2025-06-02
+  end_date: #2025-07-02
   include_sup: false
-  wait_time: 120
+  wait_time: 400
   urls:
     login: "https://www.pmuonline.sn/lonasemis/lonase_administration/Login.aspx"
-    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/Lottosaledtls.aspx"
+    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/DatewisePa.aspx"
 
   html_elements:
     ### login page ###
@@ -30,6 +30,10 @@ gitech_lotto:
     end_date_day_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlDate"
     end_date_month_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlMonth"
     end_date_year_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlYear"
+
+    # product input #
+    product_select_element_id: "OpsValidator_ContentPlaceHolder1_DDlGameType"
+    product_item_element_value: "4"
 
     submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
     download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"

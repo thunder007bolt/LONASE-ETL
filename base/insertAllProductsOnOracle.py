@@ -57,8 +57,22 @@ end_date = date.today() #- delta
 
 start_date = end_date - delta
 
-#start_date = date(2025,4,12) #end_date - delta
 
+import os
+
+# Récupération de la variable d'environnement "RENSEIGNE_DATE" si définie par Jenkins
+input_date = os.getenv("date", None)
+
+# Si une date est passée, on la parse, sinon on prend aujourd'hui
+if input_date:
+    try:
+        end_date = datetime.strptime(input_date, "%Y-%m-%d").date() + delta
+    except ValueError:
+        raise ValueError(f"Format de date invalide : {input_date}. Attendu : YYYY-MM-dd")
+else:
+    end_date = date.today()
+
+start_date = end_date - delta
 
 end_date = start_date+delta
 
@@ -88,8 +102,11 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
 
+
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
 
 # In[4]:
 
@@ -123,7 +140,10 @@ def chargeBwinner(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")#creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_BWINNERS
@@ -378,7 +398,13 @@ def chargeZeturf(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.src_prd_zeturf
@@ -558,7 +584,12 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+#creates a cursor object
 
 
 directory = generalDirectory+r"VIRTUEL_EDITEC\FINANCIAL\\"
@@ -612,7 +643,12 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+#creates a cursor object
 
 
 directory = generalDirectory+r"VIRTUEL_EDITEC\ZONE BETTING\\"
@@ -670,7 +706,11 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+#creates a cursor object
 
 
 directory = generalDirectory+r"VIRTUEL_EDITEC\PREMIERSN\\"
@@ -740,7 +780,13 @@ def chargeVirtuelEditec():#data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")  #
+
+
+
+    #creates a cursor object
     
     
     #suppression de la periode sur le fait vente
@@ -940,7 +986,12 @@ def chargeVirtuelAmabel(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_SUNUBET
@@ -1160,7 +1211,12 @@ def chargeAcajouDigitain(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.src_prd_acacia
@@ -1351,7 +1407,11 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+#creates a cursor object
 
 directory = generalDirectory+r"ACAJOU\PICK3\\"
 #print(f"virtuelAmabel{str(start_date)}.csv")
@@ -1411,7 +1471,11 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+#creates a cursor object
 
 directory = generalDirectory+r"ACAJOU\GRATTAGE\\"
 #print(f"virtuelAmabel{str(start_date)}.csv")
@@ -1485,7 +1549,13 @@ def chargeAcajouPick3Grattage(data,debut,fin):#data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
     
     #suppression de la periode sur le fait vente
@@ -1768,7 +1838,13 @@ def chargeGitechAlr(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
     
     #vider la table temporaire optiwaretemp.src_prd_acacia
     
@@ -1821,24 +1897,21 @@ AND idtemps IN (select idtemps from user_dwhpr.dim_temps where jour between '{st
     
     
     cur.execute(f""" 
-    insert into dim_terminal 
-select distinct '' idterminal, c.idccs,operateurs,'' statut,81 idsysteme from
-( select case when "Agences" like 'KOLDA' then 'ZIGUINCHOR' when
-    "Agences" like 'TAMBACOUNDA' then 'TAMBA' when "Agences" like 'MATAM' then 'TAMBA' 
-    when "Agences" like 'MBACKE' then 'DIOURBEL' 
-    when "Agences" like 'SAINT LOUIS' then 'SAINT-LOUIS'
-    when "Agences" like 'RICHARD TOLL' then 'SAINT-LOUIS'
-    when "Agences" like 'FATICK' then 'KAOLACK'
-    when "Agences" like 'BAMBEY' then 'DIOURBEL'
-    when "Agences" like 'KAFFRINE' then 'KAOLACK'
-    when "Agences" like 'KEDOUGOU' then 'TAMBA'
-    when "Agences" like 'Lonase Head Office' then 'INCONNU'
-    else "Agences" end as agences,"Operateurs" as operateurs
-    from optiwaretemp.gitech) s ,dim_ccs c
-    where UPPER(trim(s.agences))= UPPER(trim(nomccs)) and s.operateurs not in (select distinct operateur from dim_terminal
-    where idsysteme=81)
+insert into dim_terminal (IDCCS, OPERATEUR, STATUT, IDSYSTEME)
+select 241 as idccs, operateurs, '' as statut, 81 as idsysteme
+from (
+    select "Operateurs" as operateurs
+    from optiwaretemp.gitech s
+    where "Agences" <> 'Mobile Agency'
+      and "Operateurs" not in (
+            select distinct operateur
+            from dim_terminal
+            where idsysteme = 81
+      )
+)
     
 """)
+
     conn.commit()
 
     
@@ -2023,7 +2096,14 @@ def chargeGitechCasino(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
     
     #vider la table temporaire optiwaretemp.src_prd_acacia
     
@@ -2201,7 +2281,13 @@ def chargeLonasebetCasino(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_CASINO_LONASEBET
@@ -2379,7 +2465,13 @@ def chargeHonoregaming(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_ALR_HONORE_GAMING
@@ -2900,7 +2992,12 @@ def chargeAFITECHCommissionHistory(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_AFITECH_COMMISSION
@@ -3046,7 +3143,12 @@ def chargeAFITECHDailyPaymentActivity(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_AFITECH_DAILYPAYMENT
@@ -3193,7 +3295,13 @@ def chargeLonasebetAlrParifoot(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
     
     #vider la table temporaire optiwaretemp.src_prd_lonasebet
     
@@ -3445,7 +3553,12 @@ def chargeParifootonline(data,debut,fin):
         print("La base de donnee a deja ete initialisee")
         
     conn = cx_Oracle.connect(username,password,dsn)
-    cur = conn.cursor() #creates a cursor object
+    cur = conn.cursor()
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+
+
+    #creates a cursor object
 
         
     #vider la table temporaire optiwaretemp.SRC_PRD_CASINO_LONASEBET

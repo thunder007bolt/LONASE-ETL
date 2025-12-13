@@ -26,7 +26,6 @@ def move_file(file_path: Path, destination_folder: Path) -> Path:
 
     return destination
 
-
 def rename_file(pattern, source_folder, rename_name, logger):
     """Renomme un fichier ou un ensemble de fichiers selon un motif."""
     if isinstance(pattern, Path):
@@ -142,22 +141,22 @@ def check_file_not_empty(path):
         return False
 
     return True
-def copy_files(pattern, source_folder, destination_folder, logger):
+def copy_files(pattern, source_folder, destination_folder, logger, rename_function=None):
     """
     Copie un fichier ou un ensemble de fichiers correspondant à un motif
-    depuis un dossier source vers un dossier de destination.
+    depuis un dossier source vers un dossier de destination, avec la possibilité de renommer les fichiers.
 
     Args:
         pattern (str): Motif pour identifier les fichiers à copier (par exemple, "*.txt").
         source_folder (str): Chemin du dossier source contenant les fichiers.
         destination_folder (str): Chemin du dossier de destination où copier les fichiers.
         logger: Logger pour enregistrer les événements et les erreurs.
+        rename_function (callable, optional): Fonction pour renommer les fichiers.
+            Doit prendre le nom de fichier d'origine (str) et retourner un nouveau nom (str).
     """
-    # Convertir les dossiers en objets Path
     source_path = Path(source_folder)
     destination_path = Path(destination_folder)
 
-    # Vérifier si le dossier de destination existe, sinon le créer
     if not destination_path.exists():
         try:
             destination_path.mkdir(parents=True, exist_ok=True)
@@ -166,25 +165,22 @@ def copy_files(pattern, source_folder, destination_folder, logger):
             logger.error(f"Erreur lors de la création du dossier de destination : {e}")
             return
 
-    # Rechercher les fichiers correspondant au motif
     files = list(source_path.glob(pattern))
     if not files:
         logger.info(f"Aucun fichier trouvé avec le pattern : {pattern} dans {source_folder}")
         return
 
-    # Copier chaque fichier vers le dossier de destination
     for file in files:
         try:
-            # Construire le chemin de destination
-            destination_file = destination_path / file.name
+            # Déterminer le nom du fichier de destination (renommé ou original)
+            new_name = rename_function(file.name) if rename_function else file.name
+            destination_file = destination_path / new_name
 
-            # Vérifier si le fichier existe déjà dans le dossier de destination
             if destination_file.exists():
-                logger.warning(f"Le fichier {file.name} existe déjà dans {destination_folder}")
+                logger.warning(f"Le fichier {new_name} existe déjà dans {destination_folder}")
                 continue
 
-            # Copier le fichier
-            shutil.copy2(file, destination_file)  # copy2 préserve les métadonnées
+            shutil.copy2(file, destination_file)
             logger.info(f"Fichier copié : {file} -> {destination_file}")
         except Exception as e:
             logger.error(f"Erreur lors de la copie de {file}: {e}")

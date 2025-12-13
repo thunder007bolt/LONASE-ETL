@@ -140,7 +140,10 @@ class ExtractLonsasebetOnline(BaseScrapper):
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_start_month_year_xpath):
-                if start_date.strftime('%b') in i.text:
+                t = start_date.strftime('%b')
+                if t == 'Dec':
+                    t = 'Déc'
+                if t in i.text:
                     i.click()
                     break
             sleep(1)
@@ -173,7 +176,10 @@ class ExtractLonsasebetOnline(BaseScrapper):
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
-                if end_date.strftime('%b') in i.text:
+                t = end_date.strftime('%b')
+                if t == 'Dec':
+                    t = 'Déc'
+                if t in i.text:
                     i.click()
                     break
             sleep(1)

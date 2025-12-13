@@ -5,13 +5,13 @@ afitech_daily_betting:
   loaded_dest_relative_path: "afitech_daily_betting/loaded/"
   processed_dest_relative_path: "afitech_daily_betting/processed/"
   download_path: "K:/ETL/DATA_FICHIERS/afitech_daily_betting/extracted/"
-  file_downloaded_name: "*DailyPaymentActivity*xls*"
+  file_downloaded_name: "*BettingActivity*xls*"
   ##### extraction config #####
-  file_pattern: "*Betting*xls*"
-  wait_time: 300
-  start_date: #2025-06-02
-  end_date: #2025-06-02
-  page_number: 5 #120
+  file_pattern: "*BettingActivity*xls*"
+  wait_time: 2000
+  start_date:  #2025-12-10
+  end_date: #2025-12-11
+  page_number: 10 #120
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"
@@ -46,7 +46,6 @@ afitech_daily_betting:
 
     table_row_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/p-table/div/div/table/tbody/tr"
     download_button_xpath: ".//span/span/i"
-
   #### transform config ####
   files_to_transform_pattern: "*.xls*"
 

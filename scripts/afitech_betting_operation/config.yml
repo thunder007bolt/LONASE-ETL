@@ -9,9 +9,9 @@ afitech_betting_operation:
   ##### extraction config #####
   file_pattern: "*BettingOperation*xlsx"
   wait_time: 300
-  start_date: #2025-05-21
-  end_date: #2023-12-31
-  page_number: 5
+  start_date: 2025-11-28
+  end_date: 2025-11-28
+  page_number: 4
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"

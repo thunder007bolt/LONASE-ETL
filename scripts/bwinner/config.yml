@@ -36,9 +36,9 @@ bwinner:
     filter_button_element_id: "btnFilter"
     download_button_element_xpath : "/html/body/div[5]/section/div[3]/div[1]/div/a"
 
-  #### transform config ####
-  transformed_start_date: #2025-06-02
-  transformed_end_date: #2025-06-02
+  #### transform config ###
+  transformed_start_date: #2025-07-01
+  transformed_end_date: #2025-10-07
   files_to_transform_pattern: "*.xlsx"
 
   #### load config ####

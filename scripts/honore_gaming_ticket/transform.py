@@ -15,8 +15,8 @@ class HonoreGamingTicketTransformer(Transformer):
         self.agence_df = pd.read_csv(agence_file, sep=";", encoding="latin-1",index_col=False)
 
     def _transform_file(self, file: Path, date=None):
-       date = self._get_file_date(file)
-       prev_date = date - delta
+       date = self._get_file_date(file, reverse=True)
+       prev_date = date
        cols_to_import = [
            "TerminalDescription",
            "RetailCategoryName",
@@ -118,7 +118,7 @@ class HonoreGamingTicketTransformer(Transformer):
 
        name = f"{self.name}_transformed_{prev_date.strftime('%Y-%m-%d')}.csv"
 
-       self._save_file(file, grouped_df, name=name, type='csv', sep=";", encoding="latin-1", decimal=",", index=False)
+       self._save_file(file, grouped_df, name=name, type='csv', sep=";", encoding="latin-1", reverse=True, decimal=",", index=False)
 
 def run_honore_gaming_ticket_transformer():
     transformer = HonoreGamingTicketTransformer()

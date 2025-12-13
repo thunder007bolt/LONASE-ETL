@@ -9,10 +9,9 @@ editec_loto:
   ##### extraction config #####
   file_pattern: "*TicketHistory*csv"
   wait_time: 200
-  start_date: #2025-06-02
-  end_date: #2025-06-02
+  start_date: #2025-11-16
+  end_date: #2025-11-16
   urls:
-
     login: "https://new-admin-lonase.sporty-tech.net/"
     report: "https://new-admin-lonase.sporty-tech.net/reports/create"
     report_history: "https://new-admin-lonase.sporty-tech.net/reports/history"
@@ -40,12 +39,15 @@ editec_loto:
     calendar_start_day_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[2]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
     # end
     calendar_end_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar"
-    calendar_end_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[2]/div[3]/button[1]"
+    calendar_end_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
     calendar_end_month_year_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[2]/span"
     calendar_end_day_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/div[3]/hg-calendar/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
 
     category_dropdown_ng_select_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select"
     category_options_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select/ng-dropdown-panel/div[2]/div[2]/div"
+
+    etat_ticket_dropdown_ng_select_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[2]/ng-select"
+    etat_ticket_all_button: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[2]/ng-select/ng-dropdown-panel/div[1]/div/button"
 
     report_submit_button_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/button"
 

@@ -10,7 +10,8 @@ class EditecLotoLoad(Loader):
         name = ('editec_loto')
         log_file = 'logs/loader_editec_loto.log'
         columns = [
-            "retailercategoryid",
+            "agentlogin",
+            "retailcategory",
             "totalstake",
             "paidamount",
             "payableamount",
@@ -19,7 +20,7 @@ class EditecLotoLoad(Loader):
             "annee",
             "mois"
         ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_EDITEC_LOTO]"
+        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_EDITEC_LOTO_NEW]"
         super().__init__(name, log_file, columns, table_name)
 
     def _convert_file_to_dataframe(self, file):
@@ -35,3 +36,4 @@ def run_editec_loto_loader():
 
 if __name__ == "__main__":
     run_editec_loto_loader()
+0

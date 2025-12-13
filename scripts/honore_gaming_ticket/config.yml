@@ -12,7 +12,6 @@ honore_gaming_ticket:
   date:
   ##### extraction config #####
 
-
   #### transform config ####
   files_to_transform_pattern: "*.csv"
   agence_relative_file_path: "K:/ETL/DATA_FICHIERS/honore_gaming_ticket/utils/bonne_affectation_hg.csv"

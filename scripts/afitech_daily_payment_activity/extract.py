@@ -104,8 +104,8 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
 
         start_date = self.start_date
         delta = timedelta(days=1)
-        end_date = self.start_date + delta
-        while end_date <= (self.end_date + delta):
+        end_date = self.start_date
+        while end_date <= (self.end_date):
 
             browser.get(reports_url)
 
@@ -118,7 +118,7 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
 
             logger.info("Remplissage des champs de date...")
             start_date_formated = start_date.strftime('%d/%m/%Y')
-            end_date_formated = end_date.strftime('%d/%m/%Y')
+            end_date_formated = start_date.strftime('%d/%m/%Y')
 
             start_calendar_input_xpath = html_elements["start_calendar_input_xpath"]
             end_calendar_input_xpath = html_elements["end_calendar_input_xpath"]
@@ -128,13 +128,13 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
             start_calendar_input.send_keys(start_date_formated + Keys.ENTER)
             sleep(2)
             end_calendar_input = browser.find_element(by=By.XPATH, value=end_calendar_input_xpath)
-            end_calendar_input.send_keys(end_date_formated + Keys.ENTER)
+            end_calendar_input.send_keys(end_date_formated + Keys.ENTER + Keys.ENTER)
             sleep(2)
 
-            logger.info("Soumission du formulaire...")
-            report_submit_button_xpath = html_elements["report_submit_button_xpath"]
-            browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-            self.wait_and_click(report_submit_button_xpath, locator_type="xpath", timeout=60 * 4)
+            # logger.info("Soumission du formulaire...")
+            # report_submit_button_xpath = html_elements["report_submit_button_xpath"]
+            # browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+            # self.wait_and_click(report_submit_button_xpath, locator_type="xpath", timeout=15)
             try:
                 libelle = 'Report created successfully'
                 self.wait_for_presence("//div[contains(text(),'" + libelle + "')]", timeout=10 * 9, raise_error=True)
@@ -215,7 +215,8 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                             # Find the button within the row context
                             download_button = row.find_element(By.XPATH, download_button_xpath)
 
-                            logger.info("Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
+                            logger.info(
+                                "Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
                             # Optional: Wait for visibility/presence first, though JS click might not strictly need it
                             WebDriverWait(browser, 10).until(EC.visibility_of(download_button))
 

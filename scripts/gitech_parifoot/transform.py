@@ -55,14 +55,14 @@ class GitechParifootTransformer(Transformer):
         deuxième ligne (index 1) et correspond au format 'Du: DD/MM/YYYY'.
         """
         self.logger.info(f"Extraction de la date à partir du fichier {xlsx_file.name}")
-        df = pd.read_excel(xlsx_file)
-        cell_value = str(df.iloc[1])
-        match = re.search(r"Du:\s*(\d{2}/\d{2}/\d{4})", cell_value)
-        if match:
-            date_str = match.group(1)
-            return date_str
-        else:
-            raise ValueError("Date non trouvée dans le fichier.")
+        df = pd.read_excel(xlsx_file, nrows=6)  # Lecture des 6 premières lignes
+
+        for idx, row in df.iterrows():
+            cell_str = str(row).lower()
+            match = re.search(r"date\s+de\s+début\s+de\s+la\s+vente\s*:\s*(\d{2}/\d{2}/\d{4})", cell_str)
+            if match:
+                return match.group(1)
+        raise ValueError("Date non trouvée dans le fichier.")
 
     def process_numeric_column(self, value):
         """
@@ -111,7 +111,7 @@ class GitechParifootTransformer(Transformer):
 
         try:
             # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
-            data = pd.read_excel(xlsx_file, skiprows=range(1, 6))
+            data = pd.read_excel(xlsx_file, skiprows=range(0, 6))
         except Exception as e:
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de la lecture de {xlsx_file.name} : {e}")
@@ -125,11 +125,30 @@ class GitechParifootTransformer(Transformer):
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de l'extraction de la date de {xlsx_file.name} : {e}")
             return
+        col_mapping = {
+            'S.No': 'No',
+            'Agences': 'Agences',
+            'Operateurs': 'Operateur',
+            'date de vente': 'Date vente',
+            'Recette(CFA.)': 'Vente',
+            'Annulation(CFA)': 'Annulation',
+            'Ventes Resultant(CFA)': 'Ventes Resultant',
+            'Paiements(CFA.)': 'Paiement',
+            'Resultats(CFA.)': 'Resultat'
+        }
+        data.rename(columns=col_mapping, inplace=True)
+        data = data[~data['Date vente'].isin(['Total', 'montant global'])]
+        data = data[~data['Agences'].isin(['montant global', 'Nom de jeu'])]
+        pattern = r'^Parifoot\(\d+(\.\d+)?%\)$'
+        mask_yakkar = data['Agences'].astype(str).str.match(pattern, na=False)
+        data = data[~mask_yakkar]
+        data = data[~(data['Agences'].isna() & data['Operateur'].isna())]
 
+        data['Remboursement'] = 0
         # Renommage des colonnes
-        data.columns = ['No', 'Agences', 'Operateur', 'Vente', 'Annulation',
-                        'Remboursement', 'Paiement', 'Resultat']
-        # Suppression des lignes où 'Operateur' vaut 'Total' ou 'montant global'
+        columns = ['No', 'Agences', 'Operateur', 'Vente', 'Annulation',
+                   'Remboursement', 'Paiement', 'Resultat']
+        data = data[columns]
         data = data[~data['Operateur'].isin(['Total', 'montant global'])]
         # Suppression de la colonne 'No'
         if 'No' in data.columns:

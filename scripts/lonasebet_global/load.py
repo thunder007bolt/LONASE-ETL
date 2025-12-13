@@ -10,7 +10,8 @@ class LonasebetGlobalLoad(Loader):
         name = 'lonasebet_global'
         log_file = 'logs/loader_lonasebet_global.log'
         columns = [
-            "Nombre_de_paris", "Nombre_de_tickets",
+            "Nombre_de_paris",
+            "Nombre_de_tickets",
             "Mises"
             # , "Produit_brut_des_jeux"
             # , "Rentabilite"
@@ -33,6 +34,11 @@ class LonasebetGlobalLoad(Loader):
         self.logger.info(f"Lecture du fichier transformé : {file_path}")
         try:
             df = pd.read_csv(file_path, sep=';', dtype=str, encoding='latin1')
+            columns = ['Nombre de paris', 'Nombre de tickets', 'Mises', 'Mises en cours',
+                       'Gains Joueurs', 'Montant total à payer', 'Montant total payé', 'Montant à payer expiré',
+                       'Produit bruts des jeux Cashed Out', 'JOUR', 'ANNEE', 'MOIS', 'CANAL',
+                       'CATEGORIE']
+            df= df [columns]
             if len(df.columns) < 16:
                 self.logger.info(file_path)
             df.replace(np.nan, '', inplace=True)

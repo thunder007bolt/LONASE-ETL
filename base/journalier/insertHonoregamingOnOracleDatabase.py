@@ -63,7 +63,8 @@ def chargeHonoregaming(data,debut,fin):
         
     conn = cx_Oracle.connect(username,password,dsn)
     cur = conn.cursor() #creates a cursor object
-    
+    cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+    cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
     
     
     
@@ -462,7 +463,10 @@ except:
     print("La base de donnee a deja ete initialisee")
 
 conn = cx_Oracle.connect(username,password,dsn)
-cur = conn.cursor() #creates a cursor object
+cur = conn.cursor()
+cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/RR'")
+cur.execute("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ', '")
+#creates a cursor object
 
 cur.execute("""
     truncate table optiwaretemp.SRC_PRD_ALR_HONORE_GAMING

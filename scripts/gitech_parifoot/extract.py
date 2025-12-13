@@ -46,6 +46,7 @@ class ExtractGitechParifoot(BaseScrapper):
         try:
             verification_xpath = html_elements["verification_xpath"]
             WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, timeout=10*9)
             self.logger.info("Connexion à la plateforme réussie.")
 
         except:
@@ -73,6 +74,10 @@ class ExtractGitechParifoot(BaseScrapper):
         end_date_month_element_id = html_elements["end_date_month_element_id"]
         end_date_year_element_id = html_elements["end_date_year_element_id"]
         error_message_element_xpath = html_elements["error_message_element_xpath"]
+        product_select_element_id = html_elements["product_select_element_id"]
+        product_item_element_value = html_elements["product_item_element_value"]
+
+        self.fill_select_by_value(product_select_element_id, value=product_item_element_value)
 
         start_date = self.start_date
         # todo: +1 if include_sup equals true
@@ -105,8 +110,8 @@ class ExtractGitechParifoot(BaseScrapper):
                 pass
 
             self.logger.info("Télechargement du fichier")
-            download_button_element_xpath = html_elements["download_button_element_xpath"]
-            self.wait_and_click(download_button_element_xpath, locator_type='xpath', timeout=15)
+            download_button_element_id = html_elements["download_button_element_id"]
+            self.wait_and_click(download_button_element_id, locator_type='id', timeout=15)
 
             try:
                 self.start_date = start_date

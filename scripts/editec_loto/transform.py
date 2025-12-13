@@ -26,7 +26,17 @@ class EditecLotoTransformer(Transformer):
         # filesInitialDirectory = r"K:\DATA_FICHIERS\LONASEBET\CASINO\\"
         # data.to_csv(filesInitialDirectory + "casinoLonasebet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
 
-        data = pd.DataFrame(data, columns=["RetailCategoryId", "TotalStake", "PaidAmount","PayableAmount", "State", "JOUR","ANNEE","MOIS"])
+        data = pd.DataFrame(data, columns=["AgentLogin", "RetailCategory", "TotalStake", "PaidAmount", "CancelDateTime", "PayableAmount","SettledDateTime", "State", "JOUR", "ANNEE", "MOIS"])
+        data["AgentLogin"] = data["AgentLogin"].astype(str).str[-5:]
+        data['SettledDateTime'] = pd.to_datetime(data['SettledDateTime'])
+        data['CancelDateTime'] = pd.to_datetime(data['CancelDateTime'])
+
+
+        data = data[
+            (data['SettledDateTime'].dt.date == date.date()) |
+            (data['CancelDateTime'].dt.date == date.date())
+            ]
+        data = data.drop(columns=["SettledDateTime","CancelDateTime"])
         data = data.replace(np.nan, '')
         data = data.astype(str)
 

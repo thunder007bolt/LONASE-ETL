@@ -13,7 +13,7 @@ def main_cycle():
     script_honore_gaming = os.path.join(SCRIPTS_DIR, "extract_HonoreGaming.py")
     script_hg_ticket_pari = os.path.join(SCRIPTS_DIR, "HG_ticket_pari.py")
     script_insert_honore_oracle = os.path.join(JOURNALIER_DIR, "insertHonoregamingOnOracleDatabase.py")
-    run_script(script_honore_gaming)
+    #run_script(script_honore_gaming)
     run_script(script_hg_ticket_pari)
     run_script(script_insert_honore_oracle)
     '''

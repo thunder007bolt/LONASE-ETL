@@ -12,11 +12,9 @@ class BwinnerLoad(Loader):
 
         self.oracle_columns = columns
         self.oracle_table_name = "OPTIWARETEMP.SRC_PRD_BWINNERS"
-
         # Sql server
         self.sql_server_columns = columns
         self.sql_server_table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_BWINNERS]"
-
 
 
     def _convert_file_to_dataframe(self, file):

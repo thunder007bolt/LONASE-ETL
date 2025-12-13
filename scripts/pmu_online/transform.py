@@ -125,9 +125,9 @@ class PmuOnlineTransformer(Transformer):
 
         # Renommage des colonnes
             # Lire le fichier .xlsx avec pandas
-        data.columns = ['No', 'Date', 'Nomjeu', 'Ventestotales', 'Gains', 'PourcentagePaiement', 'MontantNet']
+        data.columns = ['No', 'Date', 'NomJeu', 'Ventestotales', 'Gains', 'PourcentagePaiement', 'MontantNet']
         # Sppression des lignes contenant 'Total'
-        data = data[~data['Nomjeu'].isin(['TOTAL'])]
+        data = data[~data['NomJeu'].isin(['TOTAL'])]
         # Suppression de la colonne 'No'
         #data = data.drop('No', axis=1)
 

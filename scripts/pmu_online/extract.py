@@ -80,6 +80,23 @@ class ExtractPmuOnline(BaseScrapper):
         delta = timedelta(days=1)
         sleep(2)
         while end_date <= self.end_date:
+
+            self.logger.info("Chargement de la page des rapports...")
+            reports_url = self.config['urls']['report']
+            browser.get(reports_url)
+
+            self.logger.info("Remplissage des champs de date...")
+            html_elements = self.config['html_elements']
+            # start_date
+            start_date_day_element_id = html_elements["start_date_day_element_id"]
+            start_date_month_element_id = html_elements["start_date_month_element_id"]
+            start_date_year_element_id = html_elements["start_date_year_element_id"]
+            # end_date
+            end_date_day_element_id = html_elements["end_date_day_element_id"]
+            end_date_month_element_id = html_elements["end_date_month_element_id"]
+            end_date_year_element_id = html_elements["end_date_year_element_id"]
+            error_message_element_xpath = html_elements["error_message_element_xpath"]
+
             year, month, day = start_date.strftime("%Y-%m-%d").split("-")
             sleep(2)
             self.fill_select(start_date_day_element_id, value=day)

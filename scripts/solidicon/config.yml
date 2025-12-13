@@ -8,8 +8,8 @@ solidicon:
   download_path: "K:/ETL/DATA_FICHIERS/solidicon/extracted/"
   ##### extraction config #####
   file_pattern: "Etat de la course*.xls"
-  start_date: #2025-05-05 # defaut is today - 1 day
-  end_date: #2025-05-05
+  start_date: 2025-09-01 # defaut is today - 1 day
+  end_date: 2025-09-30
   include_sup: false
   wait_time: 120
   urls:

@@ -31,7 +31,7 @@ class Transformer(ABC):
         self.error_file_count += 1
         self.error_file_names_list.append(filename)
 
-    @abstractmethod
+    #@abstractmethod
     def _transform_file(self, file, date=None):
         pass
 
@@ -100,6 +100,20 @@ class Transformer(ABC):
             if move: move_file(file, self.error_dest_path)
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de la sauvegarde du fichier {csv_filename} : {e}")
+            return
+
+    def _save_file2(self, data, name, type="csv", **kwargs):
+        output_file = self.transformation_dest_path / name
+        try:
+            if output_file.exists():
+                output_file.unlink()
+            if type == "csv":
+                data.to_csv(output_file, **kwargs)
+            elif type == "excel":
+                data.to_excel(output_file, **kwargs)
+
+        except Exception as e:
+            self.logger.error(f"Erreur lors de la sauvegarde du fichier {output_file} : {e}")
             return
 
     def __del__(self):

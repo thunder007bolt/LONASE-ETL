@@ -126,9 +126,9 @@ class ExtractAfitechDailyBetting(BaseScrapper):
 
         start_date = self.start_date
         delta = timedelta(days=1)
-        end_date = self.start_date + delta
+        end_date = self.start_date
         browser.get(reports_url)
-        while end_date <= (self.end_date + delta):
+        while end_date <= (self.end_date):
             for index, file in enumerate(self.files):
                 formated_start_date = file["start_date"]
                 formated_end_date = file["end_date"]
@@ -196,7 +196,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
 
     def _check_and_clean_download_directory(self):
         """Vérifie si des fichiers résiduels existent et les supprime."""
-        files = list(self.extraction_dest_path.glob("*Betting*xlsx"))
+        files = list(self.extraction_dest_path.glob("*BettingActivity*xlsx"))
         if files:
             self.logger.warning(
                 f"Fichiers résiduels trouvés dans {self.extraction_dest_path}: {[f.name for f in files]}")
@@ -210,7 +210,7 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                     raise  # Propager l'erreur pour arrêter le processus si la suppression échoue
         else:
             self.logger.info(f"Aucun fichier résiduel trouvé dans {self.extraction_dest_path}.")
-
+           
     def _download2(self):
         browser = self.browser
         html_elements = self.config['html_elements']
@@ -258,13 +258,14 @@ class ExtractAfitechDailyBetting(BaseScrapper):
                             idx = index
                             break
 
-                    founded_file_name = "Betting" in report_name and founded
+                    founded_file_name = "BettingActivity" in report_name and founded
                     if founded_file_name and "Available" in status:
                         logger.info("Téléchargement du fichier...")
                         try:
 
                             self._check_and_clean_download_directory()
-                            download_button = row.find_element(By.XPATH, "./td[6]//span[@class='icon pointer']")
+                            #download_button = row.find_element(By.XPATH, "./td[6]//span[@class='icon pointer']")
+                            download_button = row.find_element(By.XPATH, "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/p-table/div/div/table/tbody/tr[1]/td[6]/div/span/i")
                             WebDriverWait(browser, 30).until(
                                 EC.element_to_be_clickable(download_button)
                             )
