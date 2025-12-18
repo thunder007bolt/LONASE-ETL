@@ -12,7 +12,7 @@ load_env()
 
 def load_yaml_config(file_path: Path) -> Dict[str, Any]:
     try:
-        with file_path.open('r') as file:
+        with file_path.open('r', encoding="utf-8") as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
         logging.error(f"Config file not found: {file_path}")
@@ -21,21 +21,24 @@ def load_yaml_config(file_path: Path) -> Dict[str, Any]:
         logging.error(f"YAML error in {file_path}: {e}")
         raise
 
-def get_config(job_name: str = None) -> Dict[str, Any]:
+def get_config(job_name: str = None, config_path: str = None) -> Dict[str, Any]:
     project_path = Path(getenv('ABSOLUTE_PROJECT_PATH'))
 
     base_config_path = project_path / 'config' / 'base_config.yml'
     base_config = load_yaml_config(base_config_path)
 
     job_config = {}
-    if job_name:
+    
+    if job_name or config_path:
         #todo: définir proprement ce chemin
-        job_config_path = project_path / 'scripts'/ job_name / 'config.yml'
+        if job_name: job_config_path = project_path / 'scripts'/ job_name / 'config.yml'
+        if config_path: job_config_path = project_path / Path(config_path)
         if job_config_path.exists():
             job_config = load_yaml_config(job_config_path)
         else:
             logging.warning(f"Aucune configuration trouvée pour {job_name}")
-
+    elif config_path:
+        config_path = project_path / Path(config_path) #eg: config_path = scripts/mensuels/commission_quinzaine.yml
     return {**base_config, **job_config}
 
 def get_secret(keys):
@@ -44,12 +47,12 @@ def get_secret(keys):
 def get_secret_v2(dict):
     return {key: getenv(env_var) for key, env_var in dict.items()}
 
-def get_transformation_configurations(name, log_file):
+def get_transformation_configurations(name, log_file, config_path=None):
     """
     Lit la configuration et renvoie le logger, le chemin de destination pour la transformation,
     le chemin pour les fichiers traités et le chemin complet du fichier téléchargé.
     """
-    configs = get_config(name)
+    configs = get_config(name, config_path=config_path)
     config = configs[name]
     base_config = configs['base']
 
@@ -75,8 +78,8 @@ def get_transformation_configurations(name, log_file):
         error_dest_path
     )
 
-def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST ):
-    configs = get_config(name)
+def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST, config_path=None ):
+    configs =get_config(name, config_path=config_path)
     secret_config = get_secret(env_variables_list)
     logger = Logger(log_file=log_file).get_logger()
 
@@ -101,8 +104,8 @@ def get_loading_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_
         files_pattern
     )
 
-def get_database_extractor_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST ):
-    configs = get_config(name)
+def get_database_extractor_configurations(name, log_file, env_variables_list = TEMP_DB_ENV_VARIABLES_LIST , config_path=None):
+    configs = get_config(job_name=name, config_path=config_path)
     secret_config = get_secret_v2(env_variables_list)
     logger = Logger(log_file=log_file).get_logger()
 
@@ -111,8 +114,10 @@ def get_database_extractor_configurations(name, log_file, env_variables_list = T
     base_config = configs['base']
     data_path = Path(base_config["paths"]["data_path"])
 
-    extraction_dest_path = data_path / config["extraction_dest_relative_path"]
-
+    extraction_dest_path = ""
+    if config.get('extraction_dest_relative_path'):
+        extraction_dest_path = data_path / config['extraction_dest_relative_path']
+        
     return (
         secret_config,
         config,

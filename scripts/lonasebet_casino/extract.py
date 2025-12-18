@@ -82,11 +82,13 @@ class ExtractLonsasebetCasino(BaseScrapper):
             calendar_start_day_xpath = html_elements["calendar_start_day_xpath"]
 
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button",
+                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[4]/div/button",
                 locator_type="xpath")
+
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div[2]/div/hg-create-report-button[2]/button",
+                "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[4]/div[2]/div/hg-create-report-button[2]/button",
                 locator_type="xpath")
+
             sleep(1)
 
             browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
@@ -101,7 +103,10 @@ class ExtractLonsasebetCasino(BaseScrapper):
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_start_month_year_xpath):
-                if start_date.strftime('%b') in i.text:
+                t = start_date.strftime('%b')
+                if t == 'Dec':
+                    t = 'Déc'
+                if t in i.text:
                     i.click()
                     break
             sleep(1)
@@ -134,7 +139,10 @@ class ExtractLonsasebetCasino(BaseScrapper):
                     break
             sleep(1)
             for i in browser.find_elements(by=By.XPATH, value=calendar_end_month_year_xpath):
-                if end_date.strftime('%b') in i.text:
+                t = end_date.strftime('%b')
+                if t == 'Dec':
+                    t = 'Déc'
+                if t in i.text:
                     i.click()
                     break
             sleep(1)

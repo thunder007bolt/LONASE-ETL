@@ -1,15 +1,17 @@
 bwinner:
-  extraction_dest_relative_path: "bwinner/extracted/"
+  extraction_dest_relative_path: "afitech_daily_betting/processed/"
+  #extraction_dest_relative_path: "bwinner/extracted/"
   transformation_dest_relative_path: "bwinner/transformed/"
   error_dest_relative_path: "bwinner/error/"
   loaded_dest_relative_path: "bwinner/loaded/"
   processed_dest_relative_path: "bwinner/processed/"
   file_downloaded_name: "Total Tax Report*.xlsx"
-  download_path: "C:/ETL/DATA_FICHIERS/bwinner/extracted/"
+  #download_path: "K:/ETL/DATA_FICHIERS/bwinner/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/afitech_daily_betting/processed/"
   ##### extraction config #####
   file_pattern: "Total Tax Report*.xlsx"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
+  start_date: #2025-04-08
+  end_date: #2025-03-04
   include_sup: false
   wait_time: 15
   urls:
@@ -34,8 +36,10 @@ bwinner:
     filter_button_element_id: "btnFilter"
     download_button_element_xpath : "/html/body/div[5]/section/div[3]/div[1]/div/a"
 
-  #### transform config ####
-  files_to_transform_pattern: "bwinner*.xlsx"
+  #### transform config ###
+  transformed_start_date: #2025-07-01
+  transformed_end_date: #2025-10-07
+  files_to_transform_pattern: "*.xlsx"
 
   #### load config ####
   files_to_load_pattern: "bwinner_transformed*.csv"

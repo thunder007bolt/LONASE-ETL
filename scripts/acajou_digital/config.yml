@@ -6,11 +6,11 @@ acajou_digital:
   processed_dest_relative_path: "acajou_digital/processed/"
   file_downloaded_name: "Accounting.csv"
   file_pattern: "Accounting.csv"
-  wait_time: 30
-  download_path: "C:/ETL/DATA_FICHIERS/acajou_digital/extracted/"
+  wait_time: 300
+  download_path: "K:/ETL/DATA_FICHIERS/acajou_digital/extracted/"
   ##### extraction config #####
-  start_date:   # defaut is today - 1 day
-  end_date:
+  start_date:  #2025-05-12 # defaut is today - 1 day
+  end_date: #2025-05-12
   include_sup: false
   urls:
     login: "https://cms.acajou.sn/Account/Login"
@@ -39,5 +39,5 @@ acajou_digital:
   files_to_transform_pattern: "acajou_digital*csv"
 
   #### load config ####
-  files_to_load_pattern: "acajou_digital_transformed*.csv"
+  files_to_load_pattern: "*.csv"
 

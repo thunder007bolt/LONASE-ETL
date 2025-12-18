@@ -5,11 +5,11 @@ gitech_casino:
   loaded_dest_relative_path: "gitech_casino/loaded/"
   processed_dest_relative_path: "gitech_casino/processed/"
   file_downloaded_name: "Cumul CA des * types de jeux*xls"
-  download_path: "C:/ETL/DATA_FICHIERS/gitech_casino/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/gitech_casino/extracted/"
   ##### extraction config #####
   file_pattern: "Cumul CA des * types de jeux*xls"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
+  start_date: #2025-01-01 # defaut is today - 1 day
+  end_date: #2025-06-02
   include_sup: false
   wait_time: 120
   urls:

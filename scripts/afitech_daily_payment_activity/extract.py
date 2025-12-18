@@ -21,9 +21,14 @@ import pyotp
 
 
 class ExtractAfitechDailyPaymentActivity(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('afitech_daily_payment_activity', env_variables_list,
-                         'logs/extract_afitech_daily_payment_activity.log')
+    def __init__(self, env_variables_list, start_date=None, end_date=None):
+        super().__init__(
+            name='afitech_daily_payment_activity',
+            env_variables_list=env_variables_list,
+            log_file='logs/extract_afitech_daily_payment_activity.log',
+            start_date=start_date,
+            end_date=end_date
+        )
         self.file_path = None
         self.range = False
         self.files = []
@@ -111,11 +116,9 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
             self.wait_and_click(report_dropdown_xpath, locator_type="xpath")
             self.wait_and_click(report_type_xpath, locator_type="xpath")
 
-
             logger.info("Remplissage des champs de date...")
             start_date_formated = start_date.strftime('%d/%m/%Y')
-            end_date_formated = end_date.strftime('%d/%m/%Y')
-
+            end_date_formated = start_date.strftime('%d/%m/%Y')
 
             start_calendar_input_xpath = html_elements["start_calendar_input_xpath"]
             end_calendar_input_xpath = html_elements["end_calendar_input_xpath"]
@@ -125,24 +128,25 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
             start_calendar_input.send_keys(start_date_formated + Keys.ENTER)
             sleep(2)
             end_calendar_input = browser.find_element(by=By.XPATH, value=end_calendar_input_xpath)
-            end_calendar_input.send_keys(end_date_formated + Keys.ENTER)
+            end_calendar_input.send_keys(end_date_formated + Keys.ENTER + Keys.ENTER)
             sleep(2)
 
-            logger.info("Soumission du formulaire...")
-            report_submit_button_xpath = html_elements["report_submit_button_xpath"]
-            browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-            self.wait_and_click(report_submit_button_xpath, locator_type="xpath")
+            # logger.info("Soumission du formulaire...")
+            # report_submit_button_xpath = html_elements["report_submit_button_xpath"]
+            # browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+            # self.wait_and_click(report_submit_button_xpath, locator_type="xpath", timeout=15)
             try:
                 libelle = 'Report created successfully'
-                self.wait_for_presence("//div[contains(text(),'" + libelle + "')]", timeout=10 * 9)
+                self.wait_for_presence("//div[contains(text(),'" + libelle + "')]", timeout=10 * 9, raise_error=True)
+                self.files.append({"start_date": start_date, "end_date": end_date})
                 logger.info(
                     f"Le fichier DailyPaymentActivity de la plateforme AFITECH  du {start_date} a bien ete genere")
-                sleep(15)
+                sleep(10)
 
             except Exception as error:
                 logger.error(
                     f"Le fichier DailyPaymentActivity de la plateforme AFITECH  du {start_date} au {end_date} n'a pas pu ete genere")
-                self._quit(error)
+                continue
             start_date += delta
             end_date += delta
 
@@ -165,13 +169,18 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                 "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
                 timeout=40
             )
-            self.wait_and_click("/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button", locator_type="xpath")
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button", locator_type="xpath")
+                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
+                locator_type="xpath")
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button", locator_type="xpath")
+                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
+                locator_type="xpath")
             self.wait_and_click(
-                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button", locator_type="xpath")
+                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
+                locator_type="xpath")
+            self.wait_and_click(
+                "/html/body/hg-root/hg-layout/div/div/div/hg-report-history/div/div[3]/div/p-tabview/div/div[2]/p-tabpanel[1]/div/hg-load-more/div/hg-button/button",
+                locator_type="xpath")
             # Process rows with fresh elements each iteration
             rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
 
@@ -188,23 +197,37 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                     # Check if the row matches a file in self.files
                     founded = False
                     idx = None
-                    formated_start_date=""
-                    formated_end_date=""
+                    formated_start_date = ""
+                    formated_end_date = ""
                     for index, file in enumerate(self.files):
                         formated_start_date = file["start_date"].strftime('%d/%m/%Y')
                         formated_end_date = file["end_date"].strftime('%d/%m/%Y')
-                        if ( formated_start_date in  date1 and  formated_end_date in date2 ):
+                        if (formated_start_date in date1 and formated_end_date in date2):
                             founded = True
                             idx = index
                             break
 
-                    founded_file_name = "DailyPaymentActivity" in report_name and founded
+                    founded_file_name = "PaymentActivity" in report_name and founded
                     if founded_file_name and "Available" in status:
                         logger.info("Téléchargement du fichier...")
-                        download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
-                        # self.wait_and_click(download_button, locator_type="xpath")
-                        WebDriverWait(row, timeout=100).until(EC.element_to_be_clickable(download_button)).click()
-                        logger.info("Téléchargement lancé avec succès.")
+                        try:
+                            logger.info("Recherche du bouton de téléchargement...")
+                            # Find the button within the row context
+                            download_button = row.find_element(By.XPATH, download_button_xpath)
+
+                            logger.info(
+                                "Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
+                            # Optional: Wait for visibility/presence first, though JS click might not strictly need it
+                            WebDriverWait(browser, 10).until(EC.visibility_of(download_button))
+
+                            logger.info("Tentative de clic via JavaScript...")
+                            browser.execute_script("arguments[0].click();", download_button)
+
+                            logger.info("Clic via JavaScript exécuté (vérifiez si le téléchargement a démarré).")
+
+                        except Exception as e:
+                            logger.error(f"Échec du clic sur le bouton de téléchargement: {e}")
+                            raise e
                         try:
                             self._verify_download()
                             name = f"{self.name}_{formated_start_date.replace('/', '-')}_{formated_end_date.replace('/', '-')}"
@@ -251,8 +274,8 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
             date1 = columns[2].text
             date2 = columns[3].text
             status = columns[4].text
-            founded_file_name = "DailyPaymentActivity" in report_name and \
-                                 start_date_formated in date1 and \
+            founded_file_name = "PaymentActivity" in report_name and \
+                                start_date_formated in date1 and \
                                 end_date_formated in date2
 
             if founded_file_name and "Available" in status:
@@ -281,7 +304,7 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
 
             elif founded_file_name and (status in ["Queued", "In Progress"]):
                 self.logger.info(f"Le fichier du {start_date} est en attente de téléchargement")
-                #todo: définir ceci dans le fichier config
+                # todo: définir ceci dans le fichier config
                 sleep(30)
                 self.logger.info("Rétéléchargement du fichier")
                 self._download_files()
@@ -291,27 +314,28 @@ class ExtractAfitechDailyPaymentActivity(BaseScrapper):
                 self.logger.error(f"Le fichier du {start_date} {status} n'a pas pu être téléchargé")
                 continue
 
-
     def process_extraction(self):
         self._set_date()
         self._open_browser()
         self._connection_to_platform()
-        #self._generate_files()
-        #self._download_files()
+        self._generate_files()
+        # self._download_files()
         """
-               def generate_date_range(start_date, end_date):
-                   return [{"start_date": start_date,
-                            "end_date": start_date + timedelta(days=i)}
-                           for i in range((end_date - start_date).days + 1)]
+        def generate_date_range(start_date, end_date):
+           return [{"start_date": start_date + timedelta(days=i),
+                    "end_date": start_date + timedelta(days=i)}
+                   for i in range((end_date - start_date).days + 1)]
 
-               self.files = generate_date_range(self.start_date, self.end_date)
-        """
+        self.files = generate_date_range(self.start_date, self.end_date)
+        #"""
         self._download2()
+
 
 def run_afitech_payment_daily_activity():
     env_variables_list = ["AFITECH_LOGIN_USERNAME", "AFITECH_LOGIN_PASSWORD", "AFITECH_GET_OTP_URL"]
     job = ExtractAfitechDailyPaymentActivity(env_variables_list)
     job.process_extraction()
+
 
 if __name__ == "__main__":
     run_afitech_payment_daily_activity()

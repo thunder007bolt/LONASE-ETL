@@ -6,9 +6,9 @@ load_env()
 
 
 class PmuCALoad(Loader):
-    def __init__(self):
+    def __init__(self, log_file=None, config_path=None):
         name = ('pmu_ca')
-        log_file = 'logs/loader_pmu_ca.log'
+        log_file = log_file or 'logs/loader_pmu_ca.log'
         columns = [
             "produit",
             "ca",
@@ -18,15 +18,15 @@ class PmuCALoad(Loader):
             "mois"
         ]
         table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_PMUSENEGAL_CA]"
-        super().__init__(name, log_file, columns, table_name)
+        super().__init__(name, log_file, columns, table_name, config_path=config_path)
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False)
         return df
 
 
-def run_pmu_ca_loader():
-    loader = PmuCALoad()
+def run_pmu_ca_loader(config_path=None, log_file=None):
+    loader = PmuCALoad(config_path=config_path, log_file=log_file)
     loader.process_loading()
 
 

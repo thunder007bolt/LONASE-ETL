@@ -42,7 +42,7 @@ class ParifootOnlineLoad(Loader):
         super().__init__(name, log_file, columns, table_name)
 
     def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
+        df = pd.read_csv(file, sep=';', index_col=False, dtype=str)
         return df
 
 

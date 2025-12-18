@@ -78,6 +78,12 @@ class ExtractBwinner(BaseScrapper):
         sleep(1)
         self._process_multiple_files()
 
+    def _handle_failed_download(self, start_date):
+        self.start_date = start_date
+        self._connection_to_platform()
+        self._download_files()
+        return False
+
     def _process_download(self, start_date, end_date):
         self.logger.info("Remplissage des champs de date...")
         html_elements = self.config['html_elements']
@@ -102,7 +108,11 @@ class ExtractBwinner(BaseScrapper):
         sleep(2)
 
         self.logger.info("Télechargement du fichier")
-        self.wait_and_click(download_button_element_xpath, locator_type='xpath', timeout=15)
+        #try:
+        self.wait_and_click(download_button_element_xpath, locator_type='xpath', timeout=15, raise_error=True)
+        #except:
+
+
 
 
 def run_bwinner():

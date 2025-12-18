@@ -48,6 +48,17 @@ class HonoreGamingLoad(Loader):
         table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_ALR_HONORE_GAMING]"
         super().__init__(name, log_file, columns, table_name)
 
+    def _load_datas(self, data):
+        self.logger.info("Chargement des données dans la base...")
+        insert_query = f"""
+            INSERT INTO {self.table_name} ({", ".join([f'[{col}]' for col in self.columns])})
+            VALUES
+                ({", ".join(["?"] * len(self.columns))})
+        """
+        self.cursor.fast_executemany = True
+        self.cursor.executemany(insert_query, data)
+        self.connexion.commit()
+
     def _convert_file_to_dataframe(self, file):
         df = pd.read_csv(file, sep=';', index_col=False)
         return df

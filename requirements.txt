@@ -9,3 +9,5 @@ lxml
 pyodbc
 pyotp
 xlwings
+
+pyinstaller

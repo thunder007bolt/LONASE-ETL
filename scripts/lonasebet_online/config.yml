@@ -5,11 +5,11 @@ lonasebet_online:
   loaded_dest_relative_path: "lonasebet_online/loaded/"
   processed_dest_relative_path: "lonasebet_online/processed/"
   file_downloaded_name: "*GlobalBettingHistory*csv"
-  download_path: "C:/ETL/DATA_FICHIERS/lonasebet_online/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/lonasebet_online/extracted/"
   ##### extraction config #####
   file_pattern: "*GlobalBettingHistory*csv"
-  start_date: 2025-02-15
-  end_date: 2025-02-16
+  start_date: #2025-11-15
+  end_date: #2025-11-15
   wait_time: 200
   urls:
     login: "https://new-admin-lonase.sporty-tech.net/"

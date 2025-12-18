@@ -16,7 +16,7 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
     def __init__(self):
         super().__init__('afitech_daily_payment_activity', 'logs/transformer_afitech_daily_payment_activity.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         """
         """
         self.logger.info(f"Traitement du fichier : {file.name}")
@@ -31,9 +31,15 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
             return
 
         data = data.replace(np.nan, '')
-        data = data.applymap(lambda x: str(x).replace('.', ','))
         data['Partner'] = data['Partner'].str.replace(',', '.', regex=False)
-        data['Date'] = data['Date'].str.replace('-', '/', regex=False)
+        date = data['Date'][0].date()
+        data['Date'] = data['Date'].dt.strftime('%d/%m/%Y')
+        data = data.astype(str)
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\AFITECH\DailyPaymentActivity\\"
+        data.to_csv(filesInitialDirectory + "AFITECH_DailyPaymentActivity "+ date.strftime('%Y-%m-%d')+"_"+date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';')
+
+        data = data.applymap(lambda x: str(x).replace('.', ','))
         data['t_amount_of_partner_deposits'] = 0
         data['t_am_of_partner_withdrawals'] = 0
         data.rename(
@@ -48,9 +54,8 @@ class AfitechDailyPaymentActivityTransformer(Transformer):
                 "Total Commissions": "total_commissions"
             }
         )
-        data = data.astype(str)
 
-        self._save_file(file, data, type="csv", index=False, sep=';', encoding='utf8')
+        self._save_file(file, data, type="csv", index=False, sep=';', encoding='utf8', reverse=True)
 
 
 def run_afitech_daily_payment_activity_transformer():

@@ -16,7 +16,7 @@ class MinishopTransformer(Transformer):
     def __init__(self):
         super().__init__('minishop', 'logs/transformer_minishop.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
         try:
             data = pd.read_csv(file, sep=';')
@@ -26,7 +26,10 @@ class MinishopTransformer(Transformer):
             self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
             return
 
-        data = pd.DataFrame(data, columns=['DATE', 'ETABLISSEMENT', 'JEU', 'TERMINAL', 'VENDEUR', 'MONTANT A VERSER', 'MONTANT A PAYER'])
+        data.columns=['DATE', 'ETABLISSEMENT', 'JEU', 'TERMINAL', 'VENDEUR', 'MONTANT A VERSER', 'MONTANT A PAYER']
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\MINI_SHOP\\"
+        data.to_csv(filesInitialDirectory + "minishop_"+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='latin-1' )
 
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='latin-1', index=False)
 

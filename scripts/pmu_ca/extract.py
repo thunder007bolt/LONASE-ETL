@@ -10,8 +10,8 @@ from utils.date_utils import sleep
 
 
 class ExtractPmuCA(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('pmu_ca', env_variables_list, 'logs/extract_pmu_ca.log')
+    def __init__(self, env_variables_list,  config_path=None, log_file=None):
+        super().__init__('pmu_ca', env_variables_list, log_file or 'logs/extract_pmu_ca.log', config_path=config_path)
         self.file_path = None
 
     def _connection_to_platform(self):
@@ -31,7 +31,7 @@ class ExtractPmuCA(BaseScrapper):
         password = secret_config["PMU_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_click(login_step1_xpath, locator_type='xpath')
+        self.wait_and_click(login_step1_xpath, locator_type='xpath', timeout=60*10, raise_error=True)
         self.wait_and_click(login_step2_xpath, locator_type='xpath')
         self.wait_and_send_keys(username_xpath, locator_type='xpath', keys=username, raise_error=True)
         self.wait_and_send_keys(password_xpath, locator_type='xpath', keys=password, raise_error=True)
@@ -73,9 +73,12 @@ class ExtractPmuCA(BaseScrapper):
         date_month_element_xpath = date_month_element_xpath.replace('variable_to_be_set', month)
         date = start_date.strftime('%d-%m-%Y')
         date_element_xpath = date_element_xpath.replace('variable_to_be_set', date)
-        sleep(3)
+
         self.wait_and_click(date_month_element_xpath, locator_type="xpath", timeout=120)
+        sleep(5)
         self.wait_and_click(date_element_xpath, locator_type="xpath", timeout=120)
+        self.wait_and_click(date_element_xpath, locator_type="xpath", timeout=120)
+        sleep(10)
 
         step1_element_xpath = step1_element_xpath.replace('variable_to_be_set', date)
         self.wait_for_presence(step1_element_xpath, raise_error=True)
@@ -124,9 +127,9 @@ class ExtractPmuCA(BaseScrapper):
         self._download_files()
 
 
-def run_pmu_ca():
+def run_pmu_ca(config_path=None, log_file=None):
     env_variables_list = ["PMU_LOGIN_USERNAME", "PMU_LOGIN_PASSWORD"]
-    job = ExtractPmuCA(env_variables_list)
+    job = ExtractPmuCA(env_variables_list, config_path=config_path, log_file=log_file)
     job.process_extraction()
 
 

@@ -3,14 +3,14 @@ sys.path.append("C:\ETL")
 
 from base.logger import Logger
 from extract import run_bwinner as extract
-from transform import run_bwinner_transformer as transform
+from transform_from_afitech import run_bwinner_transformer as transform
 from load import run_bwinner_loader as load
 
 def orchestrator():
     logger = Logger(log_file="logs/orchestrator_bwinner.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
-        extract()
+        #extract()
         transform()
         load()
         logger.info("Orchestrateur terminé avec succès.")

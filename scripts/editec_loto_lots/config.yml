@@ -1,0 +1,61 @@
+editec_loto_lots:
+  extraction_dest_relative_path: "editec_loto_lots/extracted/"
+  transformation_dest_relative_path: "editec_loto_lots/transformed/"
+  error_dest_relative_path: "editec_loto_lots/error/"
+  loaded_dest_relative_path: "editec_loto_lots/loaded/"
+  processed_dest_relative_path: "editec_loto_lots/processed/"
+  file_downloaded_name: "*TreasuryCashManagement*xlsx"
+  download_path: "K:/ETL/DATA_FICHIERS/editec_loto_lots/extracted/"
+  ##### extraction config #####
+  file_pattern: "*TreasuryCashManagement*xlsx"
+  wait_time: 200
+  start_date: #2025-11-16
+  end_date: #2025-11-16
+  urls:
+    login: "https://new-admin-lonase.sporty-tech.net/"
+    report: "https://new-admin-lonase.sporty-tech.net/retail/detailed-activity"
+    report_history: "https://new-admin-lonase.sporty-tech.net/reports/history"
+
+  html_elements:
+    ### login page ###
+    username_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[1]/input"
+    password_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[2]/input"
+    login_submit_button_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[3]/button"
+
+    ### home ###
+    verification_xpath: "/html/body/hg-root/hg-layout/div/div/hg-header/div/div/hg-topbar-infos/div/div[2]/div[2]"
+
+    ### report generation page ###
+    # dropdown_element_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button"
+    report_verification_xpath: "/html/body/hg-root/hg-layout/div/hg-topbar/header/div/div[2]/div[5]/hg-profile-avatar/p-avatar/div/span"
+    report_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div/button"
+    report_type_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/ngb-accordion/div[2]/div[2]/div/hg-create-report-button[2]/button"
+    # start
+
+
+    calendar_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/hg-range/div/div/p-calendar"
+    calendar_year_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
+    calendar_year_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
+    calendar_month_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
+    calendar_day_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
+
+    search_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/div/form/div[2]/button"
+    category_dropdown_ng_select_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select"
+    category_options_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[1]/ng-select/ng-dropdown-panel/div[2]/div[2]/div"
+
+    etat_ticket_dropdown_ng_select_xpath: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[2]/ng-select"
+    etat_ticket_all_button: "/html/body/ngb-popover-window/div[2]/hg-report-request-generator/form/hg-multi-select[2]/ng-select/ng-dropdown-panel/div[1]/div/button"
+
+    report_submit_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-detailed-activity/div/div/hg-agents-detailed-activity/div[1]/button"
+
+    ### report history page ###
+    table_xpath: "//table/tbody"
+    table_row_xpath: "//table/tbody/tr"
+    download_button_xpath: "*/div/div/i"
+
+  #### transform config ####
+  files_to_transform_pattern: "editec_loto_lots*xlsx"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

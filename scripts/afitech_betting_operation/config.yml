@@ -1,0 +1,51 @@
+afitech_betting_operation:
+  extraction_dest_relative_path: "afitech_betting_operation/extracted/"
+  transformation_dest_relative_path: "afitech_betting_operation/transformed/"
+  error_dest_relative_path: "afitech_betting_operation/error/"
+  loaded_dest_relative_path: "afitech_betting_operation/loaded/"
+  processed_dest_relative_path: "afitech_betting_operation/processed/"
+  download_path: "K:/ETL/DATA_FICHIERS/afitech_betting_operation/extracted/"
+  file_downloaded_name: "*BettingOperation*xlsx"
+  ##### extraction config #####
+  file_pattern: "*BettingOperation*xlsx"
+  wait_time: 300
+  start_date: 2025-11-28
+  end_date: 2025-11-28
+  page_number: 4
+  urls:
+    login: "https://lonase-prod.afite.ch/login"
+    report: "https://lonase-prod.afite.ch/reports/create"
+    report_history: "https://lonase-prod.afite.ch/reports/history"
+
+  html_elements:
+    ### login page ###
+    username_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/form/div[1]/input"
+    password_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/form/div[2]/div[1]/input"
+    login_submit_button_element_xpath: "//button[@type='submit']"
+
+    ### MFA page ###
+    verification_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[1]/span"
+    dropdown_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/p-dropdown/div/span"
+    google_authentication_element_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[4]/li"
+    code_input_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/div/hg-code/div/input[1]"
+
+
+    ### report generation page ###
+    report_verification_xpath: "/html/body/hg-root/hg-layout/div/hg-topbar/header/div/div[2]/div[5]/hg-profile-avatar/p-avatar/div/span"
+    report_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/div[2]/div/p-dropdown/div/span"
+    report_type_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[3]/li"
+    start_calendar_input_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[1]/p-calendar/span/input"
+    end_calendar_input_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[2]/p-calendar/span/input"
+    report_submit_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-create-report/div/hg-report-request-generator/div/div/form/div[8]/hg-button/button"
+
+    ### report history page ###
+    table_xpath: "//table/tbody"
+    table_row_xpath: "//table/tbody/tr"
+    download_button_xpath: ".//span/span/i"
+
+  #### transform config ####
+  files_to_transform_pattern: "*.xls*"
+
+  #### load config ####
+  files_to_load_pattern: "*.csv"
+

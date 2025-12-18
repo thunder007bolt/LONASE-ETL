@@ -1,0 +1,73 @@
+lonasebet_global:
+  extraction_dest_relative_path: "lonasebet_global/extracted/"
+  transformation_dest_relative_path: "lonasebet_global/transformed/"
+  error_dest_relative_path: "lonasebet_global/error/"
+  loaded_dest_relative_path: "lonasebet_global/loaded/"
+  processed_dest_relative_path: "lonasebet_global/processed/"
+
+  file_pattern: "globalLonasebet*.csv"
+  download_path: "K:/DATA_FICHIERS/LONASEBET/GLOBAL/"
+  wait_time: 200
+  start_date: #2025-06-18
+  end_date: #YYYY-MM-DD
+
+  urls:
+    login: "https://new-admin-lonase.sporty-tech.net/"
+    analysis: "https://new-admin-lonase.sporty-tech.net/analysis/bets"
+
+  html_elements:
+    username_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[1]/input"
+    password_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[2]/input"
+    login_submit_button_element_xpath: "/html/body/hg-root/hg-login/div/div[2]/form/div[3]/button"
+    verification_xpath: "/html/body/hg-root/hg-layout/div/div/hg-header/div/div/hg-topbar-infos/div/div[2]/div[2]/button/div/span"
+
+    date_picker_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/input"
+    year_picker_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[1]/div/div[1]/div/button[2]"
+    year_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
+    month_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[2]/span"
+    day_list_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-range/div/div/p-calendar/span/div/div[1]/div/div[2]/table/tbody/*/*/span[not(contains(@class, 'p-disabled'))]"
+    category_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select/div/div/div[2]"
+    category_dropdown_ng_select_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select"
+    canal_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select/div/div/div[2]"
+    canal_dropdown_ng_select_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select"
+
+    #category_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select/div/div/div[2]"
+    category_options_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div"
+    masse_commune_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[1]/div"
+    masse_separee_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[2]/div"
+    sports_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[3]/div"
+    virtuel_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[4]/div"
+    casino_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[5]/div"
+    close_category_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[1]/ng-select/div/span"
+
+    channel_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select/div/div/div[2]"
+    online_channel_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[1]/div"
+    retail_channel_option_xpath: "/html/body/ng-dropdown-panel/div[2]/div[2]/div[2]/div"
+    close_channel_dropdown_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/hg-multi-select[2]/ng-select/div/span"
+
+    search_button_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[1]/div/form/div[2]/button[1]"
+
+    data_table_rows_xpath: "/html/body/hg-root/hg-layout/div/div/div/hg-betting-analysis/div[2]/div[1]/hg-betting-kpi/div[1]/div"
+
+  files_to_transform_pattern: "globalLonasebet*.csv"
+
+  files_to_load_pattern: "*.csv"
+  db_table_name: "[DWHPR_TEMP].[OPTIWARETEMP].[src_prd_globalLonasebet]"
+  db_archive_table_name: "[DWHPR_TEMP].[OPTIWARETEMP].[ar_globalLonasebet]"
+  columns:
+    - "Nombre_de_paris"
+    - "Nombre_de_tickets"
+    - "Mises"
+    - "Produit_brut_des_jeux"
+    - "Rentabilite"
+    - "Mises_en_cours"
+    - "Gains_Joueurs"
+    - "Montant_total_a_payer"
+    - "Montant_total_paye"
+    - "Montant_a_payer_expire"
+    - "Produit_bruts_des_jeux_Cashed_Out"
+    - "JOUR"
+    - "ANNEE"
+    - "MOIS"
+    - "CANAL"
+    - "CATEGORIE"

@@ -2,12 +2,12 @@ from base.logger import Logger
 from utils.config_utils import get_config, get_transformation_configurations
 from pathlib import Path
 from abc import ABC, abstractmethod
-from utils.file_manipulation import move_file
+from utils.file_manipulation import move_file, check_file_not_empty
 import re
 import datetime
 
 class Transformer(ABC):
-    def __init__(self, name, log_file):
+    def __init__(self, name, log_file,config_path=None):
         self.error_file_count = 0
         self.error_file_names_list = []
         self.name = name
@@ -20,7 +20,7 @@ class Transformer(ABC):
             self.source_path,
             self.file_pattern,
             self.error_dest_path
-        ) = get_transformation_configurations(name, log_file)
+        ) = get_transformation_configurations(name, log_file, config_path)
 
     def check_error(self):
         if self.error_file_count > 0:
@@ -31,15 +31,20 @@ class Transformer(ABC):
         self.error_file_count += 1
         self.error_file_names_list.append(filename)
 
-    @abstractmethod
-    def _transform_file(self, file):
+    #@abstractmethod
+    def _transform_file(self, file, date=None):
         pass
 
     def process_transformation(self):
         self.logger.info(f"Transformation des fichiers de {self.source_path} en {self.file_pattern}")
         for file in self.source_path.glob(self.file_pattern):
             self.logger.info(f"Transformation du fichier {file}")
-            self._transform_file(file)
+            try:
+                date = self._get_file_date(file)
+            except :
+                date = None
+            if not check_file_not_empty(file): continue
+            self._transform_file(file, date=date)
         pass
 
     def set_filename(self, date_str, prefix):
@@ -58,6 +63,8 @@ class Transformer(ABC):
             regex = r"\s*(\d{2}-\d{2}-\d{4})"
             format = "%d-%m-%Y"
 
+
+
         if is_multiple:
             matches = re.findall(regex, file.name)
             dates = [datetime.datetime.strptime(match, format) for match in matches]
@@ -75,7 +82,7 @@ class Transformer(ABC):
         else:
             return f"{self.name}_transformed_{dates.strftime('%Y-%m-%d')}.csv"
 
-    def _save_file(self, file, data, type="csv",date=None, name=None, reverse=False, is_multiple=False, **kwargs):
+    def _save_file(self, file, data, type="csv",date=None, name=None, reverse=False, is_multiple=False,move=True, **kwargs):
         csv_filename = name or self._build_name(file, reverse=reverse, date=date, is_multiple=is_multiple)
         output_file = self.transformation_dest_path / csv_filename
         try:
@@ -86,13 +93,27 @@ class Transformer(ABC):
             elif type == "excel":
                 data.to_excel(output_file, **kwargs)
 
-            move_file(file, self.processed_dest_path)
+            if move: move_file(file, self.processed_dest_path)
             self.logger.info(f"Le fichier {csv_filename} a été transformé et sauvegardé avec succès.")
 
         except Exception as e:
-            move_file(file, self.error_dest_path)
+            if move: move_file(file, self.error_dest_path)
             self.set_error(file.name)
             self.logger.error(f"Erreur lors de la sauvegarde du fichier {csv_filename} : {e}")
+            return
+
+    def _save_file2(self, data, name, type="csv", **kwargs):
+        output_file = self.transformation_dest_path / name
+        try:
+            if output_file.exists():
+                output_file.unlink()
+            if type == "csv":
+                data.to_csv(output_file, **kwargs)
+            elif type == "excel":
+                data.to_excel(output_file, **kwargs)
+
+        except Exception as e:
+            self.logger.error(f"Erreur lors de la sauvegarde du fichier {output_file} : {e}")
             return
 
     def __del__(self):

@@ -1,4 +1,6 @@
 from pathlib import Path
+import shutil
+import os
 
 def move_file(file_path: Path, destination_folder: Path) -> Path:
     """
@@ -23,7 +25,6 @@ def move_file(file_path: Path, destination_folder: Path) -> Path:
     file_path.rename(destination)
 
     return destination
-
 
 def rename_file(pattern, source_folder, rename_name, logger):
     """Renomme un fichier ou un ensemble de fichiers selon un motif."""
@@ -55,6 +56,57 @@ def _rename_file(file, rename_name, logger):
     file.rename(new_file)
     return new_file
 
+def _rename_file2(file: Path, rename_name: str, logger) -> Path:
+    """Effectue le renommage d'un fichier."""
+    try:
+        new_file = file.parent / f"{rename_name}{file.suffix}"
+        file.rename(new_file)
+        return new_file
+    except Exception as e:
+        logger.error(f"Échec du renommage de {file} en {rename_name}: {e}")
+        raise
+from pathlib import Path
+import time
+
+def rename_file2(pattern, source_folder, rename_name, logger):
+    """Renomme un fichier et vérifie que le renommage est effectif."""
+    if isinstance(pattern, Path):
+        file = pattern
+        try:
+            new_file = _rename_file(file, rename_name, logger)
+            # Vérifier que le fichier original n'existe plus
+            if file.exists():
+                logger.error(f"Le fichier original {file} existe toujours après le renommage.")
+                raise FileExistsError(f"Échec du renommage : {file} n'a pas été supprimé.")
+            # Vérifier que le nouveau fichier existe
+            if not new_file.exists():
+                logger.error(f"Le nouveau fichier {new_file} n'a pas été créé.")
+                raise FileNotFoundError(f"Échec du renommage : {new_file} n'existe pas.")
+            logger.info(f"Fichier renommé avec succès : {new_file}")
+            return new_file
+        except Exception as e:
+            logger.error(f"Erreur lors du renommage de {file}: {e}")
+            raise
+    else:
+        files = list(Path(source_folder).glob(pattern))
+        if not files:
+            logger.info(f"Aucun fichier trouvé avec le pattern : {pattern}")
+            return
+        for file in files:
+            try:
+                new_file = _rename_file(file, rename_name, logger)
+                if file.exists():
+                    logger.error(f"Le fichier original {file} existe toujours après le renommage.")
+                    raise FileExistsError(f"Échec du renommage : {file} n'a pas été supprimé.")
+                if not new_file.exists():
+                    logger.error(f"Le nouveau fichier {new_file} n'a pas été créé.")
+                    raise FileNotFoundError(f"Échec du renommage : {new_file} n'existe pas.")
+                logger.info(f"Fichier renommé avec succès : {new_file}")
+                return new_file
+            except Exception as e:
+                logger.error(f"Erreur lors du renommage de {file}: {e}")
+                raise
+
 def delete_file(path: Path, file_pattern: str):
     """
     Supprime les fichiers correspondant au pattern spécifié dans le dossier spécifié.
@@ -71,3 +123,64 @@ def delete_file(path: Path, file_pattern: str):
 
 def files_list(path, pattern="*"):
     return list(Path(path).glob(pattern))
+
+def check_file_not_empty(path):
+    """
+    Vérifie si le fichier existe ET qu'il n'est pas vide.
+    Retourne True si tout est OK, sinon False.
+    Affiche aussi un message explicite.
+    """
+    if not os.path.isfile(path):
+        print(f"Le fichier n'existe pas : {path}")
+        return False
+
+    size = os.path.getsize(path)
+
+    if size == 0:
+        print(f"Le fichier est vide : {path}")
+        return False
+
+    return True
+def copy_files(pattern, source_folder, destination_folder, logger, rename_function=None):
+    """
+    Copie un fichier ou un ensemble de fichiers correspondant à un motif
+    depuis un dossier source vers un dossier de destination, avec la possibilité de renommer les fichiers.
+
+    Args:
+        pattern (str): Motif pour identifier les fichiers à copier (par exemple, "*.txt").
+        source_folder (str): Chemin du dossier source contenant les fichiers.
+        destination_folder (str): Chemin du dossier de destination où copier les fichiers.
+        logger: Logger pour enregistrer les événements et les erreurs.
+        rename_function (callable, optional): Fonction pour renommer les fichiers.
+            Doit prendre le nom de fichier d'origine (str) et retourner un nouveau nom (str).
+    """
+    source_path = Path(source_folder)
+    destination_path = Path(destination_folder)
+
+    if not destination_path.exists():
+        try:
+            destination_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Dossier de destination créé : {destination_path}")
+        except Exception as e:
+            logger.error(f"Erreur lors de la création du dossier de destination : {e}")
+            return
+
+    files = list(source_path.glob(pattern))
+    if not files:
+        logger.info(f"Aucun fichier trouvé avec le pattern : {pattern} dans {source_folder}")
+        return
+
+    for file in files:
+        try:
+            # Déterminer le nom du fichier de destination (renommé ou original)
+            new_name = rename_function(file.name) if rename_function else file.name
+            destination_file = destination_path / new_name
+
+            if destination_file.exists():
+                logger.warning(f"Le fichier {new_name} existe déjà dans {destination_folder}")
+                continue
+
+            shutil.copy2(file, destination_file)
+            logger.info(f"Fichier copié : {file} -> {destination_file}")
+        except Exception as e:
+            logger.error(f"Erreur lors de la copie de {file}: {e}")

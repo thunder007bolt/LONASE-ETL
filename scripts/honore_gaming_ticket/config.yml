@@ -5,18 +5,17 @@ honore_gaming_ticket:
   error_dest_relative_path: "honore_gaming_ticket/error/"
   loaded_dest_relative_path: "honore_gaming_ticket/loaded/"
   processed_dest_relative_path: "honore_gaming_ticket/processed/"
-  download_path: "C:/ETL/DATA_FICHIERS/honore_gaming_ticket/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/honore_gaming_ticket/extracted/"
   file_pattern: "daily-modified-horse-racing-tickets-detailed_*"
   file_prefix: "daily-modified-horse-racing-tickets-detailed_"
   wait_time: 500
   date:
   ##### extraction config #####
 
-
   #### transform config ####
   files_to_transform_pattern: "*.csv"
-  agence_relative_file_path: "C:/ETL/DATA_FICHIERS/honore_gaming_ticket/utils/bonne_affectation_hg.csv"
-  mise_relative_file_path: "C:/ETL/DATA_FICHIERS/honore_gaming_ticket/utils/mise_unitaire.csv"
+  agence_relative_file_path: "K:/ETL/DATA_FICHIERS/honore_gaming_ticket/utils/bonne_affectation_hg.csv"
+  mise_relative_file_path: "K:/ETL/DATA_FICHIERS/honore_gaming_ticket/utils/mise_unitaire.csv"
   #### load config ####
   files_to_load_pattern: "*.csv"
 

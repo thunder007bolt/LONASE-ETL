@@ -171,24 +171,6 @@ class ExtractSunubetCasino(BaseScrapper):
         rows = browser.find_elements(by=By.XPATH, value=table_row_xpath)
         for row in rows:
             columns = row.find_elements(by=By.TAG_NAME, value="td")
-            """
-            start_date_formated = start_date.strftime('%d/%m/%Y')
-            end_date_formated = (start_date + delta).strftime('%d/%m/%Y')
-            self.wait_for_presence("//tr", timeout=60)
-            max_attempts = 3
-            columns = []
-            for attempt in range(max_attempts):
-                try:
-                    sleep(2)
-                    columns = row.find_elements(By.TAG_NAME, "td")
-                    break  # Si succès, sors de la boucle
-                except Exception as e:
-                    if attempt < max_attempts - 1:
-                        print("Element stale, réessai...")
-                        self._download_files()
-                        sleep(2)  # Petite pause avant de réessayer
-                        continue
-            """
             if len(columns) < 5:
                 continue
 

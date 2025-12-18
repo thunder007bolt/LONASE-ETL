@@ -15,7 +15,8 @@ from selenium.webdriver.common.keys import Keys
 from utils.config_utils import get_config, get_secret
 from utils.date_utils import get_yesterday_date, sleep
 from utils.other_utils import move_file, loading
-
+from load_env import load_env
+load_env()
 
 class ExtractVirtualAmabel(BaseScrapper):
     def __init__(self, env_variables_list):
@@ -25,9 +26,8 @@ class ExtractVirtualAmabel(BaseScrapper):
 
     def _connection_to_platform(self):
         self.logger.info("Connexion au site...")
-        browser = self.browser
         login_url = self.config['urls']['login']
-        browser.get(login_url)
+        self.browser.get(login_url)
 
         html_elements = self.config['html_elements']
         secret_config = self.secret_config
@@ -40,9 +40,40 @@ class ExtractVirtualAmabel(BaseScrapper):
         domain = secret_config["VIRTUAL_AMABEL_DOMAIN"]
 
         self.logger.info("Saisie des identifiants...")
-        self.wait_and_send_keys(username_xpath,keys=username, locator_type="xpath")
-        self.wait_and_send_keys(password_xpath,keys=password, locator_type="xpath")
-        self.wait_and_send_keys(domain_xpath, keys=domain, locator_type="xpath")
+        sleep(5)
+        # reessayer plusieurs fois
+        attempts = 6
+        for attempt in range(attempts):
+            self.logger.info(f"Tentative {attempt}")
+            try:
+                browser = self.browser
+                username = 'HadiaSouadouGaye'
+
+                WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                         "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[3]/div/input"))).send_keys(
+                    username)
+
+                password = "Controledegestion2025@"
+                WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                         "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[4]/div/p-password/div/input"))).send_keys(
+                    password)
+
+                domain = "LONASE-CG"
+                WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                         "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[2]/div/input"))).send_keys(
+                    domain)
+
+                WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                         "/html/body/app-root/ng-component/div/div[1]/div/div[2]/div[1]/form/div/div[5]/div/button"))).click()
+
+                #self.wait_and_send_keys2(username_xpath,keys=username, locator_type="xpath", timeout=60*2, raise_error=True)
+                #self.wait_and_send_keys2(password_xpath,keys=password, locator_type="xpath", timeout=60*2, raise_error=True)
+                #self.wait_and_send_keys2(domain_xpath, keys=domain, locator_type="xpath", timeout=60*2, raise_error=True)
+                break
+            except Exception as e:
+                self.browser.get(login_url)
+                if attempt == attempts:
+                    raise e
 
         self.logger.info("Envoi du formulaire...")
         self.wait_and_click(submit_button_xpath, locator_type="xpath")
@@ -55,7 +86,7 @@ class ExtractVirtualAmabel(BaseScrapper):
 
         except:
             self.logger.error("Connexion à la plateforme n'a pas pu être établie.")
-            browser.quit()
+            self.browser.quit()
 
         sleep(10)
         pass
@@ -90,14 +121,14 @@ class ExtractVirtualAmabel(BaseScrapper):
         date_not_picked = True
         while date_not_picked:
             self.wait_for_presence(MONTH_YEAR_XPATH)
-            month_year = browser.find_element(by=By.XPATH, value=MONTH_YEAR_XPATH).text
+            month_year = browser.find_element(by=By.XPATH, value="/html/body/div/div/div[2]/p-calendar/span/div/div/div[1]/div[1]/div").text
             current_month_year = datetime.strptime(month_year, "%B %Y")
             target_month_year = start_date.replace(day=1)
             target_month_year = datetime.strptime(target_month_year.strftime('%d/%m/%Y'), '%d/%m/%Y')
 
             if current_month_year == target_month_year:
                 for tr in browser.find_elements(by=By.XPATH, value=DATE_CELLS_XPATH):
-                    if tr.text.strip() == start_date.strftime("%d"):
+                    if tr.text.strip() == start_date.strftime("%#d"):
                         tr.click()
                         tr.click()
                         date_not_picked = False

@@ -98,7 +98,7 @@ class ExtractGitech(BaseScrapper):
             try:
                 self.wait_for_presence(error_message_element_xpath, locator_type='xpath', timeout=5, raise_error=True)
                 self.logger.error(f"Le fichier du {year}-{month}-{day} n'existe pas")
-                self._quit()
+                exit(0)
             except:
                 pass
 

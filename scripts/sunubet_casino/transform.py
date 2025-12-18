@@ -16,7 +16,7 @@ class SunubetCasinoTransformer(Transformer):
     def __init__(self):
         super().__init__('sunubet_casino', 'logs/transformer_sunubet_casino.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         """
         """
         self.logger.info(f"Traitement du fichier : {file.name}")
@@ -34,6 +34,10 @@ class SunubetCasinoTransformer(Transformer):
         data["JOUR"] = str(date.strftime("%d/%m/%Y"))
         data["ANNEE"] = str(date.strftime("%Y"))
         data["MOIS"] = str(date.strftime("%m"))
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\SUNUBET\CASINO\\"
+        data.to_csv(filesInitialDirectory + "casinoSunubet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
+
         data = pd.DataFrame(data, columns=["JOUR", "Stake", "PaidAmount"])
         data = data.replace(np.nan, '')
         data = data.astype(str)

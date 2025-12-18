@@ -77,9 +77,12 @@ class ExtractGitechPhysique(BaseScrapper):
                 # verifications des fichiers
                 for file_pattern in files_patterns:
                     formatted_pattern = file_pattern.replace("*",f"{day}_")
-                    if self._verify_download(formatted_pattern): files_patterns_m.remove(file_pattern)
+                    try:
+                        if self._verify_download(formatted_pattern): files_patterns_m.remove(file_pattern)
+                    except Exception as e:
+                        self.logger.info(f"Une erreur est survenue lors de la verification du fichier {e}")
                 if len(files_patterns_m) > 0:
-                    self.logger.warning(f"Certains fichiers n'ont pas été téléchargé {files_patterns} pour {start_date}")
+                    self.logger.warning(f"Certains fichiers n'ont pas été téléchargé {files_patterns_m} ")
                 else:
                     self.logger.warning(f"Tous les fichiers ont été téléchargés pour {start_date}")
             except Exception as e:

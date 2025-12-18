@@ -5,13 +5,13 @@ parifoot_online:
   loaded_dest_relative_path: "parifoot_online/loaded/"
   processed_dest_relative_path: "parifoot_online/processed/"
   file_downloaded_name: "AgentCasinoAndBettingReport*cs*"
-  download_path: "C:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/parifoot_online/extracted/"
   ##### extraction config #####
-  file_pattern: "AgentCasinoAndBettingReport*cs*"
-  start_date: 2025-03-01 # defaut is today - 1 day
-  end_date: 2025-03-04
+  file_pattern: "AgentCasinoAndBettingReport*csv"
+  start_date: #2025-10-29 # defaut is today - 1 day
+  end_date: #2025-10-29
   include_sup: false
-  wait_time: 8
+  wait_time: 30
   urls:
     login: "https://agent.premierbet.com/"
     report: "https://agent.premierbet.com/Transaction?menu=accReport_index_agentCasinoAndBettingReport&actionCtrl=AgentCasinoAndBettingReport"

@@ -1,4 +1,4 @@
-import sys
+import sys, os
 sys.path.append("C:\ETL")
 
 from base.logger import Logger
@@ -7,12 +7,14 @@ from transform import run_afitech_daily_payment_activity_transformer as transfor
 from load import run_afitech_daily_payment_activity_loader as load
 
 def orchestrator():
+    allow_transform = os.getenv("transform") if os.getenv("transform") is not None else True
+    allow_loading= os.getenv("load") if os.getenv("load") is not None else True
     logger = Logger(log_file="logs/orchestrator_afitech_daily_payment_activity.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
         extract()
-        transform()
-        load()
+        if allow_transform: transform()
+        if allow_loading: load()
         logger.info("Orchestrateur terminé avec succès.")
 
     except Exception as e:

@@ -10,7 +10,7 @@ def orchestrator():
     logger = Logger(log_file="logs/orchestrator_sunubet_casino.log").get_logger()
     try:
         logger.info("Lancement de l'orchestrateur...")
-        #extract()
+        extract()
         transform()
         load()
         logger.info("Orchestrateur terminé avec succès.")

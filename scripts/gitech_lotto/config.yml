@@ -1,0 +1,49 @@
+gitech_lotto:
+  extraction_dest_relative_path: "gitech_lotto/extracted/"
+  transformation_dest_relative_path: "gitech_lotto/transformed/"
+  error_dest_relative_path: "gitech_lotto/error/"
+  loaded_dest_relative_path: "gitech_lotto/loaded/"
+  processed_dest_relative_path: "gitech_lotto/processed/"
+  file_downloaded_name: "Recette paiement Journalier*.xls"
+  download_path: "K:/ETL/DATA_FICHIERS/gitech_lotto/extracted/"
+  ##### extraction config #####
+  file_pattern: "Recette paiement Journalier*.xls"
+  start_date: #2025-07-01 # defaut is today - 1 day
+  end_date: #2025-07-02
+  include_sup: false
+  wait_time: 400
+  urls:
+    login: "https://www.pmuonline.sn/lonasemis/lonase_administration/Login.aspx"
+    report: "https://www.pmuonline.sn/lonasemis/lonase_administration/DatewisePa.aspx"
+
+  html_elements:
+    ### login page ###
+    username_element_id: "Username"
+    password_element_id: "Password"
+    login_submit_button_element_id: "btnSubmit"
+    verification_xpath: "/html/body/form/div[3]/table/tbody/tr/td/table[1]/tbody/tr[2]/td[3]/span"
+
+    ### report page ###
+    start_date_day_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlDate"
+    start_date_month_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlMonth"
+    start_date_year_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlYear"
+    end_date_day_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlDate"
+    end_date_month_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlMonth"
+    end_date_year_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlYear"
+
+    # product input #
+    product_select_element_id: "OpsValidator_ContentPlaceHolder1_DDlGameType"
+    product_item_element_value: "4"
+
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    download_button_element_xpath: "/html/body/form/div[3]/table[8]/tbody/tr/td/div/table[1]/tbody/tr/td/input[2]"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+
+  #### transform config ####
+  files_to_transform_pattern: "gitech_lotto*.xls"
+
+  #### load config ####
+  files_to_load_pattern: "gitech_lotto*.csv"
+

@@ -16,7 +16,7 @@ class ParifootOnlineTransformer(Transformer):
     def __init__(self):
         super().__init__('parifoot_online', 'logs/transformer_parifoot_online.log')
 
-    def _transform_file(self, file: Path):
+    def _transform_file(self, file: Path, date=None):
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:
@@ -33,6 +33,9 @@ class ParifootOnlineTransformer(Transformer):
         data = pd.DataFrame(data,columns=['Unnamed: 0','Username', 'Balance', 'Total Players','Total Players Date Range', 'SB Bets No.', 'SB Stake','SB Closed Stake', 'SB Wins No.', 'SB Wins', 'SB Ref No.', 'SB Refunds','SB GGR', 'Cas.Bets No.', 'Cas.Stake', 'Cas.Wins No.', 'Cas.Wins','Cas.Ref No.', 'Cas.Refunds', 'Cas.GGR', 'Total GGR', 'Adjustments','Deposits', 'Financial Deposits', 'Financial Withdrawals','Transaction Fee', 'date'])
         data = data.replace(np.nan, '')
         data=data.astype(str)
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\PARIFOOT_ONLINE\\"
+        data.to_csv(filesInitialDirectory + "ParifootOnline "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
 
         self._save_file(file, data, type="csv", index=False, sep=';', encoding='utf8')
 

@@ -7,10 +7,10 @@ zeturf:
   file_downloaded_name: "Extranet*.csv"
   file_pattern: "Extranet*.csv"
   wait_time: 200
-  download_path: "C:/ETL/DATA_FICHIERS/zeturf/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/zeturf/extracted/"
   ##### extraction config #####
-  start_date: 2025-02-15
-  end_date: 2025-02-17
+  start_date: #2025-06-02
+  end_date: #2025-06-02
   urls:
     login: "https://ztat-extranet.zeturf.com/login"
     report: "https://ztat-extranet.zeturf.com/lonase/stats"

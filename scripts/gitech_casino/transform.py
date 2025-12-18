@@ -10,7 +10,6 @@ from base.logger import Logger
 from base.tranformer import  Transformer
 from utils.config_utils import get_config
 
-
 class GitechCasinoTransformer(Transformer):
     def __init__(self):
         super().__init__('gitech_casino', 'logs/transformer_gitech_casino.log')
@@ -21,15 +20,37 @@ class GitechCasinoTransformer(Transformer):
         Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
         et déplacé dans le répertoire des fichiers traités.
         """
+        TEMP_DIR = r"C:\Users\optiware2\AppData\Local\Temp\gen_py\3.7"
+
+        def clear_temp():
+            try:
+                shutil.rmtree(TEMP_DIR)
+            except OSError as o:
+                print(f"Erreur : {o.strerror}")
+
+        """
+        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
+        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
+        et déplacé dans le répertoire des fichiers traités.
+        """
+        clear_temp()
+
         self.logger.info(f"Conversion du fichier XLS {xls_file.name} en XLSX...")
-        excel = win32com.client.gencache.EnsureDispatch('Excel.Application')
-        wb = excel.Workbooks.Open(str(xls_file.resolve()))
-        xlsx_file = xls_file.with_suffix(".xlsx")
-        if xlsx_file.exists():
-            xlsx_file.unlink()
-        wb.SaveAs(str(xlsx_file.resolve()), FileFormat=51)
-        wb.Close()
-        excel.Application.Quit()
+        import xlwings as xw
+        # Lancement d'Excel (en arrière-plan)
+        app = xw.App(visible=False)
+
+        try:
+            wb = app.books.open(str(xls_file.resolve()))
+            xlsx_file = xls_file.with_suffix(".xlsx")
+
+            if xlsx_file.exists():
+                xlsx_file.unlink()
+
+            wb.save(str(xlsx_file.resolve()))
+            wb.close()
+        finally:
+            app.quit()
 
         # Renommage et déplacement du fichier XLS d'origine
         return xlsx_file
@@ -56,18 +77,21 @@ class GitechCasinoTransformer(Transformer):
         - Si une virgule est présente, suppression des zéros finaux et de la virgule.
         - Conversion en entier (les erreurs produisent un 0).
         """
+        # Étape 1 : Convertir la valeur en chaîne et supprimer les espaces insécables
         value_str = str(value).replace(u'\xa0', '')
+
         if ',' in value_str:
-            value_str = value_str.rstrip('00').replace(',', '')
-        try:
-            numeric_value = pd.to_numeric(value_str, errors='coerce')
-            if pd.isna(numeric_value):
-                return 0
-            return int(numeric_value)
-        except Exception:
+            value_str = value_str.replace(',', '.')
+
+        numeric_value = pd.to_numeric(value_str, errors='coerce')
+
+        if pd.isna(numeric_value):
             return 0
 
-    def _transform_file(self, file: Path):
+        return numeric_value
+
+
+    def _transform_file(self, file: Path, date):
         """
         Traite un fichier correspondant au motif "Etat de la course".
         Cette méthode effectue les étapes suivantes :
@@ -125,6 +149,10 @@ class GitechCasinoTransformer(Transformer):
             data[col] = data[col].apply(self.process_numeric_column)
 
         xlsx_file.unlink()
+
+        filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\CASINO\\"
+        data.to_csv(filesInitialDirectory + "GITECH CASINO " + date.strftime('%Y-%m-%d') + ".csv", index=False, sep=';',
+                    encoding='utf8')
 
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
 

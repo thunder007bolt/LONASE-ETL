@@ -94,7 +94,7 @@ class ExtractVirtualAmabelPivot(BaseScrapper):
 
             if current_month_year == target_month_year:
                 for tr in browser.find_elements(by=By.XPATH, value=XPATH_4):
-                    if tr.text.strip() == start_date.strftime("%d"):
+                    if tr.text.strip() == start_date.strftime("%#d"):
                         tr.click()
                         tr.click()
                         date_not_picked = False

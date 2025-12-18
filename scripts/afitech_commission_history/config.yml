@@ -5,12 +5,12 @@ afitech_commission_history:
   loaded_dest_relative_path: "afitech_commission_history/loaded/"
   processed_dest_relative_path: "afitech_commission_history/processed/"
   file_downloaded_name: "*CommissionHistory*xls*"
-  download_path: "C:/ETL/DATA_FICHIERS/afitech_commission_history/extracted/"
+  download_path: "K:/ETL/DATA_FICHIERS/afitech_commission_history/extracted/"
   ##### extraction config #####
   file_pattern: "*CommissionHistory*xls*"
   wait_time: 300
-  start_date: 2025-03-01
-  end_date: 2025-03-31
+  start_date: #2025-05-21
+  end_date: #2025-04-21
   urls:
     login: "https://lonase-prod.afite.ch/login"
     report: "https://lonase-prod.afite.ch/reports/create"
@@ -25,7 +25,7 @@ afitech_commission_history:
     ### MFA page ###
     verification_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[1]/span"
     dropdown_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/p-dropdown/div/span"
-    google_authentication_element_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[3]/li"
+    google_authentication_element_xpath: "/html/body/div/div/div/div/ul/p-dropdownitem[4]/li"
     code_input_element_xpath: "/html/body/hg-root/hg-app-login/div/div[2]/div/div/div[1]/hg-authentication/div[2]/div/hg-code/div/input[1]"
 
     ### report generation page ###

@@ -24,26 +24,24 @@ from selenium.common.exceptions import StaleElementReferenceException
 
 
 class ExtractAfitechCommissionHistory(BaseScrapper):
-    def __init__(self, env_variables_list):
-        super().__init__('afitech_commission_history', env_variables_list,
-                         'logs/extract_afitech_commission_history.log')
+    def __init__(self, env_variables_list, start_date=None, end_date=None):
+        super().__init__(
+            name='afitech_commission_history',
+            env_variables_list=env_variables_list,
+            log_file='logs/extract_afitech_commission_history.log',
+            start_date=start_date,
+            end_date=end_date
+        )
         self.file_path = None
         self.range = False
         self.files = []
 
     def _set_date(self):
-        _, _, _, yesterday_date = get_yesterday_date()
         if self.config["start_date"] is not None:
             self.range = True
-            self.start_date = self.config["start_date"]
-        else:
-            self.start_date = None
-
-        if self.config["end_date"] is not None:
-            self.end_date = self.config["end_date"]
-        else:
-            self.end_date = yesterday_date
-
+        _, _, _, yesterday_date = get_yesterday_date()
+        self.start_date = self.start_date or self.config.get("start_date")
+        self.end_date = self.end_date or self.config.get("end_date") or yesterday_date
         pass
 
     def _connection_to_platform(self):
@@ -152,7 +150,7 @@ class ExtractAfitechCommissionHistory(BaseScrapper):
 
             try:
                 libelle = 'Report created successfully'
-                self.wait_for_presence("//div[contains(text(),'" + libelle + "')]", timeout=10 * 9)
+                self.wait_for_presence("//div[contains(text(),'" + libelle + "')]", timeout=10 * 9, raise_error=True)
                 self.files.append({"start_date": start_date, "end_date": end_date})
                 logger.info(
                     f"Le fichier CommissionHistory de la plateforme AFITECH  du {start_date}  au {end_date} a bien ete genere")
@@ -160,8 +158,9 @@ class ExtractAfitechCommissionHistory(BaseScrapper):
             except Exception as error:
                 logger.error(
                     f"Le fichier CommissionHistory de la plateforme AFITECH  du {start_date} au {end_date} n'a pas pu ete genere")
-                self._quit(error)
+                continue
             end_date += delta
+
 
     def _download_files(self):
         browser = self.browser
@@ -224,10 +223,24 @@ class ExtractAfitechCommissionHistory(BaseScrapper):
 
                     founded_file_name = "CommissionHistory" in report_name and founded
                     if founded_file_name and "Available" in status:
-                        logger.info("Téléchargement du fichier...")
-                        download_button = row.find_element(by=By.XPATH, value=download_button_xpath)
-                        WebDriverWait(row, timeout=10).until(EC.element_to_be_clickable(download_button)).click()
-                        logger.info("Téléchargement lancé avec succès.")
+                        try:
+                            logger.info("Recherche du bouton de téléchargement...")
+                            # Find the button within the row context
+                            download_button = row.find_element(By.XPATH, download_button_xpath)
+
+                            logger.info("Attente que le bouton soit potentiellement cliquable (vérification visibilité/activation)...")
+                            # Optional: Wait for visibility/presence first, though JS click might not strictly need it
+                            WebDriverWait(browser, 10).until(EC.visibility_of(download_button))
+
+                            logger.info("Tentative de clic via JavaScript...")
+                            browser.execute_script("arguments[0].click();", download_button)
+
+                            logger.info("Clic via JavaScript exécuté (vérifiez si le téléchargement a démarré).")
+
+                        except Exception as e:
+                            logger.error(f"Échec du clic sur le bouton de téléchargement: {e}")
+                            raise e
+                            # Handle the error (e.g., log it, retry, skip)
                         try:
                             self._verify_download()
                             name = f"{self.name}_{formated_start_date.replace('/', '-')}_{formated_end_date.replace('/', '-')}"

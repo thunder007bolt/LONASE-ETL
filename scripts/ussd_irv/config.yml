@@ -1,0 +1,43 @@
+ussd_irv:
+  extraction_dest_relative_path: "ussd_irv/extracted/"
+  transformation_dest_relative_path: "ussd_irv/transformed/"
+  error_dest_relative_path: "ussd_irv/error/"
+  loaded_dest_relative_path: "ussd_irv/loaded/"
+  processed_dest_relative_path: "ussd_irv/processed/"
+  file_downloaded_name: "GFM_CDR_DETAILS*xls"
+  download_path: "K:/ETL/DATA_FICHIERS/ussd_irv/extracted/"
+  ##### extraction config #####
+  file_pattern: "GFM_CDR_DETAILS*xls"
+
+  start_date: #2025-07-09 # defaut is today - 1 day
+  end_date: #2025-07-09
+  include_sup: false
+  wait_time: 120
+  urls:
+    login: "http://dvs2.dyndns.biz:16800/backendcdr/"
+    report: "http://dvs2.dyndns.biz:16800/backendcdr/"
+  html_elements:
+    ### login page ###
+    username_element_id: "identifiantInput"
+    password_element_id: "mdpInput"
+    login_submit_button_element_id: "connexion"
+    verification_xpath: "/html/body/div[3]/form[1]/table/tbody/tr[1]/td[3]/table[1]/tbody/tr/td[1]/b"
+
+    ### report page ###
+    start_date_day_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlDate"
+    start_date_month_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlMonth"
+    start_date_year_element_id: "OpsValidator_ContentPlaceHolder1_FDate_ddlYear"
+    end_date_day_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlDate"
+    end_date_month_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlMonth"
+    end_date_year_element_id: "OpsValidator_ContentPlaceHolder1_TDate_ddlYear"
+    submit_button_element_id: "OpsValidator_ContentPlaceHolder1_btnSubmit"
+    download_button_element_id: "OpsValidator_ContentPlaceHolder1_btnExcel"
+    error_message_element_xpath: "//span[contains(@id,'OpsValidator_ContentPlaceHolder1_lblErrInfo') and contains(text(),'Aucun enregistrement trouv')]"
+
+
+  #### transform config ####
+  files_to_transform_pattern: "*.csv"
+
+  #### load config ####
+  files_to_load_pattern: "ussd_irv*.csv"
+

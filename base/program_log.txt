@@ -1,0 +1,44 @@
+ERROR:root:Erreur à la tentative 1: Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=130.0.6723.70)
+Stacktrace:
+	GetHandleVerifier [0x00007FF70101B125+29573]
+	(No symbol) [0x00007FF700F8FF50]
+	(No symbol) [0x00007FF700E4B6EA]
+	(No symbol) [0x00007FF700E1FCD5]
+	(No symbol) [0x00007FF700ECEF67]
+	(No symbol) [0x00007FF700EE7FC1]
+	(No symbol) [0x00007FF700EC70A3]
+	(No symbol) [0x00007FF700E912DF]
+	(No symbol) [0x00007FF700E92441]
+	GetHandleVerifier [0x00007FF70134C76D+3377613]
+	GetHandleVerifier [0x00007FF701397B67+3685831]
+	GetHandleVerifier [0x00007FF70138CF8B+3641835]
+	GetHandleVerifier [0x00007FF7010DB2A6+816390]
+	(No symbol) [0x00007FF700F9B25F]
+	(No symbol) [0x00007FF700F97084]
+	(No symbol) [0x00007FF700F97220]
+	(No symbol) [0x00007FF700F8607F]
+	BaseThreadInitThunk [0x00007FFA5FD77AC4+20]
+	RtlUserThreadStart [0x00007FFA6004A8C1+33]
+
+ERROR:root:Erreur lors du lancement d'Excel : This COM object can not automate the makepy process - please run makepy manually for this object
+ERROR:root:Erreur inattendue à la tentative 1: This COM object can not automate the makepy process - please run makepy manually for this object
+ERROR:root:Erreur lors du lancement d'Excel : No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur inattendue à la tentative 1: No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur lors du lancement d'Excel : No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur inattendue à la tentative 1: No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur lors du lancement d'Excel : No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur lors du lancement d'Excel : No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur lors du lancement d'Excel : No module named 'win32com.gen_py.00020813-0000-0000-C000-000000000046x0x1x9'
+ERROR:root:Erreur lors du lancement d'Excel : module 'win32com' has no attribute 'Dispatch'
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: (-2147352567, 'Une exception s’est produite.', (0, 'Microsoft Excel', 'Nous n’avons pas pu accéder au fichier. Essayez l’une des options suivantes :\n\n• Assurez-vous que le dossier spécifié existe. \n• Assurez-vous que le dossier contenant le fichier n’est pas en mode Lecture seule.\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas l’un des caractères suivants :  <  >  ?  [  ]  :  | ou  *\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas plus de 218 caractères.', 'xlmain11.chm', 0, -2146827284), None)
+ERROR:root:Erreur inattendue à la tentative 1: [WinError 32] Le processus ne peut pas accéder au fichier car ce fichier est utilisé par un autre processus: 'K:\\DATA_FICHIERS\\VIRTUEL_EDITEC\\\\Rapport Gestion des joueurs.xls'
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: (-2147352567, 'Une exception s’est produite.', (0, 'Microsoft Excel', 'Nous n’avons pas pu accéder au fichier. Essayez l’une des options suivantes :\n\n• Assurez-vous que le dossier spécifié existe. \n• Assurez-vous que le dossier contenant le fichier n’est pas en mode Lecture seule.\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas l’un des caractères suivants :  <  >  ?  [  ]  :  | ou  *\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas plus de 218 caractères.', 'xlmain11.chm', 0, -2146827284), None)
+ERROR:root:Erreur lors du lancement d'Excel : Property 'Excel.Application.Visible' can not be set.
+ERROR:root:Erreur lors du lancement d'Excel : Property 'Excel.Application.Visible' can not be set.
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: Excel.Application.Workbooks
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: Excel.Application.Workbooks
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: Excel.Application.Workbooks
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: Excel.Application.Workbooks
+ERROR:root:Erreur lors de la conversion du fichier Rapport Gestion des joueurs.xls: (-2147352567, 'Une exception s’est produite.', (0, 'Microsoft Excel', 'Nous n’avons pas pu accéder au fichier. Essayez l’une des options suivantes :\n\n• Assurez-vous que le dossier spécifié existe. \n• Assurez-vous que le dossier contenant le fichier n’est pas en mode Lecture seule.\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas l’un des caractères suivants :  <  >  ?  [  ]  :  | ou  *\n• Assurez-vous que le nom du fichier et le chemin du dossier ne contiennent pas plus de 218 caractères.', 'xlmain11.chm', 0, -2146827284), None)
