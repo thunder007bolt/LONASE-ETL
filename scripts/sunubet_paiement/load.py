@@ -1,15 +1,12 @@
-import pandas as pd, numpy as np
-from base.loader2 import Loader
+import pandas as pd
+from base.loader import Loader
 from utils.other_utils import load_env
 
 load_env()
 
 
 class SunubetPaiementLoad(Loader):
-    def __init__(self, ):
-        name = 'sunubet_paiement'
-        log_file = 'logs/loader_sunubet_paiement.log'
-        super().__init__(name, log_file)
+    def __init__(self):
         columns = [
             "fournisseur",
             "jour",
@@ -20,14 +17,14 @@ class SunubetPaiementLoad(Loader):
             "nombre_retraits",
             "montant_retraits"
         ]
-
-        # Oracle
-        self.oracle_columns = columns
-        self.oracle_table_name = "OPTIWARETEMP.SRC_PRD_SUNUBET_DEPOT_RETRAIT"
-
-        # Sql server
-        self.sql_server_columns = columns
-        self.sql_server_table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_SUNUBET_DEPOT_RETRAIT]"
+        super().__init__(
+            name='sunubet_paiement',
+            log_file='logs/loader_sunubet_paiement.log',
+            sql_columns=columns,
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_SUNUBET_DEPOT_RETRAIT]",
+            oracle_columns=columns,
+            oracle_table_name="OPTIWARETEMP.SRC_PRD_SUNUBET_DEPOT_RETRAIT"
+        )
 
     def _convert_file_to_dataframe(self, file):
         df = pd.read_excel(file, dtype=str)

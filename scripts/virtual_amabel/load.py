@@ -1,26 +1,24 @@
-import pandas as pd
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 
 load_env()
 
-class VirtualAmabelLoad(Loader):
+class VirtualAmabelLoad(CSVLoader):
     def __init__(self):
-        name = ('virtual_amabel')
-        log_file = 'logs/loader_virtual_amabel.log'
-        columns = [
-            "nom",
-            "total enjeu",
-            "total ticket virtuel",
-            "total paiement",
-            "date vente"
-        ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_SUNUBET]"
-        super().__init__(name, log_file, columns, table_name)
-
-    def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
-        return df
+        super().__init__(
+            name='virtual_amabel',
+            log_file='logs/loader_virtual_amabel.log',
+            sql_columns=[
+                "nom",
+                "total enjeu",
+                "total ticket virtuel",
+                "total paiement",
+                "date vente"
+            ],
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_SUNUBET]",
+            csv_sep=';',
+            csv_encoding='utf-8'
+        )
 
 def run_virtual_amabel_loader():
     loader = VirtualAmabelLoad()

@@ -12,7 +12,11 @@ def move_file(source_file, dest_path, dest_file, logger = None):
     shutil.move(source_file, dest_path)
 
 def load_env():
-    load_dotenv("./.env")
+    """Charge les variables d'environnement depuis .env dans le répertoire racine."""
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.resolve()
+    env_file = project_root / '.env'
+    load_dotenv(env_file)
 
 from utils.date_utils import sleep
 import time

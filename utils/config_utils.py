@@ -22,23 +22,29 @@ def load_yaml_config(file_path: Path) -> Dict[str, Any]:
         raise
 
 def get_config(job_name: str = None, config_path: str = None) -> Dict[str, Any]:
-    project_path = Path(getenv('ABSOLUTE_PROJECT_PATH'))
+    """
+    Charge la config globale + config spécifique (par nom de job ou chemin explicite).
+    """
+    project_path = Path(getenv('ABSOLUTE_PROJECT_PATH') or getcwd())
 
     base_config_path = project_path / 'config' / 'base_config.yml'
     base_config = load_yaml_config(base_config_path)
 
     job_config = {}
-    
-    if job_name or config_path:
-        #todo: définir proprement ce chemin
-        if job_name: job_config_path = project_path / 'scripts'/ job_name / 'config.yml'
-        if config_path: job_config_path = project_path / Path(config_path)
-        if job_config_path.exists():
-            job_config = load_yaml_config(job_config_path)
-        else:
-            logging.warning(f"Aucune configuration trouvée pour {job_name}")
-    elif config_path:
-        config_path = project_path / Path(config_path) #eg: config_path = scripts/mensuels/commission_quinzaine.yml
+
+    # Détermination du chemin de config spécifique
+    job_config_path = None
+    if config_path:
+        candidate = Path(config_path)
+        job_config_path = candidate if candidate.is_absolute() else project_path / candidate
+    elif job_name:
+        job_config_path = project_path / 'scripts' / job_name / 'config.yml'
+
+    if job_config_path and job_config_path.exists():
+        job_config = load_yaml_config(job_config_path)
+    elif job_config_path:
+        logging.warning(f"Aucune configuration trouvée pour {job_config_path}")
+
     return {**base_config, **job_config}
 
 def get_secret(keys):

@@ -2,6 +2,11 @@
 from datetime import  date, timedelta, datetime
 import time
 
+# Formats de date standardisés
+DATE_FORMAT_DISPLAY = "%d/%m/%Y"  # Format d'affichage français
+DATE_FORMAT_STORAGE = "%Y-%m-%d"  # Format de stockage ISO
+DATE_FORMAT_FILENAME = "%Y%m%d"   # Format pour noms de fichiers
+
 
 def sleep(seconds):
     time.sleep(seconds)
@@ -26,6 +31,20 @@ def get_previous_month_date_range():
 
 def date_string_to_date(date_str, format="%Y-%m-%d"):
     try:
-       return datetime.strptime(date_str, format).date()
-    except :
+        return datetime.strptime(date_str, format).date()
+    except Exception:
         return None
+
+
+def parse_date_multi(date_str, formats=("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y")):
+    """
+    Essaie plusieurs formats et renvoie une date ou None.
+    """
+    if date_str is None:
+        return None
+    for fmt in formats:
+        try:
+            return datetime.strptime(str(date_str).split(" ")[0], fmt).date()
+        except Exception:
+            continue
+    return None

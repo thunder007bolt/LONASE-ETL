@@ -1,30 +1,28 @@
-import pandas as pd, numpy as np
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 
 load_env()
 
 
-class LonasebetOnlineLoad(Loader):
+class LonasebetOnlineLoad(CSVLoader):
     def __init__(self):
-        name = ('lonasebet_online')
-        log_file = 'logs/loader_lonasebet_online.log'
-        columns = [
-            "id",
-            "issuedatetime",
-            "stake",
-            "betcategorytype",
-            "state",
-            "paidamount",
-            "customerlogin",
-            "freebet"
-        ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_LONASEBET]"
-        super().__init__(name, log_file, columns, table_name)
-
-    def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
-        return df
+        super().__init__(
+            name='lonasebet_online',
+            log_file='logs/loader_lonasebet_online.log',
+            sql_columns=[
+                "id",
+                "issuedatetime",
+                "stake",
+                "betcategorytype",
+                "state",
+                "paidamount",
+                "customerlogin",
+                "freebet"
+            ],
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_LONASEBET]",
+            csv_sep=';',
+            csv_encoding='utf-8'
+        )
 
 def run_lonasebet_online_loader():
     loader = LonasebetOnlineLoad()

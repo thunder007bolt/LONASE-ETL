@@ -1,5 +1,5 @@
-import sys
-sys.path.append("C:\ETL")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
 from base.orchestrator import Orchestrator
 from transform import run_gitech_lotto_final_transformer

@@ -1,23 +1,19 @@
-import sys
-sys.path.append("C:\ETL")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
-from base.logger import Logger
+from base.orchestrator import Orchestrator
 from extract import run_virtual_amabel as extract
 from transform import run_virtual_amabel_transformer as transform
 from load import run_virtual_amabel_loader as load
 
-def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_sunubet_online.log").get_logger()
-    try:
-        logger.info("Lancement de l'orchestrateur...")
-        extract()
-        transform()
-        load()
-        logger.info("Orchestrateur terminé avec succès.")
-
-    except Exception as e:
-        logger.error(f"Erreur lors de l'exécution de l'orchestrateur : {e}")
-        raise e
+def run_virtual_amabel_orchestrator():
+    orchestrator = Orchestrator(
+        name="virtual_amabel",
+        extractor=extract,
+        transformer=transform,
+        loader=load
+    )
+    orchestrator.run()
 
 if __name__ == "__main__":
-  orchestrator()
+    run_virtual_amabel_orchestrator()

@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from base.tranformer import Transformer
+from base.transformer import Transformer
 from utils.config_utils import get_config
 
 class LonasebetGlobalTransformer(Transformer):

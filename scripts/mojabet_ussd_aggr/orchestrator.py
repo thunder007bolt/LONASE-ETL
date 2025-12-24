@@ -1,21 +1,17 @@
-import sys
-sys.path.append("C:\ETL")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
-from base.logger import Logger
+from base.orchestrator import Orchestrator
 from extract import run_mojabet_ussd_aggr as extract
 from load import run_mojabet_ussd_aggr_loader as load
 
-def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_mojabet_ussd.log").get_logger()
-    try:
-        logger.info("Lancement de l'orchestrateur...")
-        extract()
-        load()
-        logger.info("Orchestrateur terminé avec succès.")
-
-    except Exception as e:
-        logger.error(f"Erreur lors de l'exécution de l'orchestrateur : {e}")
-        raise e
+def run_mojabet_ussd_aggr_orchestrator():
+    orchestrator = Orchestrator(
+        name="mojabet_ussd_aggr",
+        extractor=extract,
+        loader=load
+    )
+    orchestrator.run()
 
 if __name__ == "__main__":
-  orchestrator()
+    run_mojabet_ussd_aggr_orchestrator()

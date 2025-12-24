@@ -4,8 +4,6 @@ import glob
 from base.logger import Logger
 from base.web_scrapper import BaseScrapper
 ### selenium ###
-from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 ### utils ###
 from utils.config_utils import get_config, get_secret
@@ -46,7 +44,7 @@ class ExtractGitechPhysique(BaseScrapper):
         self.logger.info("Vérification de la connexion...")
         try:
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser,timeout=10*9).until( EC.presence_of_element_located(( By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, locator_type='xpath', timeout=90)
             self.logger.info("Connexion à la plateforme réussie.")
 
         except:

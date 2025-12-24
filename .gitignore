@@ -1,11 +1,56 @@
-.vscode
-venv
-.venv
-.env*
-!.env.example
-*.pyc
-__pycache__
-DATA_FICHIERS
-**/logs/*
-.idea
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Build artifacts
+build/
+dist/
+*.spec
+*.exe
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
 *.log
+logs/
+
+# Temporary files
+temp.py
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ChromeDriver (should be managed via package manager)
+chromedriver.exe
+
+# Environment variables
+.env
+.env.local
+
+# Data files (if sensitive)
+*.csv
+*.xlsx
+*.xls
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyInstaller
+*.manifest
+*.spec

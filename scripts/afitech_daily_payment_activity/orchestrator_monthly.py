@@ -1,5 +1,5 @@
-import sys
-sys.path.append("/")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
 from base.orchestrator import Orchestrator
 from extract_monthly import run_afitech_daily_payment_activity_monthly

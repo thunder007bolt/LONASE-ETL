@@ -153,9 +153,9 @@ class BaseScrapper(ABC):
                     try:
                         self.start_date = start_date
                         self._verify_download()
-                    except:
+                    except Exception as verify_err:
                         self.logger.error(
-                            f"Le fichier du {start_date} n'a pas pu être téléchargé, Nous allons recommencer")
+                            f"Le fichier du {start_date} n'a pas pu être téléchargé, nouvelle tentative", exc_info=True)
                         # Faire juste 3 essais
                         result = self._handle_failed_download(start_date)
                         if result:
@@ -176,7 +176,8 @@ class BaseScrapper(ABC):
     def _get_text_from_xpath(self, xpath_selector):
             try:
                 return self.browser.find_element(By.XPATH, xpath_selector).text.strip()
-            except :
+            except Exception as xpath_err:
+                self.logger.debug(f"Impossible de récupérer le texte pour {xpath_selector}: {xpath_err}")
                 return None
 
     def _verify_download_opt(self, file_pattern=None, start_date=None, patterns=None):
@@ -439,31 +440,31 @@ class BaseScrapper(ABC):
             element = WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element)))
             element.click()
             return element
-        except:
+        except Exception as click_err:
             if raise_error:
-                raise(f"Élément non cliquable ou introuvable : {element}")
-            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+                raise ElementNotInteractableException(f"Élément non cliquable ou introuvable : {element}") from click_err
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({click_err})")
 
     def wait_for_click(self, element, locator_type='xpath', timeout=60, raise_error=False):
         by_type = self._get_by_type(locator_type)
         try:
             return  WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element)))
-        except:
+        except Exception as click_err:
             if raise_error:
-                raise(f"Élément non cliquable ou introuvable : {element}")
-            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+                raise ElementNotInteractableException(f"Élément non cliquable ou introuvable : {element}") from click_err
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({click_err})")
 
     def wait_for_invisibility(self, element, locator_type='xpath', timeout=60, raise_error=False, exit_on_error=False):
             by_type = self._get_by_type(locator_type)
             try:
                 WebDriverWait(self.browser, timeout).until(EC.invisibility_of_element((by_type, element)))
-            except:
+            except Exception as invisible_err:
                 if exit_on_error:
-                    self.logger.error(f"Élément n'a pas disparu : {element}")
+                    self.logger.error(f"Élément n'a pas disparu : {element} ({invisible_err})")
                     exit(1)
                 if raise_error:
-                    raise(f"Élément non cliquable ou introuvable : {element}")
-                self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+                    raise TimeoutException(f"Élément non cliquable ou introuvable : {element}") from invisible_err
+                self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({invisible_err})")
 
     def fill_select_by_value(self, element, type='id', value=None):
         try:
@@ -478,31 +479,31 @@ class BaseScrapper(ABC):
         by_type = self._get_by_type(locator_type)
         try:
             return WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element)))
-        except:
+        except Exception as presence_err:
             if exit_on_error:
-                self.logger.error(f"Élément n'est pas apparu : {element}")
+                self.logger.error(f"Élément n'est pas apparu : {element} ({presence_err})")
                 exit(1)
             if raise_error:
-                raise(f"Élément introuvable : {element}")
-            self.logger.warning(f"Élément introuvable : {element}")
+                raise NoSuchElementException(f"Élément introuvable : {element}") from presence_err
+            self.logger.warning(f"Élément introuvable : {element} ({presence_err})")
 
     def wait_and_send_keys(self, element, locator_type='id', timeout=60, keys=None, raise_error=False):
         try:
             by_type = self._get_by_type(locator_type)
             WebDriverWait(self.browser, timeout).until(EC.element_to_be_clickable((by_type, element))).send_keys(keys)
-        except:
+        except Exception as send_err:
             if raise_error:
-                raise(f"Élément non cliquable ou introuvable : {element}")
-            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+                raise ElementNotInteractableException(f"Élément non cliquable ou introuvable : {element}") from send_err
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({send_err})")
 
     def wait_and_send_keys2(self, element, locator_type='id', timeout=60, keys=None, raise_error=False):
         try:
             by_type = self._get_by_type(locator_type)
             WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((by_type, element))).send_keys(keys)
-        except:
+        except Exception as send_err:
             if raise_error:
-                raise (f"Élément non cliquable ou introuvable : {element}")
-            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+                raise ElementNotInteractableException(f"Élément non cliquable ou introuvable : {element}") from send_err
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({send_err})")
 
     def wait_element_visible(self, element, type='xpath', timeout=60):
         by_type = self._get_by_type(type)
@@ -512,8 +513,8 @@ class BaseScrapper(ABC):
         try:
             by_type = self._get_by_type(type)
             (Select(self.browser.find_element(by=by_type, value=element))).select_by_visible_text(str(value))
-        except:
-            self.logger.warning(f"Élément non cliquable ou introuvable : {element}")
+        except Exception as select_err:
+            self.logger.warning(f"Élément non cliquable ou introuvable : {element} ({select_err})")
 
     def wait_for_staleness(self, element, timeout=30):
         """Attend qu'un élément devienne obsolète (stale)."""

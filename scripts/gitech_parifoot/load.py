@@ -1,20 +1,22 @@
-import pandas as pd, numpy as np
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 load_env()
 
-class GitechParifootLoad(Loader):
+class GitechParifootLoad(CSVLoader):
     def __init__(self):
-        name = ('gitech_parifoot')
-        log_file = 'logs/loader_gitech_parifoot.log'
-        columns = ["Agences", "Operateurs", "date_de_vente", "Recette_CFA", "Annulation_CFA", "Paiements_CFA"]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_GITECH_PARIFOOT]"
-        super().__init__(name, log_file, columns, table_name)
-
+        super().__init__(
+            name='gitech_parifoot',
+            log_file='logs/loader_gitech_parifoot.log',
+            sql_columns=["Agences", "Operateurs", "date_de_vente", "Recette_CFA", "Annulation_CFA", "Paiements_CFA"],
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_GITECH_PARIFOOT]",
+            csv_sep=';',
+            csv_encoding='utf-8'
+        )
+    
     def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
-        df = df.replace(np.nan, '')
-        df = pd.DataFrame(df,columns=['Agences', 'Operateur', 'Date vente', 'Vente', 'Annulation', 'Paiement'])
+        df = super()._convert_file_to_dataframe(file)
+        # Sélection des colonnes spécifiques
+        df = df[['Agences', 'Operateur', 'Date vente', 'Vente', 'Annulation', 'Paiement']]
         return df
 
 def run_gitech_parifoot_loader():

@@ -1,23 +1,19 @@
-import sys
-sys.path.append("C:\ETL")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
-from base.logger import Logger
+from base.orchestrator import Orchestrator
 from extract import run_honore_gaming as extract
 from transform_new import run_honore_gaming_new_transformer as transform
 from load import run_honore_gaming_loader as load
 
-def orchestrator():
-    logger = Logger(log_file="logs/orchestrator_honore_gaming.log").get_logger()
-    try:
-        logger.info("Lancement de l'orchestrateur...")
-        extract()
-        transform()
-        load()
-        logger.info("Orchestrateur terminé avec succès.")
-
-    except Exception as e:
-        logger.error(f"Erreur lors de l'exécution de l'orchestrateur : {e}")
-        raise e
+def run_honore_gaming_new_orchestrator():
+    orchestrator = Orchestrator(
+        name="honore_gaming_new",
+        extractor=extract,
+        transformer=transform,
+        loader=load
+    )
+    orchestrator.run()
 
 if __name__ == "__main__":
-  orchestrator()
+    run_honore_gaming_new_orchestrator()

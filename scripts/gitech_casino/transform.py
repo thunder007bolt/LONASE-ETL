@@ -1,125 +1,61 @@
-import os
 import re
-import shutil
 from pathlib import Path
-import numpy as np
 import pandas as pd
-import win32com.client
-from datetime import datetime
-from base.logger import Logger
-from base.tranformer import  Transformer
-from utils.config_utils import get_config
+from base.transformer import Transformer
+from utils.excel_utils import convert_xls_to_xlsx
+
 
 class GitechCasinoTransformer(Transformer):
     def __init__(self):
         super().__init__('gitech_casino', 'logs/transformer_gitech_casino.log')
 
-    def convert_xls_to_xlsx(self, xls_file: Path) -> Path:
-        """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
-        """
-        TEMP_DIR = r"C:\Users\optiware2\AppData\Local\Temp\gen_py\3.7"
-
-        def clear_temp():
-            try:
-                shutil.rmtree(TEMP_DIR)
-            except OSError as o:
-                print(f"Erreur : {o.strerror}")
-
-        """
-        Convertit un fichier XLS en XLSX via l'automatisation COM d'Excel.
-        Après conversion, le fichier XLS d'origine est renommé avec un suffixe contenant la date
-        et déplacé dans le répertoire des fichiers traités.
-        """
-        clear_temp()
-
-        self.logger.info(f"Conversion du fichier XLS {xls_file.name} en XLSX...")
-        import xlwings as xw
-        # Lancement d'Excel (en arrière-plan)
-        app = xw.App(visible=False)
-
-        try:
-            wb = app.books.open(str(xls_file.resolve()))
-            xlsx_file = xls_file.with_suffix(".xlsx")
-
-            if xlsx_file.exists():
-                xlsx_file.unlink()
-
-            wb.save(str(xlsx_file.resolve()))
-            wb.close()
-        finally:
-            app.quit()
-
-        # Renommage et déplacement du fichier XLS d'origine
-        return xlsx_file
-
     def extract_date_from_file(self, xlsx_file: Path) -> str:
         """
-        Extrait la date contenue dans le fichier XLSX. On suppose que la date se trouve dans la
-        deuxième ligne (index 1) et correspond au format 'Du: DD/MM/YYYY'.
+        Extrait la date contenue dans le fichier XLSX.
         """
         self.logger.info(f"Extraction de la date à partir du fichier {xlsx_file.name}")
         df = pd.read_excel(xlsx_file)
         cell_value = str(df.iloc[2])
         match = re.search(r"Du:\s*(\d{2}/\d{2}/\d{4})", cell_value)
         if match:
-            date_str = match.group(1)
-            return date_str
+            return match.group(1)
         else:
             raise ValueError("Date non trouvée dans le fichier.")
 
     def process_numeric_column(self, value):
         """
-        Nettoie et convertit une valeur lue depuis une colonne numérique.
-        - Suppression des espaces insécables.
-        - Si une virgule est présente, suppression des zéros finaux et de la virgule.
-        - Conversion en entier (les erreurs produisent un 0).
+        Nettoie et convertit une valeur numérique (retourne float pour casino).
         """
-        # Étape 1 : Convertir la valeur en chaîne et supprimer les espaces insécables
         value_str = str(value).replace(u'\xa0', '')
-
         if ',' in value_str:
             value_str = value_str.replace(',', '.')
-
         numeric_value = pd.to_numeric(value_str, errors='coerce')
-
         if pd.isna(numeric_value):
             return 0
-
         return numeric_value
 
 
-    def _transform_file(self, file: Path, date):
+    def _transform_file(self, file: Path, date=None):
         """
         Traite un fichier correspondant au motif "Etat de la course".
-        Cette méthode effectue les étapes suivantes :
-          - Conversion en XLSX si nécessaire
-          - Lecture et nettoyage des données
-          - Extraction de la date
-          - Transformation des données et création du CSV de sortie
-          - Suppression du fichier XLSX temporaire
         """
         self.logger.info(f"Traitement du fichier : {file.name}")
 
         try:
             if file.suffix.lower() == ".xls":
-                xlsx_file = self.convert_xls_to_xlsx(file)
+                xlsx_file = convert_xls_to_xlsx(file, self.logger)
                 self.logger.info(f"Conversion de {file.name} en {xlsx_file.name} réussie.")
             elif file.suffix.lower() == ".xlsx":
                 xlsx_file = file
             else:
                 raise Exception(f"Type de fichier non géré : {file.name}")
-
         except Exception as e:
             self.logger.error(f"Erreur lors de la conversion de {file.name} : {e}")
             self.set_error(file.name)
-            # TODO : déplacer le fichier dans un dossier d'erreur
             return
 
         try:
-            # Lecture du fichier Excel en sautant les lignes d'en-tête (de la 2ème à la 6ème ligne)
+            # Lecture du fichier Excel en sautant les lignes d'en-tête
             data = pd.read_excel(xlsx_file, skiprows=range(0, 6))
         except Exception as e:
             self.set_error(file.name)
@@ -135,24 +71,31 @@ class GitechCasinoTransformer(Transformer):
             return
 
         # Renommage des colonnes
-        data.columns = ['No','IdJeu','NomJeu','Vente','Paiement','PourcentagePaiement']
-        # Suppression des lignes où 'Operateur' vaut 'Total' ou 'montant global'
+        data.columns = ['No', 'IdJeu', 'NomJeu', 'Vente', 'Paiement', 'PourcentagePaiement']
+        
+        # Suppression des lignes indésirables
         data = data[~data['NomJeu'].isin(['Total', 'montant global', 'PMU Online', 'Nom de jeu'])]
+        
         # Suppression de la colonne 'No'
         data.drop('No', axis=1, inplace=True)
-        # Insertion et remplissage de la colonne "Date vente" avec la date extraite
+        
+        # Insertion de la date
         data.insert(2, "Date vente", date_str)
 
-        # Nettoyage et conversion des colonnes numériques
+        # Nettoyage des colonnes numériques
         numeric_cols = ['Vente', 'Paiement']
         for col in numeric_cols:
             data[col] = data[col].apply(self.process_numeric_column)
 
-        xlsx_file.unlink()
+        # Suppression du fichier temporaire
+        if xlsx_file != file:
+            xlsx_file.unlink()
 
-        filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\CASINO\\"
-        data.to_csv(filesInitialDirectory + "GITECH CASINO " + date.strftime('%Y-%m-%d') + ".csv", index=False, sep=';',
-                    encoding='utf8')
+        # Sauvegarde (chemins hardcodés à nettoyer plus tard)
+        if date:
+            filesInitialDirectory = r"K:\DATA_FICHIERS\GITECH\CASINO\\"
+            data.to_csv(filesInitialDirectory + "GITECH CASINO " + date.strftime('%Y-%m-%d') + ".csv",
+                       index=False, sep=';', encoding='utf8')
 
         self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
 

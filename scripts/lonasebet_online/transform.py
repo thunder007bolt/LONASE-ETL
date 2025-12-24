@@ -1,44 +1,18 @@
-import os
-import re
-import shutil
 from pathlib import Path
-import numpy as np
-import pandas as pd
-import win32com.client
-from datetime import datetime
-from base.logger import Logger
-from base.tranformer import Transformer
-from utils.config_utils import get_config
-from utils.file_manipulation import move_file
+from base.simple_csv_transformer import SimpleCSVTransformer
 
 
-class LonasebetOnlineTransformer(Transformer):
+class LonasebetOnlineTransformer(SimpleCSVTransformer):
     def __init__(self):
-        super().__init__('lonasebet_online', 'logs/transformer_lonasebet_online.log')
-
-    def _transform_file(self, file: Path, date):
-        self.logger.info(f"Traitement du fichier : {file.name}")
-        try:
-            data = pd.read_csv(file, sep=';',index_col=False)
-
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
-            return
-        # todo: get date from file or current date
-        data["JOUR"] = str(date.strftime("%d/%m/%Y"))
-        data["ANNEE"] = str(date.strftime("%Y"))
-        data["MOIS"] = str(date.strftime("%m"))
-
-        filesInitialDirectory = r"K:\DATA_FICHIERS\LONASEBET\ALR_PARIFOOT\\"
-        data.to_csv(filesInitialDirectory + "OnlineLonasebet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
-
-        data = pd.DataFrame(data,columns=["BetId","JOUR","Stake","BetCategory","State","PaidAmount","CustomerLogin","Freebet"])
-        data = data.replace(np.nan, '')
-        data = data.astype(str)
-
-
-        self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
+        super().__init__(
+            name='lonasebet_online',
+            log_file='logs/transformer_lonasebet_online.log',
+            csv_sep=';',
+            csv_encoding='utf-8',
+            add_date_columns=True,
+            select_columns=["BetId", "JOUR", "Stake", "BetCategory", "State", "PaidAmount", "CustomerLogin", "Freebet"],
+            archive_path=r"K:\DATA_FICHIERS\LONASEBET\ALR_PARIFOOT\\"
+        )
 
 
 def run_lonasebet_online_transformer():

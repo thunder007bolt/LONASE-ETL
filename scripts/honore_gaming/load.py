@@ -1,12 +1,9 @@
-import pandas as pd
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 load_env()
 
-class HonoreGamingLoad(Loader):
+class HonoreGamingLoad(CSVLoader):
     def __init__(self):
-        name = ('honore_gaming')
-        log_file = 'logs/loader_honore_gaming.log'
         columns = [
             "reportdatetime",
             "ticketnumber",
@@ -45,23 +42,30 @@ class HonoreGamingLoad(Loader):
             "paidamount",
             "gamename"
         ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_ALR_HONORE_GAMING]"
-        super().__init__(name, log_file, columns, table_name)
-
+        super().__init__(
+            name='honore_gaming',
+            log_file='logs/loader_honore_gaming.log',
+            sql_columns=columns,
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_ALR_HONORE_GAMING]",
+            csv_sep=';',
+            csv_encoding='utf-8'
+        )
+    
     def _load_datas(self, data):
+        """Surcharge pour utiliser fast_executemany."""
         self.logger.info("Chargement des données dans la base...")
         insert_query = f"""
-            INSERT INTO {self.table_name} ({", ".join([f'[{col}]' for col in self.columns])})
+            INSERT INTO {self.sql_server_table_name} ({", ".join([f'[{col}]' for col in self.sql_server_columns])})
             VALUES
-                ({", ".join(["?"] * len(self.columns))})
+                ({", ".join(["?"] * len(self.sql_server_columns))})
         """
-        self.cursor.fast_executemany = True
-        self.cursor.executemany(insert_query, data)
-        self.connexion.commit()
-
-    def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
-        return df
+        if hasattr(self, 'sql_server_cursor') and self.sql_server_cursor:
+            self.sql_server_cursor.fast_executemany = True
+            self.sql_server_cursor.executemany(insert_query, data)
+            self.sql_server_connexion.commit()
+        else:
+            # Fallback sur la méthode parente
+            super()._load_datas(data)
 
 def run_honore_gaming_loader():
     loader = HonoreGamingLoad()

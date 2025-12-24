@@ -1,25 +1,24 @@
-import pandas as pd, numpy as np
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 
 load_env()
 
 
-class LonasebetCasinoLoad(Loader):
+class LonasebetCasinoLoad(CSVLoader):
     def __init__(self):
-        name = ('lonasebet_casino')
-        log_file = 'logs/loader_lonasebet_casino.log'
-        columns = [
-            "date",
-            "mise totale",
-            "Somme PayÃ©e"
-        ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_CASINO_LONASEBET]"
-        super().__init__(name, log_file, columns, table_name)
-
-    def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False, dtype=str)
-        return df
+        super().__init__(
+            name='lonasebet_casino',
+            log_file='logs/loader_lonasebet_casino.log',
+            sql_columns=[
+                "date",
+                "mise totale",
+                "Somme PayÃ©e"
+            ],
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_CASINO_LONASEBET]",
+            csv_sep=';',
+            csv_encoding='utf-8',
+            csv_dtype=str
+        )
 
 def run_lonasebet_casino_loader():
     loader = LonasebetCasinoLoad()

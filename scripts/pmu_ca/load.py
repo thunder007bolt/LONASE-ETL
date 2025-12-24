@@ -1,28 +1,27 @@
-import pandas as pd
-from base.loader import Loader
+from base.csv_loader import CSVLoader
 from utils.other_utils import load_env
 
 load_env()
 
 
-class PmuCALoad(Loader):
+class PmuCALoad(CSVLoader):
     def __init__(self, log_file=None, config_path=None):
-        name = ('pmu_ca')
-        log_file = log_file or 'logs/loader_pmu_ca.log'
-        columns = [
-            "produit",
-            "ca",
-            "sharing",
-            "jour",
-            "annee",
-            "mois"
-        ]
-        table_name = "[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_PMUSENEGAL_CA]"
-        super().__init__(name, log_file, columns, table_name, config_path=config_path)
-
-    def _convert_file_to_dataframe(self, file):
-        df = pd.read_csv(file, sep=';', index_col=False)
-        return df
+        super().__init__(
+            name='pmu_ca',
+            log_file=log_file or 'logs/loader_pmu_ca.log',
+            sql_columns=[
+                "produit",
+                "ca",
+                "sharing",
+                "jour",
+                "annee",
+                "mois"
+            ],
+            sql_table_name="[DWHPR_TEMP].[OPTIWARETEMP].[SRC_PRD_PMUSENEGAL_CA]",
+            csv_sep=';',
+            csv_encoding='utf-8',
+            config_path=config_path
+        )
 
 
 def run_pmu_ca_loader(config_path=None, log_file=None):

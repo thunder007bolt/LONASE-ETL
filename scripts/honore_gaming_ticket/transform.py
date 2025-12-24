@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from base.tranformer import Transformer
+from base.transformer import Transformer
 from datetime import timedelta
 
 delta = timedelta(days=1)

@@ -40,20 +40,17 @@ class ExtractLonsasebetOnline(BaseScrapper):
         password = secret_config["LONASEBET_ONLINE_LOGIN_PASSWORD"]
 
         self.logger.info("Saisie des identifiants...")
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, username_xpath))).send_keys(
-            username)
-        WebDriverWait(browser, timeout=10 * 9).until(EC.element_to_be_clickable((By.XPATH, password_xpath))).send_keys(
-            password)
+        self.wait_and_send_keys(username_xpath, locator_type='xpath', timeout=90, keys=username)
+        self.wait_and_send_keys(password_xpath, locator_type='xpath', timeout=90, keys=password)
 
         self.logger.info("Envoi du formulaire...")
-        WebDriverWait(browser, timeout=10 * 9).until(
-            EC.element_to_be_clickable((By.XPATH, submit_button_xpath))).click()
+        self.wait_and_click(submit_button_xpath, locator_type='xpath', timeout=90)
         sleep(2)
 
         try:
             self.logger.info("Vérification de la connexion...")
             verification_xpath = html_elements["verification_xpath"]
-            WebDriverWait(browser, timeout=10).until(EC.presence_of_element_located((By.XPATH, verification_xpath)))
+            self.wait_for_presence(verification_xpath, locator_type='xpath', timeout=10)
             sleep(1)
             self.logger.info("Connexion à la plateforme réussie.")
         except Exception as error:

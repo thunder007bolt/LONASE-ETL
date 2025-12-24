@@ -1,36 +1,24 @@
 from pathlib import Path
-import numpy as np
-import pandas as pd
-from base.tranformer import Transformer
+from base.simple_csv_transformer import SimpleCSVTransformer
 
-class LonasebetCasinoTransformer(Transformer):
+
+class LonasebetCasinoTransformer(SimpleCSVTransformer):
     def __init__(self):
-        super().__init__('lonasebet_casino', 'logs/transformer_lonasebet_casino.log')
-
+        super().__init__(
+            name='lonasebet_casino',
+            log_file='logs/transformer_lonasebet_casino.log',
+            csv_sep=';',
+            csv_encoding='utf-8',
+            add_date_columns=True,
+            select_columns=["JOUR", "Stake", "PaidAmount"],
+            archive_path=r"K:\DATA_FICHIERS\LONASEBET\CASINO\\"
+        )
+    
     def _transform_file(self, file: Path, date=None):
-        self.logger.info(f"Traitement du fichier : {file.name}")
-
-        try:
-            data = pd.read_csv(file, sep=';', index_col=False, encoding='utf-8')
-
-        except Exception as e:
-            self.set_error(file.name)
-            self.logger.error(f"Erreur lors de la lecture de {file.name} : {e}")
-            return
-
-        date = self._get_file_date(file)
-        data["JOUR"] = str(date.strftime("%d/%m/%Y"))
-        data["ANNEE"] = str(date.strftime("%Y"))
-        data["MOIS"] = str(date.strftime("%m"))
-
-        filesInitialDirectory = r"K:\DATA_FICHIERS\LONASEBET\CASINO\\"
-        data.to_csv(filesInitialDirectory + "casinoLonasebet "+ date.strftime('%Y-%m-%d') + ".csv", index=False,sep=';',encoding='utf8')
-
-        data = pd.DataFrame(data, columns=["JOUR", "Stake", "PaidAmount"])
-        data = data.replace(np.nan, '')
-        data = data.astype(str)
-
-        self._save_file(file=file, data=data, type="csv", sep=';', encoding='utf8', index=False)
+        # Utilise la logique de base
+        if date is None:
+            date = self._get_file_date(file)
+        super()._transform_file(file, date)
 
 def run_lonasebet_casino_transformer():
     transformer = LonasebetCasinoTransformer()

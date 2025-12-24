@@ -1,5 +1,5 @@
-import sys
-sys.path.append("C:\ETL")
+from utils.path_utils import setup_project_paths
+setup_project_paths()
 
 from base.orchestrator import Orchestrator
 from scripts.lonasebet_global.extract import run_lonasebet_global_extractor
